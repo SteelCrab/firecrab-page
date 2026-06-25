@@ -1558,80 +1558,6 @@
   word-break: keep-all;
 }
 
-.why-section {
-  width: 100%;
-  padding-right: max(24px, calc((100vw - 1180px) / 2));
-  padding-left: max(24px, calc((100vw - 1180px) / 2));
-  background: #fff;
-}
-
-.why-heading {
-  display: grid;
-  grid-template-columns: minmax(0, 0.86fr) minmax(340px, 0.58fr);
-  gap: 40px;
-  align-items: end;
-}
-
-.why-heading p {
-  margin: 0;
-}
-
-.why-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 34px;
-}
-
-.why-card {
-  display: grid;
-  min-height: 232px;
-  align-content: start;
-  gap: 14px;
-  padding: 22px;
-  border: 1px solid var(--md-line, rgba(22, 32, 27, 0.14));
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: var(--md-shadow-1, 0 1px 2px rgba(60, 64, 67, 0.16));
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms ease;
-}
-
-.why-card:hover {
-  border-color: #d2e3fc;
-  box-shadow: var(--md-shadow-2, 0 4px 8px rgba(60, 64, 67, 0.14));
-  transform: translateY(-2px);
-}
-
-.why-card-icon {
-  display: grid;
-  width: 52px;
-  height: 52px;
-  place-items: center;
-  border: 1px solid #d2e3fc;
-  border-radius: 8px;
-  background: var(--md-blue-soft, #e8f0fe);
-  color: var(--md-blue, #1a73e8);
-}
-
-.why-card h3 {
-  margin: 0;
-  color: var(--md-ink, #202124);
-  font-size: 1.12rem;
-  line-height: 1.24;
-  word-break: keep-all;
-}
-
-.why-card p {
-  margin: 0;
-  color: var(--md-muted, #5f6368);
-  font-size: 0.92rem;
-  line-height: 1.52;
-  word-break: keep-all;
-}
-
 .image-template-section {
   display: grid;
   gap: 32px;
@@ -2137,7 +2063,6 @@
   .structure-visuals,
   .split-heading,
   .overview-expanded-heading,
-  .why-heading,
   .image-template-heading,
   .api-section,
   .template-section,
@@ -2159,10 +2084,6 @@
   }
 
   .microvm-template-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .why-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2332,7 +2253,6 @@
 
   .contrast-section,
   .container-section,
-  .why-section,
   .deploy-flow-section,
   .roadmap-section {
     padding-right: 16px;
@@ -2477,15 +2397,7 @@
     grid-template-columns: 1fr;
   }
 
-  .why-grid {
-    grid-template-columns: 1fr;
-  }
-
   .overview-scope-card {
-    min-height: auto;
-  }
-
-  .why-card {
     min-height: auto;
   }
 
@@ -2814,7 +2726,6 @@
 
 .container-section,
 .intro-section,
-.why-section,
 .api-section,
 .image-template-section,
 .template-section,
@@ -2837,7 +2748,6 @@
 .comparison-table,
 .code-window,
 .overview-scope-card,
-.why-card,
 .microvm-template-card,
 .template-board,
 .roadmap-stage {
@@ -2860,7 +2770,6 @@
 
 .keyword-item svg,
 .overview-scope-icon,
-.why-card-icon,
 .container-compare-row svg,
 .roadmap-stage svg {
   color: var(--md-blue);
@@ -2868,7 +2777,6 @@
 
 .keyword-item h3,
 .overview-scope-card h3,
-.why-card h3,
 .microvm-template-card h3,
 .roadmap-stage h3,
 .template-chip strong,

@@ -46,12 +46,6 @@ type Comparison = {
   firecrab: string;
 };
 
-type WhyReason = {
-  title: string;
-  description: string;
-  icon: IconComponent;
-};
-
 type Stage = {
   label: string;
   items: string[];
@@ -139,29 +133,6 @@ const overviewItems: OverviewItem[] = [
   {
     title: '설치 환경',
     description: '단일 서버, 온프레미스, 내부망·폐쇄망에서도 운영 가능한 구조.',
-    icon: TerminalSquare,
-  },
-];
-
-const whyReasons: WhyReason[] = [
-  {
-    title: 'Firecracker에 집중',
-    description: '범용 VM 기능보다 MicroVM 생성, 상태, 콘솔, 로그 관리에 집중합니다.',
-    icon: Flame,
-  },
-  {
-    title: '가볍게 시작',
-    description: '단일 서버나 소규모 온프레미스에서도 운영 가능한 구조를 목표로 합니다.',
-    icon: Activity,
-  },
-  {
-    title: '웹에서 바로 관리',
-    description: 'CPU, Memory, Disk, Network를 지정하고 MicroVM 상태를 한 화면에서 확인합니다.',
-    icon: Server,
-  },
-  {
-    title: '내부망에도 어필',
-    description: '외부 SaaS 의존도를 낮춘 설치형 구조로 내부망·폐쇄망 환경도 고려합니다.',
     icon: TerminalSquare,
   },
 ];
@@ -369,7 +340,6 @@ function App() {
         </a>
         <nav className="nav-links" aria-label="주요 섹션">
           <a href="#overview">개요</a>
-          <a href="#why">Why</a>
           <a href="#templates">템플릿</a>
           <a href="#difference">차별점</a>
           <a href="#roadmap">MVP</a>
@@ -447,31 +417,6 @@ function App() {
               </article>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section className="section why-section" id="why" aria-labelledby="why-title" data-reveal="section">
-        <div className="why-heading">
-          <div data-reveal="slide-right">
-            <div className="section-kicker">Why FireCrab?</div>
-            <h2 id="why-title">MicroVM 관리를 더 가볍게</h2>
-          </div>
-          <p data-reveal="slide-left">
-            FireCrab은 거대한 VM 플랫폼을 대체하기보다, Firecracker MicroVM을 웹에서
-            빠르게 만들고 운영하는 데 필요한 기능만 선명하게 제공합니다.
-          </p>
-        </div>
-
-        <div className="why-grid" aria-label="FireCrab이 필요한 이유">
-          {whyReasons.map((reason, index) => (
-            <article className="why-card" data-reveal="tile" key={reason.title} style={revealDelay(index, 60)}>
-              <div className="why-card-icon" aria-hidden="true">
-                <reason.icon size={24} />
-              </div>
-              <h3>{reason.title}</h3>
-              <p>{reason.description}</p>
-            </article>
-          ))}
         </div>
       </section>
 
