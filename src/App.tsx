@@ -2,18 +2,25 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import {
   Activity,
   ArrowRight,
+  Bell,
   Box,
   CheckCircle2,
   Cloud,
   Code2,
   Coffee,
   Cpu,
-  Database,
   Flame,
   GitBranch,
+  LayoutDashboard,
+  MoreHorizontal,
   Network,
   PlayCircle,
+  Plus,
+  Power,
+  RefreshCw,
+  Search,
   Server,
+  ShieldCheck,
   TerminalSquare,
 } from 'lucide-react';
 import {
@@ -71,6 +78,49 @@ type DeploymentStep = {
   title: string;
   description: string;
   icon?: IconComponent;
+};
+
+type DashboardMetric = {
+  label: string;
+  value: string;
+  detail: string;
+  icon: IconComponent;
+  tone: 'blue' | 'green' | 'yellow' | 'gray';
+};
+
+type DashboardMicroVm = {
+  id: string;
+  name: string;
+  image: string;
+  state: 'running' | 'booting' | 'paused' | 'stopped';
+  host: string;
+  cpu: string;
+  memory: string;
+  disk: string;
+  ip: string;
+  endpoint: string;
+  updated: string;
+};
+
+type DashboardHost = {
+  name: string;
+  role: string;
+  cpu: number;
+  memory: number;
+  microvms: number;
+};
+
+type DashboardEvent = {
+  time: string;
+  level: 'info' | 'success' | 'warn';
+  message: string;
+};
+
+type DashboardTemplateOption = {
+  title: string;
+  meta: string;
+  icon?: IconComponent;
+  brandIcon?: SimpleIcon;
 };
 
 type RevealStyle = CSSProperties & {
@@ -274,17 +324,11 @@ const deploymentSteps: DeploymentStep[] = [
   {
     label: '03',
     title: 'FireCrab Control',
-    description: 'MicroVM Spec을 저장하고 Firecracker 제어 요청으로 변환합니다.',
+    description: '선택한 사양을 저장하고 Firecracker에 MicroVM 생성을 요청합니다.',
     icon: Network,
   },
   {
     label: '04',
-    title: 'Firecracker',
-    description: 'API Socket으로 vCPU, Memory, RootFS, TAP을 구성합니다.',
-    icon: Server,
-  },
-  {
-    label: '05',
     title: 'MicroVM Ready',
     description: '상태, Console, Logs, Endpoint를 대시보드에 표시합니다.',
     icon: Cloud,
@@ -325,9 +369,134 @@ const stack = [
   ['Agent', 'FireCrab Host Agent'],
 ];
 
+const dashboardMetrics: DashboardMetric[] = [
+  {
+    label: 'Running MicroVM',
+    value: '18',
+    detail: '3개 호스트에서 실행 중',
+    icon: Server,
+    tone: 'blue',
+  },
+  {
+    label: 'Allocated vCPU',
+    value: '32',
+    detail: '사용률 42%',
+    icon: Cpu,
+    tone: 'green',
+  },
+  {
+    label: 'Memory Pool',
+    value: '28 GiB',
+    detail: '전체 64 GiB 중 할당',
+    icon: Activity,
+    tone: 'yellow',
+  },
+  {
+    label: 'Template Images',
+    value: '7',
+    detail: 'Ubuntu, Python, Nginx 포함',
+    icon: Box,
+    tone: 'gray',
+  },
+];
+
+const dashboardMicroVms: DashboardMicroVm[] = [
+  {
+    id: 'fc-web-001',
+    name: 'fc-web-001',
+    image: 'Ubuntu Minimal',
+    state: 'running',
+    host: 'host-01',
+    cpu: '2 vCPU',
+    memory: '2 GiB',
+    disk: '20 GiB',
+    ip: '10.24.0.18',
+    endpoint: 'ssh://fc-web-001.local',
+    updated: '방금 전',
+  },
+  {
+    id: 'fc-nginx-edge',
+    name: 'fc-nginx-edge',
+    image: 'Nginx Server',
+    state: 'running',
+    host: 'host-01',
+    cpu: '1 vCPU',
+    memory: '1 GiB',
+    disk: '10 GiB',
+    ip: '10.24.0.21',
+    endpoint: 'http://edge.firecrab.local',
+    updated: '2분 전',
+  },
+  {
+    id: 'fc-python-job',
+    name: 'fc-python-job',
+    image: 'Python Server',
+    state: 'booting',
+    host: 'host-02',
+    cpu: '2 vCPU',
+    memory: '2 GiB',
+    disk: '12 GiB',
+    ip: '10.24.0.32',
+    endpoint: 'serial://fc-python-job',
+    updated: '5분 전',
+  },
+  {
+    id: 'fc-redis-cache',
+    name: 'fc-redis-cache',
+    image: 'Redis Server',
+    state: 'paused',
+    host: 'host-02',
+    cpu: '1 vCPU',
+    memory: '512 MiB',
+    disk: '8 GiB',
+    ip: '10.24.0.41',
+    endpoint: 'redis://10.24.0.41:6379',
+    updated: '14분 전',
+  },
+  {
+    id: 'fc-java-api',
+    name: 'fc-java-api',
+    image: 'Java Server',
+    state: 'running',
+    host: 'host-03',
+    cpu: '2 vCPU',
+    memory: '3 GiB',
+    disk: '24 GiB',
+    ip: '10.24.0.52',
+    endpoint: 'https://api.firecrab.local',
+    updated: '21분 전',
+  },
+];
+
+const dashboardHosts: DashboardHost[] = [
+  { name: 'host-01', role: 'MicroVM Node', cpu: 58, memory: 46, microvms: 8 },
+  { name: 'host-02', role: 'MicroVM Node', cpu: 36, memory: 54, microvms: 6 },
+  { name: 'host-03', role: 'Template Build', cpu: 29, memory: 31, microvms: 4 },
+];
+
+const dashboardEvents: DashboardEvent[] = [
+  { time: '14:22:10', level: 'success', message: 'fc-nginx-edge 상태가 running으로 변경되었습니다.' },
+  { time: '14:21:48', level: 'info', message: 'Python Server 이미지로 MicroVM 생성 요청이 접수되었습니다.' },
+  { time: '14:20:31', level: 'warn', message: 'host-02 memory allocation이 54%에 도달했습니다.' },
+  { time: '14:18:09', level: 'info', message: 'Serial Console 세션이 fc-web-001에 연결되었습니다.' },
+];
+
+const dashboardTemplates: DashboardTemplateOption[] = [
+  { title: 'Ubuntu Minimal', meta: 'Kernel + RootFS', brandIcon: siUbuntu },
+  { title: 'Python Server', meta: 'API / Batch', brandIcon: siPython },
+  { title: 'Nginx Server', meta: 'Web Server', brandIcon: siNginx },
+  { title: 'Redis Server', meta: 'Cache Node', brandIcon: siRedis },
+  { title: 'Java Server', meta: 'JVM Service', icon: Coffee },
+];
+
 function App() {
+  const currentPath = useCurrentPath();
   useScrollReveal();
   const activeDeploymentStep = useCyclingIndex(deploymentSteps.length, 1700);
+
+  if (currentPath === '/dashboard') {
+    return <DashboardMockupPage />;
+  }
 
   return (
     <main className="page-shell">
@@ -339,6 +508,7 @@ function App() {
           <span>FireCrab</span>
         </a>
         <nav className="nav-links" aria-label="주요 섹션">
+          <a href="/dashboard">대시보드</a>
           <a href="#overview">개요</a>
           <a href="#templates">템플릿</a>
           <a href="#difference">차별점</a>
@@ -355,7 +525,11 @@ function App() {
             웹 대시보드에서 Firecracker MicroVM을 생성하고, 자원 설정·상태·콘솔·로그를 가볍게 관리합니다.
           </p>
           <div className="hero-actions" aria-label="핵심 흐름 바로가기">
-            <a className="primary-action" href="#deploy-flow">
+            <a className="primary-action" href="/dashboard">
+              <LayoutDashboard size={18} />
+              대시보드 보기
+            </a>
+            <a className="secondary-action" href="#deploy-flow">
               <PlayCircle size={18} />
               배포 흐름 보기
             </a>
@@ -515,8 +689,8 @@ function App() {
         <div className="split-heading">
           <h2 id="deploy-flow-title" data-reveal="slide-right">대시보드에서 Firecracker MicroVM까지</h2>
           <p data-reveal="slide-left">
-            사용자가 Web Dashboard에서 템플릿과 자원 사양을 선택하면 FireCrab Control이
-            MicroVM Spec을 저장하고 Firecracker 제어 요청으로 변환합니다.
+            사용자가 템플릿과 자원 사양을 선택하면 FireCrab Control이 설정을 저장하고
+            Firecracker에 MicroVM 생성을 요청합니다.
           </p>
         </div>
 
@@ -609,6 +783,416 @@ function App() {
       </footer>
     </main>
   );
+}
+
+function DashboardMockupPage() {
+  const [selectedMicroVmId, setSelectedMicroVmId] = useState(dashboardMicroVms[0].id);
+  const selectedMicroVm =
+    dashboardMicroVms.find((microVm) => microVm.id === selectedMicroVmId) ?? dashboardMicroVms[0];
+  const stateLabels: Record<DashboardMicroVm['state'], string> = {
+    running: 'Running',
+    booting: 'Booting',
+    paused: 'Paused',
+    stopped: 'Stopped',
+  };
+  const dashboardNavItems: Array<[string, IconComponent, boolean]> = [
+    ['Dashboard', LayoutDashboard, true],
+    ['MicroVM instances', Server, false],
+    ['Image templates', Box, false],
+    ['Host agents', Cpu, false],
+    ['Serial console', TerminalSquare, false],
+    ['Access control', ShieldCheck, false],
+  ];
+  const selectedSpecRows = [
+    ['MicroVM ID', selectedMicroVm.id],
+    ['Image type', selectedMicroVm.image],
+    ['Host agent', selectedMicroVm.host],
+    ['Endpoint', selectedMicroVm.endpoint],
+    ['Last event', selectedMicroVm.updated],
+  ];
+
+  return (
+    <div className="dashboard-shell">
+      <header className="dashboard-globalbar" aria-label="FireCrab console global navigation">
+        <a className="dashboard-global-brand" href="/" aria-label="FireCrab landing page">
+          <img src="/firecrab-icon.png" alt="" aria-hidden="true" />
+          <strong>FireCrab</strong>
+        </a>
+        <button className="dashboard-services-button" type="button">
+          <Box size={16} />
+          Services
+        </button>
+        <label className="dashboard-global-search">
+          <Search size={16} />
+          <span className="sr-only">콘솔 검색</span>
+          <input type="search" placeholder="Search MicroVMs, templates, host agents" />
+        </label>
+        <div className="dashboard-global-actions" aria-label="Console utilities">
+          <button type="button">Support</button>
+          <button type="button">firecrab-admin</button>
+        </div>
+      </header>
+
+      <aside className="dashboard-sidebar" aria-label="FireCrab dashboard navigation">
+        <nav className="dashboard-nav" aria-label="대시보드 메뉴">
+          <div className="dashboard-nav-heading">FireCrab Control</div>
+          {dashboardNavItems.map(([label, Icon, active]) => (
+            <a className={active ? 'is-active' : ''} href="#dashboard-overview" key={label}>
+              <Icon size={18} />
+              <span>{label}</span>
+            </a>
+          ))}
+        </nav>
+
+        <div className="dashboard-sidebar-status">
+          <span>CONTROL PLANE</span>
+          <strong>Available</strong>
+          <p>Host Agent 3대 연결, Firecracker socket 정상</p>
+        </div>
+      </aside>
+
+      <main className="dashboard-main" id="dashboard-overview">
+        <div className="dashboard-content">
+          <section className="dashboard-page-header" aria-labelledby="dashboard-title">
+            <div className="dashboard-breadcrumb">
+              <a href="/">FireCrab</a>
+              <ArrowRight size={13} />
+              <span>MicroVM management</span>
+            </div>
+            <div className="dashboard-page-title-row">
+              <div>
+                <div className="dashboard-kicker">FireCrab Control Plane</div>
+                <h1 id="dashboard-title">MicroVM Dashboard</h1>
+              </div>
+              <div className="dashboard-header-actions">
+                <button className="dashboard-secondary-button" type="button">
+                  <RefreshCw size={16} />
+                  Refresh
+                </button>
+                <button className="dashboard-secondary-button" type="button">
+                  <Bell size={16} />
+                  Alarms
+                </button>
+                <a className="dashboard-primary-button" href="#dashboard-create">
+                  <Plus size={16} />
+                  Launch MicroVM
+                </a>
+              </div>
+            </div>
+            <p>
+              Firecracker 기반 MicroVM 인스턴스, 이미지 템플릿, Host Agent, Serial Console을
+              운영자 관점에서 빠르게 제어하는 전문가용 콘솔입니다.
+            </p>
+          </section>
+
+          <section className="dashboard-alert" aria-label="운영 상태 알림">
+            <ShieldCheck size={18} />
+            <div>
+              <strong>Control plane healthy</strong>
+              <span>3 host agents connected. TAP network and serial console checks passed.</span>
+            </div>
+          </section>
+
+          <div className="dashboard-tabs" aria-label="MicroVM dashboard tabs">
+            <a className="is-active" href="#dashboard-overview">Instances</a>
+            <a href="#dashboard-create">Launch template</a>
+            <a href="#host-title">Host agents</a>
+            <a href="#log-title">Event log</a>
+            <a href="#console-title">Console</a>
+          </div>
+
+          <section className="dashboard-metric-grid" aria-label="대시보드 주요 지표">
+            {dashboardMetrics.map((metric) => (
+              <article className={`dashboard-metric-card tone-${metric.tone}`} key={metric.label}>
+                <div className="dashboard-metric-icon" aria-hidden="true">
+                  <metric.icon size={20} />
+                </div>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <p>{metric.detail}</p>
+              </article>
+            ))}
+          </section>
+
+          <div className="dashboard-grid">
+            <section className="dashboard-panel dashboard-instance-panel" aria-labelledby="instance-title">
+              <div className="dashboard-panel-head">
+                <div>
+                  <span>Resources</span>
+                  <h2 id="instance-title">MicroVM instances</h2>
+                </div>
+                <div className="dashboard-panel-tools">
+                  <label className="dashboard-table-filter">
+                    <Search size={15} />
+                    <span className="sr-only">MicroVM 목록 검색</span>
+                    <input type="search" placeholder="Filter by name, host, image" />
+                  </label>
+                  <button className="dashboard-ghost-button" type="button">
+                    <RefreshCw size={15} />
+                    Sync
+                  </button>
+                  <button className="dashboard-ghost-button" type="button">
+                    <MoreHorizontal size={15} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="dashboard-instance-table" role="table" aria-label="MicroVM 목록">
+                <div className="dashboard-instance-row dashboard-instance-head" role="row">
+                  <span role="columnheader">Name</span>
+                  <span role="columnheader">Image</span>
+                  <span role="columnheader">State</span>
+                  <span role="columnheader">Host</span>
+                  <span role="columnheader">Resources</span>
+                  <span role="columnheader">Endpoint</span>
+                  <span role="columnheader">Actions</span>
+                </div>
+
+                {dashboardMicroVms.map((microVm) => (
+                  <button
+                    className={`dashboard-instance-row${selectedMicroVm.id === microVm.id ? ' is-selected' : ''}`}
+                    type="button"
+                    role="row"
+                    aria-pressed={selectedMicroVm.id === microVm.id}
+                    onClick={() => setSelectedMicroVmId(microVm.id)}
+                    key={microVm.id}
+                  >
+                    <span role="cell">
+                      <strong>{microVm.name}</strong>
+                      <small>{microVm.ip}</small>
+                    </span>
+                    <span role="cell">{microVm.image}</span>
+                    <span role="cell">
+                      <i className={`dashboard-state state-${microVm.state}`}>{stateLabels[microVm.state]}</i>
+                    </span>
+                    <span role="cell">{microVm.host}</span>
+                    <span role="cell">{microVm.cpu} / {microVm.memory}</span>
+                    <span role="cell">
+                      <code>{microVm.endpoint}</code>
+                    </span>
+                    <span className="dashboard-row-actions" role="cell">
+                      <span aria-label={`${microVm.name} 콘솔 열기`} title="Console">
+                        <TerminalSquare size={15} />
+                      </span>
+                      <span aria-label={`${microVm.name} 전원 제어`} title="Power">
+                        <Power size={15} />
+                      </span>
+                      <span aria-label={`${microVm.name} 더보기`} title="More">
+                        <MoreHorizontal size={15} />
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <aside className="dashboard-side-stack">
+              <section className="dashboard-panel dashboard-detail-panel" aria-labelledby="selected-title">
+                <div className="dashboard-panel-head compact">
+                  <div>
+                    <span>Inspector</span>
+                    <h2 id="selected-title">{selectedMicroVm.name}</h2>
+                  </div>
+                  <i className={`dashboard-state state-${selectedMicroVm.state}`}>{stateLabels[selectedMicroVm.state]}</i>
+                </div>
+                <div className="dashboard-inspector-summary">
+                  <div>
+                    <span>vCPU</span>
+                    <strong>{selectedMicroVm.cpu}</strong>
+                  </div>
+                  <div>
+                    <span>Memory</span>
+                    <strong>{selectedMicroVm.memory}</strong>
+                  </div>
+                  <div>
+                    <span>Disk</span>
+                    <strong>{selectedMicroVm.disk}</strong>
+                  </div>
+                </div>
+                <dl className="dashboard-detail-list">
+                  {selectedSpecRows.map(([label, value]) => (
+                    <div key={label}>
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="dashboard-inspector-actions">
+                  <button className="dashboard-primary-button" type="button">
+                    <TerminalSquare size={15} />
+                    Open console
+                  </button>
+                  <button className="dashboard-secondary-button" type="button">
+                    <Power size={15} />
+                    Stop
+                  </button>
+                </div>
+              </section>
+
+              <section className="dashboard-panel dashboard-create-panel" id="dashboard-create" aria-labelledby="create-title">
+                <div className="dashboard-panel-head compact">
+                  <div>
+                    <span>Launch</span>
+                    <h2 id="create-title">MicroVM launch template</h2>
+                  </div>
+                </div>
+
+                <div className="dashboard-template-picker" aria-label="이미지 템플릿 선택">
+                  {dashboardTemplates.map((template, index) => {
+                    const TemplateIcon = template.icon;
+                    const templateBrandColor = template.brandIcon ? `#${template.brandIcon.hex}` : '#ff9900';
+
+                    return (
+                      <button className={index === 0 ? 'is-selected' : ''} type="button" key={template.title}>
+                        <span
+                          className="dashboard-template-icon"
+                          style={{ '--template-brand': templateBrandColor } as CSSProperties}
+                          aria-hidden="true"
+                        >
+                          {template.brandIcon ? <BrandIcon icon={template.brandIcon} /> : null}
+                          {TemplateIcon ? <TemplateIcon size={19} /> : null}
+                        </span>
+                        <span>
+                          <strong>{template.title}</strong>
+                          <small>{template.meta}</small>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <form className="dashboard-create-form" aria-label="MicroVM 생성 설정">
+                  <label>
+                    vCPU
+                    <select defaultValue="2">
+                      <option value="1">1 Core</option>
+                      <option value="2">2 Core</option>
+                      <option value="4">4 Core</option>
+                    </select>
+                  </label>
+                  <label>
+                    Memory
+                    <select defaultValue="2048">
+                      <option value="1024">1 GiB</option>
+                      <option value="2048">2 GiB</option>
+                      <option value="4096">4 GiB</option>
+                    </select>
+                  </label>
+                  <label>
+                    RootFS
+                    <select defaultValue="20">
+                      <option value="10">10 GiB</option>
+                      <option value="20">20 GiB</option>
+                      <option value="40">40 GiB</option>
+                    </select>
+                  </label>
+                  <label>
+                    Network
+                    <select defaultValue="tap">
+                      <option value="nat">NAT</option>
+                      <option value="tap">TAP Bridge</option>
+                      <option value="isolated">Isolated</option>
+                    </select>
+                  </label>
+                </form>
+
+                <button className="dashboard-primary-button full" type="button">
+                  <Plus size={16} />
+                  Launch MicroVM
+                </button>
+              </section>
+            </aside>
+          </div>
+
+          <div className="dashboard-bottom-grid">
+            <section className="dashboard-panel" aria-labelledby="host-title">
+              <div className="dashboard-panel-head">
+                <div>
+                  <span>Compute</span>
+                  <h2 id="host-title">Host agent capacity</h2>
+                </div>
+                <ShieldCheck size={20} />
+              </div>
+              <div className="dashboard-host-list">
+                {dashboardHosts.map((host) => (
+                  <article className="dashboard-host-row" key={host.name}>
+                    <div>
+                      <strong>{host.name}</strong>
+                      <span>{host.role} / {host.microvms} MicroVM</span>
+                    </div>
+                    <div className="dashboard-meter-group" aria-label={`${host.name} 자원 사용률`}>
+                      <span>CPU {host.cpu}%</span>
+                      <div className="dashboard-meter">
+                        <i style={{ '--meter': `${host.cpu}%` } as CSSProperties} />
+                      </div>
+                      <span>Memory {host.memory}%</span>
+                      <div className="dashboard-meter">
+                        <i style={{ '--meter': `${host.memory}%` } as CSSProperties} />
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="dashboard-panel dashboard-log-panel" aria-labelledby="log-title">
+              <div className="dashboard-panel-head">
+                <div>
+                  <span>Operations</span>
+                  <h2 id="log-title">Event log</h2>
+                </div>
+                <button className="dashboard-icon-button" type="button" aria-label="로그 더보기">
+                  <MoreHorizontal size={17} />
+                </button>
+              </div>
+              <div className="dashboard-log-stream">
+                {dashboardEvents.map((event) => (
+                  <p className={`level-${event.level}`} key={`${event.time}-${event.message}`}>
+                    <span>{event.time}</span>
+                    <strong>{event.level}</strong>
+                    {event.message}
+                  </p>
+                ))}
+              </div>
+            </section>
+
+            <section className="dashboard-panel dashboard-console-panel" aria-labelledby="console-title">
+              <div className="dashboard-panel-head">
+                <div>
+                  <span>Console</span>
+                  <h2 id="console-title">Serial Console</h2>
+                </div>
+                <button className="dashboard-ghost-button" type="button">
+                  <TerminalSquare size={15} />
+                  Connect
+                </button>
+              </div>
+              <pre aria-label="Serial Console preview">
+                <code>{`firecrab@${selectedMicroVm.name}:~$ fc-control inspect ${selectedMicroVm.id}
+state=${selectedMicroVm.state}
+image="${selectedMicroVm.image}"
+host="${selectedMicroVm.host}"
+endpoint="${selectedMicroVm.endpoint}"`}</code>
+              </pre>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function useCurrentPath() {
+  const [path, setPath] = useState(() => window.location.pathname.replace(/\/$/, '') || '/');
+
+  useEffect(() => {
+    const updatePath = () => setPath(window.location.pathname.replace(/\/$/, '') || '/');
+
+    window.addEventListener('popstate', updatePath);
+    return () => window.removeEventListener('popstate', updatePath);
+  }, []);
+
+  return path;
 }
 
 function useCyclingIndex(length: number, intervalMs: number) {
