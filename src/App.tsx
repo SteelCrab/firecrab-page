@@ -1,24 +1,25 @@
-import { useEffect, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import {
   Activity,
   ArrowRight,
   Box,
   CheckCircle2,
+  Cloud,
+  Code2,
+  Coffee,
   Cpu,
+  Database,
   Flame,
   GitBranch,
-  HardDrive,
-  MemoryStick,
   Network,
   PlayCircle,
   Server,
   TerminalSquare,
 } from 'lucide-react';
 import {
-  siAlpinelinux,
-  siDebian,
   siNginx,
   siPostgresql,
+  siPython,
   siRedis,
   siUbuntu,
   type SimpleIcon,
@@ -33,10 +34,36 @@ type Keyword = {
   icon: IconComponent;
 };
 
+type OverviewItem = {
+  title: string;
+  description: string;
+  icon: IconComponent;
+};
+
 type Comparison = {
   label: string;
-  legacy: string;
+  vmPlatform: string;
   firecrab: string;
+};
+
+type ArchitectureLayer = {
+  title: string;
+  description: string;
+  icon: IconComponent;
+  isPrimary?: boolean;
+};
+
+type ArchitectureColumn = {
+  title: string;
+  subtitle: string;
+  layers: ArchitectureLayer[];
+  summary: string;
+};
+
+type WhyReason = {
+  title: string;
+  description: string;
+  icon: IconComponent;
 };
 
 type Stage = {
@@ -44,30 +71,26 @@ type Stage = {
   items: string[];
 };
 
-type RuntimeTemplate = {
+type ExecutionMode = {
   title: string;
   role: string;
   description: string;
-  brandIcon: SimpleIcon;
-};
-
-type MicroVmComparisonGroup = {
-  title: string;
-  columns: [string, string];
-  rows: Array<[string, string, string]>;
-};
-
-type MicroVmSpec = {
-  label: string;
-  value: string;
   icon: IconComponent;
 };
 
-type ExecutionStep = {
+type MicroVmTemplate = {
+  title: string;
+  description: string;
+  brandIcon?: SimpleIcon;
+  icon?: IconComponent;
+  iconColor?: string;
+};
+
+type DeploymentStep = {
   label: string;
   title: string;
   description: string;
-  icon: IconComponent;
+  icon?: IconComponent;
 };
 
 type RevealStyle = CSSProperties & {
@@ -80,23 +103,79 @@ const revealDelay = (index: number, step = 70): RevealStyle => ({
 
 const keywords: Keyword[] = [
   {
-    title: 'MicroVM 생성',
-    description: 'Ubuntu, Debian, Alpine 이미지 기반 생성.',
+    title: 'MicroVM Web Dashboard',
+    description: '브라우저에서 MicroVM 생성, 상태, 자원, 콘솔을 관리.',
     icon: Server,
   },
   {
-    title: '자원 커스텀',
-    description: 'CPU Core, Memory, Disk, Network 직접 설정.',
+    title: 'Firecracker Native',
+    description: 'Firecracker API Socket, RootFS, TAP, Serial 제어에 맞춘 구조.',
     icon: Cpu,
   },
   {
-    title: 'Dashboard / Monitoring',
-    description: 'VM 수, CPU, Memory, Disk 사용량 확인.',
+    title: 'Template 기반 생성',
+    description: 'Ubuntu, Python, Nginx, Redis 같은 템플릿으로 빠르게 생성.',
+    icon: Network,
+  },
+  {
+    title: 'Lifecycle Control',
+    description: 'MicroVM 생성, 시작, 중지, 삭제를 일관된 흐름으로 제어.',
+    icon: GitBranch,
+  },
+  {
+    title: 'Console & Logs',
+    description: 'Serial Console, Web SSH, 이벤트 로그로 실행 상태를 확인.',
+    icon: Code2,
+  },
+  {
+    title: 'Closed Network Ready',
+    description: '인터넷 의존도를 낮춰 내부망·폐쇄망 설치 환경에도 어필.',
+    icon: TerminalSquare,
+  },
+];
+
+const overviewItems: OverviewItem[] = [
+  {
+    title: '관리 대상',
+    description: 'Firecracker MicroVM, 이미지 템플릿, 자원 사양, 상태, 콘솔, 로그.',
+    icon: Server,
+  },
+  {
+    title: '생성 방식',
+    description: '템플릿 선택 후 CPU, Memory, Disk, Network 값을 지정해 MicroVM 생성.',
+    icon: Network,
+  },
+  {
+    title: '운영 기능',
+    description: '생성, 시작, 중지, 삭제, 상태 확인, Serial Console, 이벤트 로그.',
+    icon: GitBranch,
+  },
+  {
+    title: '설치 환경',
+    description: '단일 서버, 온프레미스, 내부망·폐쇄망에서도 운영 가능한 구조.',
+    icon: TerminalSquare,
+  },
+];
+
+const whyReasons: WhyReason[] = [
+  {
+    title: 'Firecracker에 집중',
+    description: '범용 VM 기능보다 MicroVM 생성, 상태, 콘솔, 로그 관리에 집중합니다.',
+    icon: Flame,
+  },
+  {
+    title: '가볍게 시작',
+    description: '단일 서버나 소규모 온프레미스에서도 운영 가능한 구조를 목표로 합니다.',
     icon: Activity,
   },
   {
-    title: 'Console / Image',
-    description: 'Serial Console, Web SSH, OS 이미지 관리.',
+    title: '웹에서 바로 관리',
+    description: 'CPU, Memory, Disk, Network를 지정하고 MicroVM 상태를 한 화면에서 확인합니다.',
+    icon: Server,
+  },
+  {
+    title: '내부망에도 어필',
+    description: '외부 SaaS 의존도를 낮춘 설치형 구조로 내부망·폐쇄망 환경도 고려합니다.',
     icon: TerminalSquare,
   },
 ];
@@ -104,175 +183,245 @@ const keywords: Keyword[] = [
 const comparisons: Comparison[] = [
   {
     label: '핵심 방향',
-    legacy: '범용 서버 가상화 플랫폼',
+    vmPlatform: '범용 서버 가상화 플랫폼',
     firecrab: 'Firecracker 전용 MicroVM 관리 플랫폼',
   },
   {
     label: '가상화 방식',
-    legacy: 'KVM, QEMU, ESXi 기반 일반 VM',
+    vmPlatform: 'KVM, QEMU, ESXi 기반 일반 VM',
     firecrab: 'Firecracker 기반 MicroVM',
   },
   {
     label: 'VM 구성',
-    legacy: 'BIOS / UEFI, VGA, 다양한 가상 장치 포함 가능',
-    firecrab: 'vCPU, Memory, Linux Kernel, RootFS, Network, Serial 중심',
+    vmPlatform: 'BIOS / UEFI, VGA, 다양한 가상 장치 포함 가능',
+    firecrab: 'vCPU, Memory, RootFS, Network, Serial 중심',
   },
   {
     label: '플랫폼 범위',
-    legacy: 'VM, Storage, Network, Cluster, HA, Backup까지 포함',
+    vmPlatform: 'VM, Storage, Network, Cluster, HA, Backup까지 포함',
     firecrab: 'MicroVM 생성, 자원 설정, 콘솔, 모니터링에 집중',
   },
   {
     label: '사용 목적',
-    legacy: '데이터센터 / 서버 가상화 운영',
+    vmPlatform: '데이터센터 / 서버 가상화 운영',
     firecrab: '가벼운 격리 VM을 빠르게 생성·관리',
   },
   {
     label: '자원 설정',
-    legacy: '가능하지만 일반 VM 기준',
-    firecrab: '작은 MicroVM 단위로 CPU / Memory / Disk / Network 커스텀',
+    vmPlatform: '가능하지만 일반 VM 기준',
+    firecrab: '작은 MicroVM 단위로 CPU / Memory / Disk 커스텀',
   },
   {
     label: '콘솔 방식',
-    legacy: 'VNC, SPICE, Web Console, SSH',
+    vmPlatform: 'VNC, SPICE, Web Console, SSH',
     firecrab: 'Serial Console, Web SSH 중심',
   },
   {
     label: '운영 규모',
-    legacy: '대규모 / 복잡한 인프라에 적합',
+    vmPlatform: '대규모 / 복잡한 인프라에 적합',
     firecrab: '단일 서버 또는 소규모 인프라에 적합',
   },
   {
     label: '차별화 핵심',
-    legacy: '범용성과 기능 다양성',
+    vmPlatform: '범용성과 기능 다양성',
     firecrab: '경량성, 단순성, Firecracker 전용성',
   },
 ];
 
-const microVmComparisons: MicroVmComparisonGroup[] = [
+const architectureColumns: ArchitectureColumn[] = [
   {
-    title: '일반 VM과 차이',
-    columns: ['일반 VM', 'MicroVM'],
-    rows: [
-      ['구성', 'BIOS / UEFI, VGA, USB 포함 가능', 'vCPU, Memory, Kernel, RootFS 중심'],
-      ['목적', '범용 서버 / 데스크톱 가상화', '빠르게 실행되는 작은 리눅스 서버 VM'],
-      ['디스크', '가상 Disk', 'RootFS Disk'],
-      ['네트워크', '범용 가상 네트워크', 'TAP Network 중심'],
-      ['콘솔', 'VNC, SPICE, Web Console', 'Serial Console 중심'],
-      ['사용 목적', '데이터센터 / 서버 가상화 운영', '서버 앱용 격리 실행 환경'],
+    title: '기존 VM 플랫폼',
+    subtitle: '범용 서버 가상화 관리 스택',
+    summary: 'VM 자체와 주변 인프라 기능을 넓게 관리합니다.',
+    layers: [
+      {
+        title: 'Management UI',
+        description: '관리자가 VM, Storage, Network를 설정.',
+        icon: Server,
+      },
+      {
+        title: 'VM Platform',
+        description: 'Cluster, HA, Backup까지 포괄.',
+        icon: Network,
+      },
+      {
+        title: 'Hypervisor',
+        description: 'KVM, QEMU, ESXi 기반 가상화.',
+        icon: Cpu,
+      },
+      {
+        title: 'General VM',
+        description: 'BIOS / UEFI, VGA, 다양한 장치 포함.',
+        icon: Box,
+      },
+      {
+        title: 'Guest OS + App',
+        description: 'OS 접속 후 애플리케이션 설치·운영.',
+        icon: TerminalSquare,
+      },
+    ],
+  },
+  {
+    title: 'FireCrab',
+    subtitle: 'Firecracker 전용 MicroVM 관리 스택',
+    summary: 'MicroVM 생성과 상태 관리에 필요한 기능만 집중합니다.',
+    layers: [
+      {
+        title: 'Web Dashboard',
+        description: '이미지 타입과 자원 사양 선택.',
+        icon: Server,
+      },
+      {
+        title: 'FireCrab Control',
+        description: 'MicroVM Spec 저장, Lifecycle 제어.',
+        icon: Activity,
+        isPrimary: true,
+      },
+      {
+        title: 'MicroVM Manager',
+        description: '생성, 시작, 중지, 삭제 흐름 관리.',
+        icon: GitBranch,
+      },
+      {
+        title: 'Firecracker',
+        description: 'vCPU, Memory, RootFS, Network 구성.',
+        icon: Flame,
+      },
+      {
+        title: 'MicroVM',
+        description: 'Kernel, RootFS, Serial 중심의 작은 VM.',
+        icon: Cloud,
+      },
     ],
   },
 ];
 
-const firecrabMicroVmSpec: MicroVmSpec[] = [
-  { label: 'CPU', value: '2 Core', icon: Cpu },
-  { label: 'Memory', value: '2GB', icon: MemoryStick },
-  { label: 'Disk', value: '20GB', icon: HardDrive },
-  { label: 'Image', value: 'Ubuntu Minimal', icon: Server },
-  { label: 'Network', value: 'NAT', icon: Network },
-  { label: 'Console', value: 'Serial Console', icon: TerminalSquare },
-];
-
-const runtimeTemplates: RuntimeTemplate[] = [
+const executionModes: ExecutionMode[] = [
   {
-    title: 'Ubuntu Minimal',
-    role: 'BASE OS',
-    description: '기본 서버 이미지',
-    brandIcon: siUbuntu,
+    title: 'MicroVM Lifecycle',
+    role: 'CREATE / START / STOP',
+    description: 'MicroVM 생성, 시작, 중지, 삭제를 Web Dashboard와 REST API에서 제어.',
+    icon: Code2,
   },
   {
-    title: 'Debian Minimal',
-    role: 'BASE OS',
-    description: '안정적인 기본 이미지',
-    brandIcon: siDebian,
-  },
-  {
-    title: 'Alpine Minimal',
-    role: 'BASE OS',
-    description: '초경량 Linux 이미지',
-    brandIcon: siAlpinelinux,
-  },
-  {
-    title: 'Nginx Server',
-    role: 'HTTP EDGE',
-    description: 'Nginx 포함 RootFS',
-    brandIcon: siNginx,
-  },
-  {
-    title: 'Redis Server',
-    role: 'CACHE',
-    description: 'Redis 포함 RootFS',
-    brandIcon: siRedis,
-  },
-  {
-    title: 'PostgreSQL Server',
-    role: 'SQL',
-    description: 'PostgreSQL 포함 RootFS',
-    brandIcon: siPostgresql,
-  },
-];
-
-const executionSteps: ExecutionStep[] = [
-  {
-    label: '01',
-    title: '이미지 선택',
-    description: 'Ubuntu Minimal 이미지를 선택합니다.',
+    title: 'Image Template',
+    role: 'ROOTFS / KERNEL',
+    description: 'Ubuntu Minimal, Python, Nginx, Redis 같은 목적별 이미지 타입으로 생성.',
     icon: Server,
   },
   {
-    label: '02',
-    title: '자원 지정',
-    description: '2 vCPU, 2GB Memory, 20GB Disk, NAT Network를 입력합니다.',
-    icon: Cpu,
-  },
-  {
-    label: '03',
-    title: 'MicroVM 생성 요청',
-    description: 'FireCrab이 MicroVM Spec을 저장하고 Firecracker에 전달합니다.',
-    icon: Flame,
-  },
-  {
-    label: '04',
-    title: '부팅 및 네트워크 연결',
-    description: 'Kernel, RootFS, TAP Network, Serial Console을 연결합니다.',
+    title: 'Resource Spec',
+    role: 'CPU / MEMORY / DISK',
+    description: 'vCPU, Memory, Disk, Network 값을 지정해 MicroVM Spec을 저장하고 실행.',
     icon: Network,
   },
   {
-    label: '05',
-    title: 'Running 상태 확인',
-    description: '상태와 Console 접속 정보를 대시보드에 표시합니다.',
+    title: 'Console & Logs',
+    role: 'SERIAL / WEB LOG',
+    description: 'Serial Console, Web SSH, Event Log로 부팅 상태와 실행 로그를 확인.',
+    icon: GitBranch,
+  },
+  {
+    title: 'Firecracker Native',
+    role: 'API SOCKET',
+    description: 'Firecracker API Socket, TAP Network, RootFS 중심으로 가볍게 제어.',
+    icon: TerminalSquare,
+  },
+  {
+    title: 'Closed Network Ready',
+    role: 'ON-PREMISE',
+    description: '내부 서버와 폐쇄망에도 설치 가능한 단순한 운영 구조를 목표로 확장.',
     icon: CheckCircle2,
   },
 ];
 
-const executionLogs = [
-  'image ubuntu-minimal selected',
-  'spec saved: 2vcpu / 2048mb / 20gb',
-  'firecracker socket request accepted',
-  'tap0 attached, serial console opened',
-  'state changed to running',
+const microVmTemplates: MicroVmTemplate[] = [
+  {
+    title: 'Ubuntu Minimal',
+    description: '가장 기본적인 Linux MicroVM 이미지. 테스트와 범용 서버 작업에 사용합니다.',
+    brandIcon: siUbuntu,
+  },
+  {
+    title: 'Python Server',
+    description: 'Python 런타임이 포함된 MicroVM 이미지. API 서버나 작업 실행에 사용합니다.',
+    brandIcon: siPython,
+  },
+  {
+    title: 'Nginx Server',
+    description: 'Nginx가 포함된 RootFS로 빠르게 Web Server MicroVM을 생성합니다.',
+    brandIcon: siNginx,
+  },
+  {
+    title: 'Redis Server',
+    description: 'Redis 실행 준비가 된 MicroVM 이미지. 격리된 캐시 노드를 구성합니다.',
+    brandIcon: siRedis,
+  },
+  {
+    title: 'PostgreSQL Server',
+    description: 'PostgreSQL이 포함된 MicroVM 이미지. 작은 내부 서비스 DB 검증에 사용합니다.',
+    brandIcon: siPostgresql,
+  },
+  {
+    title: 'Java Server',
+    description: 'JDK가 포함된 MicroVM 이미지. Spring Boot 같은 JVM 서비스를 격리 실행합니다.',
+    icon: Coffee,
+    iconColor: '#e76f00',
+  },
+];
+
+const deploymentSteps: DeploymentStep[] = [
+  {
+    label: '01',
+    title: '관리자 / 개발자',
+    description: 'Web Dashboard에서 생성할 MicroVM 정보를 입력합니다.',
+    icon: Code2,
+  },
+  {
+    label: '02',
+    title: 'Web Dashboard',
+    description: '템플릿과 CPU, Memory, Disk, Network 값을 선택합니다.',
+    icon: Flame,
+  },
+  {
+    label: '03',
+    title: 'FireCrab Control',
+    description: 'MicroVM Spec을 저장하고 Firecracker 제어 요청으로 변환합니다.',
+    icon: Network,
+  },
+  {
+    label: '04',
+    title: 'Firecracker',
+    description: 'API Socket으로 vCPU, Memory, RootFS, TAP을 구성합니다.',
+    icon: Server,
+  },
+  {
+    label: '05',
+    title: 'MicroVM Ready',
+    description: '상태, Console, Logs, Endpoint를 대시보드에 표시합니다.',
+    icon: Cloud,
+  },
 ];
 
 const roadmap: Stage[] = [
   {
     label: 'MVP',
     items: [
-      '로그인',
-      'Dashboard',
-      'MicroVM 목록 조회',
-      'MicroVM 생성',
-      'CPU / Memory / Disk / Network 설정',
-      '시작 / 중지 / 재시작 / 삭제',
-      '상태 표시 / Serial Console / 로그',
+      'MicroVM 목록 / 상세 조회',
+      '템플릿 기반 생성',
+      'CPU / Memory / Disk 설정',
+      'MicroVM 생성 / 실행 / 종료',
+      'Serial Console',
+      '로그 조회',
+      'REST API 제공',
     ],
   },
   {
     label: '2차 기능',
-    items: ['이미지 업로드', '템플릿 관리', 'Snapshot', 'VM별 자원 그래프', 'REST API 문서화'],
+    items: ['Template 관리', 'Snapshot', 'Monitoring', '사용자 / 권한 관리', 'Host Agent', '배포 이력 관리'],
   },
   {
     label: '3차 기능',
-    items: ['Multi Host', '사용자별 VM 할당', '권한 관리', 'Scheduling', 'Terraform Provider'],
+    items: ['Multi Host', 'Scheduling', 'Template Marketplace', 'Terraform Provider', '폐쇄망 패키징', '운영 대시보드 고도화'],
   },
 ];
 
@@ -280,25 +429,30 @@ const stack = [
   ['Frontend', 'React, TypeScript'],
   ['Backend', 'Rust, Axum, Tokio'],
   ['Database', 'PostgreSQL'],
+  ['API Server', 'REST API, WebSocket'],
   ['MicroVM Engine', 'Firecracker'],
   ['Host OS', 'Ubuntu Server / Debian'],
-  ['Console', 'WebSocket'],
-  ['API', 'REST API'],
+  ['Console', 'Serial Console, Web SSH'],
+  ['Agent', 'FireCrab Host Agent'],
 ];
 
 function App() {
   useScrollReveal();
+  const activeDeploymentStep = useCyclingIndex(deploymentSteps.length, 1700);
 
   return (
     <main className="page-shell">
       <header className="topbar" aria-label="FireCrab navigation">
         <a className="brand" href="#top" aria-label="FireCrab home">
           <span className="brand-mark" aria-hidden="true">
-            <Flame size={20} strokeWidth={2.4} />
+            <img className="brand-mark-icon" src="/firecrab-icon.png" alt="" />
           </span>
           <span>FireCrab</span>
         </a>
         <nav className="nav-links" aria-label="주요 섹션">
+          <a href="#overview">개요</a>
+          <a href="#why">Why</a>
+          <a href="#templates">템플릿</a>
           <a href="#difference">차별점</a>
           <a href="#roadmap">MVP</a>
         </nav>
@@ -307,15 +461,15 @@ function App() {
       <section className="hero" id="top" aria-labelledby="hero-title">
         <RuntimeScene />
         <div className="hero-copy">
-          <p className="eyebrow">Firecracker 기반 MicroVM 관리 플랫폼</p>
+          <p className="eyebrow">Firecracker 기반 MicroVM Web 관리 플랫폼</p>
           <h1 id="hero-title">FireCrab</h1>
           <p className="hero-titleline">
-            웹에서 MicroVM을 만들고 CPU, Memory, Disk, Network를 직접 설정합니다.
+            웹 대시보드에서 Firecracker MicroVM을 생성하고, 자원 설정·상태·콘솔·로그를 가볍게 관리합니다.
           </p>
           <div className="hero-actions" aria-label="핵심 흐름 바로가기">
-            <a className="primary-action" href="#runtime-flow">
+            <a className="primary-action" href="#deploy-flow">
               <PlayCircle size={18} />
-              MicroVM 생성 흐름
+              배포 흐름 보기
             </a>
             <a className="secondary-action" href="#difference">
               <GitBranch size={18} />
@@ -325,14 +479,15 @@ function App() {
         </div>
       </section>
 
-      <section className="section intro-section" aria-labelledby="overview-title" data-reveal="section">
+      <section className="section intro-section" id="overview" aria-labelledby="overview-title" data-reveal="section">
         <div className="section-kicker">Project Overview</div>
         <div className="intro-grid">
           <div data-reveal="slide-right">
-            <h2 id="overview-title">웹에서 MicroVM 생성·관리</h2>
+            <h2 id="overview-title">Web Dashboard 기반 MicroVM 관리</h2>
             <p>
-              FireCrab은 기존 VM 플랫폼보다 가볍게 MicroVM을 생성·관리할 수
-              있도록 Firecracker에 특화된 오픈소스 경량 VM 관리 플랫폼입니다.
+              FireCrab은 기존 VM 플랫폼보다 가볍게 MicroVM을 생성·관리할 수 있도록
+              Firecracker에 특화된 오픈소스 경량 VM 관리 플랫폼입니다. 단일 서버, 온프레미스,
+              내부망·폐쇄망 환경에서도 운영 가능한 구조를 목표로 합니다.
             </p>
           </div>
           <div className="keyword-grid" aria-label="핵심 키워드" data-reveal="slide-left">
@@ -350,77 +505,62 @@ function App() {
             ))}
           </div>
         </div>
-      </section>
 
-      <section className="section microvm-section" aria-labelledby="microvm-title" data-reveal="section">
-        <div className="section-kicker">What is a MicroVM</div>
-        <div className="microvm-intro">
-          <div data-reveal="slide-right">
-            <h2 id="microvm-title">MicroVM은 작은 리눅스 서버 VM입니다</h2>
+        <div className="overview-expansion" aria-labelledby="overview-expanded-title" data-reveal="fade-up">
+          <div className="overview-expanded-heading">
+            <div>
+              <div className="section-kicker">Platform Scope</div>
+              <h3 id="overview-expanded-title">FireCrab이 다루는 영역</h3>
+            </div>
             <p>
-              Firecracker MicroVM은 서버 실행에 필요한 vCPU, Memory, Linux Kernel,
-              RootFS, Network, Serial Console 중심으로 구성됩니다.
+              MicroVM을 만들고, 사양을 저장하고, 실행 상태를 확인하는 관리 흐름을
+              Web Dashboard 안에 모읍니다.
             </p>
           </div>
-        </div>
 
-        <div className="microvm-compare-grid single-card" aria-label="MicroVM 비교 요약">
-          {microVmComparisons.map((group, index) => (
-            <article
-              className="microvm-compare-card"
-              data-reveal="tile"
-              key={group.title}
-              style={revealDelay(index)}
-            >
-              <h3>{group.title}</h3>
-              <div className="microvm-mini-table">
-                <div className="microvm-mini-head">
-                  <span>구분</span>
-                  <span>{group.columns[0]}</span>
-                  <strong>{group.columns[1]}</strong>
+          <div className="overview-scope-grid" aria-label="FireCrab 프로젝트 개요 확장">
+            {overviewItems.map((item, index) => (
+              <article className="overview-scope-card" data-reveal="tile" key={item.title} style={revealDelay(index, 60)}>
+                <div className="overview-scope-icon" aria-hidden="true">
+                  <item.icon size={22} />
                 </div>
-                {group.rows.map(([label, source, micro]) => (
-                  <div className="microvm-mini-row" key={label}>
-                    <span data-label="구분">{label}</span>
-                    <p data-label={group.columns[0]}>{source}</p>
-                    <strong data-label={group.columns[1]}>{micro}</strong>
-                  </div>
-                ))}
-              </div>
-            </article>
-          ))}
-        </div>
-
-        <div className="microvm-example" aria-label="FireCrab MicroVM 예시" data-reveal="fade-up">
-          <div>
-            <div className="section-kicker">FireCrab Example</div>
-            <h3>Ubuntu Minimal 이미지로 MicroVM 생성</h3>
-            <p>
-              Image, CPU, Memory, Disk, Network, Console 사양을 선택해 작은 리눅스
-              서버 VM을 만듭니다.
-            </p>
-          </div>
-          <div className="microvm-spec-grid">
-            {firecrabMicroVmSpec.map((spec, index) => (
-              <div
-                className="microvm-spec"
-                data-reveal="tile"
-                key={spec.label}
-                style={revealDelay(index, 45)}
-              >
-                <spec.icon size={18} />
-                <span>{spec.label}</span>
-                <strong>{spec.value}</strong>
-              </div>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
+      <section className="section why-section" id="why" aria-labelledby="why-title" data-reveal="section">
+        <div className="why-heading">
+          <div data-reveal="slide-right">
+            <div className="section-kicker">Why FireCrab?</div>
+            <h2 id="why-title">MicroVM 관리를 더 가볍게</h2>
+          </div>
+          <p data-reveal="slide-left">
+            FireCrab은 거대한 VM 플랫폼을 대체하기보다, Firecracker MicroVM을 웹에서
+            빠르게 만들고 운영하는 데 필요한 기능만 선명하게 제공합니다.
+          </p>
+        </div>
+
+        <div className="why-grid" aria-label="FireCrab이 필요한 이유">
+          {whyReasons.map((reason, index) => (
+            <article className="why-card" data-reveal="tile" key={reason.title} style={revealDelay(index, 60)}>
+              <div className="why-card-icon" aria-hidden="true">
+                <reason.icon size={24} />
+              </div>
+              <h3>{reason.title}</h3>
+              <p>{reason.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="section contrast-section" id="difference" aria-labelledby="difference-title" data-reveal="section">
         <div className="section-kicker">Difference</div>
-        <h2 id="difference-title" data-reveal="slide-right">기존 VM 플랫폼과 FireCrab의 차이</h2>
-        <div className="comparison-table" role="table" aria-label="기존 VM 플랫폼과 FireCrab 비교">
+        <h2 id="difference-title" data-reveal="slide-right">VM 플랫폼과 FireCrab의 차이</h2>
+        <div className="comparison-table" role="table" aria-label="기존 플랫폼과 FireCrab 비교">
           <div className="comparison-row comparison-head" role="row">
             <span role="columnheader">구분</span>
             <span role="columnheader">기존 VM 플랫폼</span>
@@ -429,103 +569,108 @@ function App() {
           {comparisons.map((row, index) => (
             <div className="comparison-row" data-reveal="row" role="row" key={row.label} style={revealDelay(index, 55)}>
               <span role="cell">{row.label}</span>
-              <span role="cell">{row.legacy}</span>
+              <span role="cell">{row.vmPlatform}</span>
               <strong role="cell">{row.firecrab}</strong>
             </div>
           ))}
         </div>
-      </section>
 
-      <section className="section flow-section" id="runtime-flow" aria-labelledby="flow-title" data-reveal="section">
-        <div className="section-kicker">Execution Example</div>
-        <div className="split-heading">
-          <h2 id="flow-title" data-reveal="slide-right">Ubuntu MicroVM이 실행되기까지</h2>
-          <p data-reveal="slide-left">
-            이미지 선택부터 Firecracker 생성 요청, 부팅, Running 상태 표시까지의
-            흐름을 한 번의 실행 예시로 보여줍니다.
-          </p>
-        </div>
+        <div className="architecture-compare" aria-label="VM 플랫폼과 FireCrab 아키텍처 비교">
+          <div className="architecture-compare-heading" data-reveal="fade-up">
+            <span>Architecture View</span>
+            <strong>관리 범위가 넓은 VM 플랫폼, MicroVM 제어에 집중한 FireCrab</strong>
+          </div>
+          <div className="architecture-columns">
+            {architectureColumns.map((column, columnIndex) => (
+              <article className="architecture-card" key={column.title} data-reveal="fade-up" style={revealDelay(columnIndex, 90)}>
+                <div className="architecture-card-head">
+                  <span>{column.subtitle}</span>
+                  <h3>{column.title}</h3>
+                  <p>{column.summary}</p>
+                </div>
+                <div className="architecture-stack">
+                  {column.layers.map((layer, layerIndex) => {
+                    const Icon = layer.icon;
 
-        <div className="execution-demo" aria-label="MicroVM 실행 순서 예시" data-reveal="fade-up">
-          <div className="execution-timeline" aria-label="실행 순서">
-            {executionSteps.map((step, index) => (
-              <article className="execution-step" key={step.title}>
-                <span className="execution-step-number">{step.label}</span>
-                <div className="execution-step-icon" aria-hidden="true">
-                  <step.icon size={18} />
+                    return (
+                      <div
+                        className={`architecture-layer${layer.isPrimary ? ' is-primary' : ''}`}
+                        key={layer.title}
+                        data-reveal="row"
+                        style={revealDelay(layerIndex + columnIndex, 45)}
+                      >
+                        <div className="architecture-layer-icon" aria-hidden="true">
+                          <Icon size={20} strokeWidth={2.2} />
+                        </div>
+                        <div>
+                          <strong>{layer.title}</strong>
+                          <p>{layer.description}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div>
-                  <strong>{step.title}</strong>
-                  <p>{step.description}</p>
-                </div>
-                {index < executionSteps.length - 1 ? (
-                  <ArrowRight className="execution-step-arrow" size={18} aria-hidden="true" />
-                ) : null}
               </article>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="execution-console" aria-label="MicroVM 실행 로그">
-            <div className="execution-console-head">
-              <div>
-                <span>firecrab create</span>
-                <strong>vm-ubuntu-fn42</strong>
-              </div>
-              <em>running</em>
-            </div>
-
-            <div className="execution-spec">
-              <span>Ubuntu Minimal</span>
-              <span>2 vCPU</span>
-              <span>2GB Memory</span>
-              <span>20GB Disk</span>
-              <span>NAT</span>
-            </div>
-
-            <div className="execution-boot-visual" aria-hidden="true">
-              <div className="boot-orbit">
-                <Flame size={26} />
-              </div>
-              <div className="boot-stack">
-                <span>Kernel</span>
-                <span>RootFS</span>
-                <span>TAP</span>
-                <span>Serial</span>
-              </div>
-            </div>
-
-            <div className="execution-log">
-              {executionLogs.map((log, index) => (
-                <p key={log}>
-                  <span>{String(index + 1).padStart(2, '0')}</span>
-                  {log}
-                </p>
-              ))}
-            </div>
-
-            <div className="execution-result">
-              <CheckCircle2 size={18} />
-              <span>Serial Console ready</span>
-              <strong>ssh://vm-ubuntu.firecrab.local</strong>
-            </div>
+      <section className="section image-template-section" id="templates" aria-labelledby="templates-title" data-reveal="section">
+        <div className="image-template-heading">
+          <div data-reveal="slide-right">
+            <div className="section-kicker">MicroVM Templates</div>
+            <h2 id="templates-title">템플릿 카드로 MicroVM 생성</h2>
           </div>
+          <p data-reveal="slide-left">
+            OS 템플릿을 그대로 노출하기보다, 실행 목적에 맞춘 RootFS 이미지와 기본 설정을
+            카드로 선택하게 만드는 관리 흐름입니다.
+          </p>
+        </div>
+
+        <div className="microvm-template-grid" aria-label="MicroVM Template 목록">
+          {microVmTemplates.map((template, index) => {
+            const TemplateIcon = template.icon;
+            const templateBrandColor = template.brandIcon ? `#${template.brandIcon.hex}` : template.iconColor;
+
+            return (
+              <article
+                className="microvm-template-card"
+                data-reveal="tile"
+                key={template.title}
+                style={revealDelay(index, 55)}
+              >
+                <div className="microvm-template-card-head">
+                  <div
+                    className="microvm-template-icon"
+                    aria-hidden="true"
+                    style={{ '--template-brand': templateBrandColor } as CSSProperties}
+                  >
+                    {template.brandIcon ? <BrandIcon icon={template.brandIcon} /> : null}
+                    {TemplateIcon ? <TemplateIcon size={32} strokeWidth={2.2} /> : null}
+                  </div>
+                </div>
+                <h3>{template.title}</h3>
+                <p>{template.description}</p>
+              </article>
+            );
+          })}
         </div>
       </section>
 
       <section className="section template-section" aria-labelledby="template-title" data-reveal="section">
         <div data-reveal="slide-right">
-          <div className="section-kicker">MicroVM Template</div>
-          <h2 id="template-title">OS 이미지와 MicroVM 템플릿 관리</h2>
+          <div className="section-kicker">Management Features</div>
+          <h2 id="template-title">MicroVM 관리 기능</h2>
           <p>
-            기본 OS 이미지를 관리하고, Nginx나 Redis처럼 미리 구성된 RootFS 템플릿은
-            MicroVM 생성 편의 기능으로 제공합니다.
+            대시보드에서 MicroVM의 생성, 자원 설정, 상태 제어, 콘솔, 로그를 한 흐름으로 관리합니다.
           </p>
         </div>
-        <div className="template-board" aria-label="MicroVM Template 목록" data-reveal="slide-left">
-          {runtimeTemplates.map((template, index) => (
+        <div className="template-board" aria-label="FireCrab 실행 모드 목록" data-reveal="slide-left">
+          {executionModes.map((template, index) => (
             <div className="template-chip" data-reveal="tile" key={template.title} style={revealDelay(index, 55)}>
               <div className="template-icon" aria-hidden="true">
-                <BrandIcon icon={template.brandIcon} />
+                <template.icon size={30} />
               </div>
               <div>
                 <span>{template.role}</span>
@@ -537,9 +682,69 @@ function App() {
         </div>
       </section>
 
+      <section
+        className="section deploy-flow-section"
+        id="deploy-flow"
+        aria-labelledby="deploy-flow-title"
+        data-reveal="section"
+      >
+        <div className="section-kicker">Deploy Flow</div>
+        <div className="split-heading">
+          <h2 id="deploy-flow-title" data-reveal="slide-right">대시보드에서 Firecracker MicroVM까지</h2>
+          <p data-reveal="slide-left">
+            사용자가 Web Dashboard에서 템플릿과 자원 사양을 선택하면 FireCrab Control이
+            MicroVM Spec을 저장하고 Firecracker 제어 요청으로 변환합니다.
+          </p>
+        </div>
+
+        <div
+          className="deploy-flow"
+          aria-label="FireCrab 배포 흐름"
+          data-reveal="fade-up"
+        >
+          <div className="deploy-flow-steps">
+            {deploymentSteps.map((step, index) => {
+              const Icon = step.icon;
+              const isActive = index === activeDeploymentStep;
+              const isComplete = index < activeDeploymentStep;
+
+              return (
+                <div className="deploy-flow-stage" key={step.title}>
+                  <article
+                    className={`deploy-flow-card${isActive ? ' is-active' : ''}${isComplete ? ' is-complete' : ''}`}
+                    aria-current={isActive ? 'step' : undefined}
+                  >
+                    <div className="deploy-flow-node" aria-hidden="true">
+                      <span className="deploy-flow-number">{step.label}</span>
+                      <div className="deploy-flow-icon">
+                        {Icon ? <Icon size={24} /> : null}
+                      </div>
+                    </div>
+                    <div className="deploy-flow-copy">
+                      <strong>{step.title}</strong>
+                      <p>{step.description}</p>
+                    </div>
+                  </article>
+
+                  {index < deploymentSteps.length - 1 ? (
+                    <div
+                      className={`deploy-flow-arrow${isComplete ? ' is-complete' : ''}${isActive ? ' is-active' : ''}`}
+                      aria-hidden="true"
+                    >
+                      <span />
+                      <ArrowRight size={20} />
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       <section className="section roadmap-section" id="roadmap" aria-labelledby="roadmap-title" data-reveal="section">
         <div className="section-kicker">Scope</div>
-        <h2 id="roadmap-title" data-reveal="slide-right">MVP에서 멀티 호스트까지</h2>
+        <h2 id="roadmap-title" data-reveal="slide-right">MVP에서 Multi Host 운영까지</h2>
         <div className="roadmap-grid">
           {roadmap.map((stage, index) => (
             <article className="roadmap-stage" data-reveal="tile" key={stage.label} style={revealDelay(index, 70)}>
@@ -575,12 +780,36 @@ function App() {
       <footer className="footer">
         <div>
           <strong>FireCrab</strong>
-          <p>Firecracker에 특화된 오픈소스 경량 VM 관리 플랫폼.</p>
+          <p>Firecracker 기반 MicroVM Web 관리 플랫폼.</p>
         </div>
         <a href="#top">맨 위로</a>
       </footer>
     </main>
   );
+}
+
+function useCyclingIndex(length: number, intervalMs: number) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (length <= 1) {
+      return undefined;
+    }
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    if (prefersReducedMotion.matches) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setIndex((current) => (current + 1) % length);
+    }, intervalMs);
+
+    return () => window.clearInterval(intervalId);
+  }, [intervalMs, length]);
+
+  return index;
 }
 
 function useScrollReveal() {
@@ -626,15 +855,8 @@ function useScrollReveal() {
 }
 
 function BrandIcon({ icon }: { icon: SimpleIcon }) {
-  const color = icon.hex === '000000' ? '#251c18' : `#${icon.hex}`;
-
   return (
-    <svg
-      viewBox="0 0 24 24"
-      focusable="false"
-      role="img"
-      style={{ color }}
-    >
+    <svg viewBox="0 0 24 24" focusable="false" role="img" aria-label={icon.title}>
       <path d={icon.path} fill="currentColor" />
     </svg>
   );
@@ -643,9 +865,9 @@ function BrandIcon({ icon }: { icon: SimpleIcon }) {
 function RuntimeScene() {
   const runtimeRows = [
     ['vm-ubuntu-fn42', 'Ubuntu Minimal', '2 GiB', 'ready'],
-    ['vm-alpine-2c91', 'Alpine Minimal', '512 MiB', 'ready'],
-    ['vm-redis-a19c', 'Redis Server', '1 GiB', 'ready'],
-    ['vm-postgres-db7', 'PostgreSQL Server', '4 GiB', 'paused'],
+    ['vm-nginx-02', 'Nginx Server', '1 GiB', 'booting'],
+    ['vm-redis-08', 'Redis Server', '512 MiB', 'ready'],
+    ['vm-java-api', 'Java Server', '768 MiB', 'paused'],
   ];
   const platformNavItems: Array<[string, IconComponent]> = [
     ['Dashboard', Activity],
@@ -661,7 +883,7 @@ function RuntimeScene() {
       <div className="platform-window">
         <aside className="platform-sidebar">
           <div className="platform-logo">
-            <Flame size={18} />
+            <img className="platform-logo-mark" src="/firecrab-icon.png" alt="" />
             <span>FireCrab</span>
           </div>
           <div className="platform-nav">
