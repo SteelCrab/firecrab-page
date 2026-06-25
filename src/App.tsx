@@ -102,14 +102,6 @@ type DashboardMicroVm = {
   updated: string;
 };
 
-type DashboardHost = {
-  name: string;
-  role: string;
-  cpu: number;
-  memory: number;
-  microvms: number;
-};
-
 type DashboardEvent = {
   time: string;
   level: 'info' | 'success' | 'warn';
@@ -121,18 +113,6 @@ type DashboardTemplateOption = {
   meta: string;
   icon?: IconComponent;
   brandIcon?: SimpleIcon;
-};
-
-type DashboardHeatmapCell = {
-  time: string;
-  load: number;
-  microvms: number;
-};
-
-type DashboardHeatmapRow = {
-  host: string;
-  role: string;
-  cells: DashboardHeatmapCell[];
 };
 
 type VmGraphMetric = {
@@ -532,63 +512,6 @@ const dashboardMicroVms: DashboardMicroVm[] = [
   },
 ];
 
-const dashboardHosts: DashboardHost[] = [
-  { name: 'host-01', role: 'MicroVM Node', cpu: 58, memory: 46, microvms: 8 },
-  { name: 'host-02', role: 'MicroVM Node', cpu: 36, memory: 54, microvms: 6 },
-  { name: 'host-03', role: 'Template Build', cpu: 29, memory: 31, microvms: 4 },
-];
-
-const dashboardHeatmapRows: DashboardHeatmapRow[] = [
-  {
-    host: 'host-01',
-    role: 'MicroVM Node',
-    cells: [
-      { time: '13:40', load: 42, microvms: 7 },
-      { time: '13:45', load: 48, microvms: 7 },
-      { time: '13:50', load: 53, microvms: 8 },
-      { time: '13:55', load: 57, microvms: 8 },
-      { time: '14:00', load: 61, microvms: 8 },
-      { time: '14:05', load: 66, microvms: 8 },
-      { time: '14:10', load: 64, microvms: 8 },
-      { time: '14:15', load: 58, microvms: 8 },
-      { time: '14:20', load: 55, microvms: 8 },
-      { time: '14:25', load: 52, microvms: 8 },
-    ],
-  },
-  {
-    host: 'host-02',
-    role: 'MicroVM Node',
-    cells: [
-      { time: '13:40', load: 35, microvms: 5 },
-      { time: '13:45', load: 38, microvms: 5 },
-      { time: '13:50', load: 46, microvms: 6 },
-      { time: '13:55', load: 62, microvms: 6 },
-      { time: '14:00', load: 74, microvms: 6 },
-      { time: '14:05', load: 81, microvms: 6 },
-      { time: '14:10', load: 72, microvms: 6 },
-      { time: '14:15', load: 59, microvms: 6 },
-      { time: '14:20', load: 54, microvms: 6 },
-      { time: '14:25', load: 49, microvms: 6 },
-    ],
-  },
-  {
-    host: 'host-03',
-    role: 'Template Build',
-    cells: [
-      { time: '13:40', load: 22, microvms: 3 },
-      { time: '13:45', load: 26, microvms: 3 },
-      { time: '13:50', load: 31, microvms: 4 },
-      { time: '13:55', load: 34, microvms: 4 },
-      { time: '14:00', load: 39, microvms: 4 },
-      { time: '14:05', load: 44, microvms: 4 },
-      { time: '14:10', load: 41, microvms: 4 },
-      { time: '14:15', load: 37, microvms: 4 },
-      { time: '14:20', load: 32, microvms: 4 },
-      { time: '14:25', load: 28, microvms: 4 },
-    ],
-  },
-];
-
 const dashboardEvents: DashboardEvent[] = [
   { time: '14:22:10', level: 'success', message: 'fc-nginx-edge 상태가 running으로 변경되었습니다.' },
   { time: '14:21:48', level: 'info', message: 'Python Server 이미지로 MicroVM 생성 요청이 접수되었습니다.' },
@@ -603,13 +526,6 @@ const dashboardTemplates: DashboardTemplateOption[] = [
   { title: 'Redis Server', meta: 'Cache Node', brandIcon: siRedis },
   { title: 'Java Server', meta: 'JVM Service', icon: Coffee },
 ];
-
-const getDashboardHeatLevel = (load: number) => {
-  if (load >= 78) return 'critical';
-  if (load >= 62) return 'high';
-  if (load >= 42) return 'medium';
-  return 'low';
-};
 
 function App() {
   const currentPath = useCurrentPath();
@@ -1015,10 +931,6 @@ function DashboardMockupPage() {
     ['Endpoint', selectedMicroVm.endpoint],
     ['Last event', selectedMicroVm.updated],
   ];
-  const heatmapTimes = dashboardHeatmapRows[0]?.cells.map((cell) => cell.time) ?? [];
-  const heatmapGridStyle = {
-    gridTemplateColumns: `minmax(132px, 0.72fr) repeat(${heatmapTimes.length}, minmax(52px, 1fr))`,
-  } as CSSProperties;
 
   return (
     <div className="dashboard-shell">
@@ -1105,8 +1017,6 @@ function DashboardMockupPage() {
           <div className="dashboard-tabs" aria-label="MicroVM dashboard tabs">
             <a className="is-active" href="#dashboard-overview">Instances</a>
             <a href="#dashboard-create">Launch template</a>
-            <a href="#host-title">Host agents</a>
-            <a href="#heatmap-title">Heatmap</a>
             <a href="#log-title">Event log</a>
             <a href="#console-title">Console</a>
           </div>
@@ -1315,88 +1225,6 @@ function DashboardMockupPage() {
           </div>
 
           <div className="dashboard-bottom-grid">
-            <section className="dashboard-panel" aria-labelledby="host-title">
-              <div className="dashboard-panel-head">
-                <div>
-                  <span>Compute</span>
-                  <h2 id="host-title">Host agent capacity</h2>
-                </div>
-                <ShieldCheck size={20} />
-              </div>
-              <div className="dashboard-host-list">
-                {dashboardHosts.map((host) => (
-                  <article className="dashboard-host-row" key={host.name}>
-                    <div>
-                      <strong>{host.name}</strong>
-                      <span>{host.role} / {host.microvms} MicroVM</span>
-                    </div>
-                    <div className="dashboard-meter-group" aria-label={`${host.name} 자원 사용률`}>
-                      <span>CPU {host.cpu}%</span>
-                      <div className="dashboard-meter">
-                        <i style={{ '--meter': `${host.cpu}%` } as CSSProperties} />
-                      </div>
-                      <span>Memory {host.memory}%</span>
-                      <div className="dashboard-meter">
-                        <i style={{ '--meter': `${host.memory}%` } as CSSProperties} />
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-
-            <section className="dashboard-panel dashboard-heatmap-panel" aria-labelledby="heatmap-title">
-              <div className="dashboard-panel-head">
-                <div>
-                  <span>Monitoring</span>
-                  <h2 id="heatmap-title">Host Agent load heatmap</h2>
-                </div>
-                <div className="dashboard-heatmap-legend" aria-label="Heatmap load level">
-                  <span className="level-low">Low</span>
-                  <span className="level-medium">Medium</span>
-                  <span className="level-high">High</span>
-                  <span className="level-critical">Critical</span>
-                </div>
-              </div>
-              <div className="dashboard-heatmap-scroll">
-                <div className="dashboard-heatmap" role="table" aria-label="Host Agent 시간대별 부하 Heatmap">
-                  <div className="dashboard-heatmap-times" role="row" style={heatmapGridStyle}>
-                    <span role="columnheader">Host / Time</span>
-                    {heatmapTimes.map((time) => (
-                      <span role="columnheader" key={time}>{time}</span>
-                    ))}
-                  </div>
-                  {dashboardHeatmapRows.map((row) => (
-                    <div className="dashboard-heatmap-row" role="row" style={heatmapGridStyle} key={row.host}>
-                      <div className="dashboard-heatmap-host" role="rowheader">
-                        <strong>{row.host}</strong>
-                        <span>{row.role}</span>
-                      </div>
-                      {row.cells.map((cell, cellIndex) => {
-                        const heatLevel = getDashboardHeatLevel(cell.load);
-
-                        return (
-                          <span
-                            className={`dashboard-heatmap-cell level-${heatLevel}`}
-                            role="cell"
-                            style={{
-                              '--heat': `${cell.load}%`,
-                              '--heat-delay': `${cellIndex * 24}ms`,
-                            } as CSSProperties}
-                            title={`${row.host} ${cell.time} load ${cell.load}% / ${cell.microvms} MicroVM`}
-                            aria-label={`${row.host} ${cell.time} 부하 ${cell.load}%, MicroVM ${cell.microvms}개`}
-                            key={`${row.host}-${cell.time}`}
-                          >
-                            <span className="dashboard-heatmap-value">{cell.load}</span>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
             <section className="dashboard-panel dashboard-log-panel" aria-labelledby="log-title">
               <div className="dashboard-panel-head">
                 <div>
