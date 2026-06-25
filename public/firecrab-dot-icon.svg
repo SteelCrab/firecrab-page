@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="3 5 58 58" role="img" aria-label="FireCrab" shape-rendering="crispEdges">
+  <g fill="#8a4a2b">
+    <path d="M8 40h48v8H8z" />
+    <path d="M12 48h40v5H12z" />
+    <path d="M19 53h26v6H19z" />
+  </g>
+  <g fill="#d3914f">
+    <path d="M12 37h40v4H12z" />
+    <path d="M17 34h30v4H17z" />
+  </g>
+  <g fill="#5d2f22">
+    <path d="M10 47h44v4H10z" />
+    <path d="M18 52h28v5H18z" />
+  </g>
+  <g fill="#f3bf76">
+    <path d="M18 39h8v3h-8zM38 39h8v3h-8z" />
+  </g>
+
+  <g fill="#b51f2f">
+    <path d="M20 22h24v17H20z" />
+    <path d="M24 18h16v5H24z" />
+    <path d="M17 27h30v8H17z" />
+    <path d="M13 30h7v7h-7zM44 30h7v7h-7z" />
+    <path d="M10 22h8v8h-8zM46 22h8v8h-8z" />
+    <path d="M6 16h8v7H6zM50 16h8v7h-8z" />
+    <path d="M5 11h7v6H5zM52 11h7v6h-7z" />
+    <path d="M22 38h7v6h-7zM35 38h7v6h-7z" />
+  </g>
+  <g fill="#df3d4a">
+    <path d="M22 23h20v6H22z" />
+    <path d="M19 29h26v7H19z" />
+    <path d="M23 36h18v4H23z" />
+  </g>
+  <g fill="#ff6b63">
+    <path d="M23 24h7v4h-7z" />
+    <path d="M14 23h5v5h-5zM45 23h5v5h-5z" />
+  </g>
+  <g fill="#ffffff">
+    <path d="M24 15h7v7h-7zM33 15h7v7h-7z" />
+  </g>
+  <g fill="#1d1718">
+    <path d="M27 17h3v3h-3zM34 17h3v3h-3z" />
+    <path d="M28 33h3v2h-3zM31 35h4v2h-4zM35 33h3v2h-3z" />
+  </g>
+  <g fill="#8a1423">
+    <path d="M7 18h8v4H7zM49 18h8v4h-8z" />
+    <path d="M23 40h6v3h-6zM35 40h6v3h-6z" />
+  </g>
+  <g fill="#ffd3cf">
+    <path d="M34 30h8v3h-8z" />
+  </g>
+</svg>
