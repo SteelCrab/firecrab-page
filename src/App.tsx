@@ -123,6 +123,27 @@ type DashboardTemplateOption = {
   brandIcon?: SimpleIcon;
 };
 
+type DashboardHeatmapCell = {
+  time: string;
+  load: number;
+  microvms: number;
+};
+
+type DashboardHeatmapRow = {
+  host: string;
+  role: string;
+  cells: DashboardHeatmapCell[];
+};
+
+type VmGraphMetric = {
+  label: string;
+  vm: number;
+  microvm: number;
+  vmLabel: string;
+  microvmLabel: string;
+  note: string;
+};
+
 type RevealStyle = CSSProperties & {
   '--reveal-delay'?: string;
 };
@@ -232,6 +253,49 @@ const comparisons: Comparison[] = [
     label: '차별화 핵심',
     vmPlatform: '범용성과 기능 다양성',
     firecrab: '경량성, 단순성, Firecracker 전용성',
+  },
+];
+
+const vmMicroVmGraphMetrics: VmGraphMetric[] = [
+  {
+    label: '부팅 / 준비 시간',
+    vm: 100,
+    microvm: 24,
+    vmLabel: '전체 VM 기준',
+    microvmLabel: '빠른 시작',
+    note: '작은 VM 구성으로 생성 후 실행까지의 대기 시간을 줄입니다.',
+  },
+  {
+    label: '기본 자원 사용',
+    vm: 100,
+    microvm: 36,
+    vmLabel: '크게 할당',
+    microvmLabel: '작게 할당',
+    note: '필요한 vCPU, Memory, RootFS 중심으로 MicroVM을 구성합니다.',
+  },
+  {
+    label: '가상 장치 범위',
+    vm: 94,
+    microvm: 34,
+    vmLabel: '범용 장치',
+    microvmLabel: '최소 장치',
+    note: 'BIOS, VGA 같은 범용 구성보다 서버 실행에 필요한 장치에 집중합니다.',
+  },
+  {
+    label: '운영 복잡도',
+    vm: 88,
+    microvm: 42,
+    vmLabel: '넓은 범위',
+    microvmLabel: '단순 제어',
+    note: 'Storage, Cluster, HA 전체보다 MicroVM 생성과 상태 제어에 집중합니다.',
+  },
+  {
+    label: '격리 경계',
+    vm: 86,
+    microvm: 82,
+    vmLabel: 'VM 수준',
+    microvmLabel: 'MicroVM 수준',
+    note: '컨테이너와 달리 독립 커널을 가진 작은 VM 단위로 격리합니다.',
   },
 ];
 
@@ -474,6 +538,57 @@ const dashboardHosts: DashboardHost[] = [
   { name: 'host-03', role: 'Template Build', cpu: 29, memory: 31, microvms: 4 },
 ];
 
+const dashboardHeatmapRows: DashboardHeatmapRow[] = [
+  {
+    host: 'host-01',
+    role: 'MicroVM Node',
+    cells: [
+      { time: '13:40', load: 42, microvms: 7 },
+      { time: '13:45', load: 48, microvms: 7 },
+      { time: '13:50', load: 53, microvms: 8 },
+      { time: '13:55', load: 57, microvms: 8 },
+      { time: '14:00', load: 61, microvms: 8 },
+      { time: '14:05', load: 66, microvms: 8 },
+      { time: '14:10', load: 64, microvms: 8 },
+      { time: '14:15', load: 58, microvms: 8 },
+      { time: '14:20', load: 55, microvms: 8 },
+      { time: '14:25', load: 52, microvms: 8 },
+    ],
+  },
+  {
+    host: 'host-02',
+    role: 'MicroVM Node',
+    cells: [
+      { time: '13:40', load: 35, microvms: 5 },
+      { time: '13:45', load: 38, microvms: 5 },
+      { time: '13:50', load: 46, microvms: 6 },
+      { time: '13:55', load: 62, microvms: 6 },
+      { time: '14:00', load: 74, microvms: 6 },
+      { time: '14:05', load: 81, microvms: 6 },
+      { time: '14:10', load: 72, microvms: 6 },
+      { time: '14:15', load: 59, microvms: 6 },
+      { time: '14:20', load: 54, microvms: 6 },
+      { time: '14:25', load: 49, microvms: 6 },
+    ],
+  },
+  {
+    host: 'host-03',
+    role: 'Template Build',
+    cells: [
+      { time: '13:40', load: 22, microvms: 3 },
+      { time: '13:45', load: 26, microvms: 3 },
+      { time: '13:50', load: 31, microvms: 4 },
+      { time: '13:55', load: 34, microvms: 4 },
+      { time: '14:00', load: 39, microvms: 4 },
+      { time: '14:05', load: 44, microvms: 4 },
+      { time: '14:10', load: 41, microvms: 4 },
+      { time: '14:15', load: 37, microvms: 4 },
+      { time: '14:20', load: 32, microvms: 4 },
+      { time: '14:25', load: 28, microvms: 4 },
+    ],
+  },
+];
+
 const dashboardEvents: DashboardEvent[] = [
   { time: '14:22:10', level: 'success', message: 'fc-nginx-edge 상태가 running으로 변경되었습니다.' },
   { time: '14:21:48', level: 'info', message: 'Python Server 이미지로 MicroVM 생성 요청이 접수되었습니다.' },
@@ -488,6 +603,13 @@ const dashboardTemplates: DashboardTemplateOption[] = [
   { title: 'Redis Server', meta: 'Cache Node', brandIcon: siRedis },
   { title: 'Java Server', meta: 'JVM Service', icon: Coffee },
 ];
+
+const getDashboardHeatLevel = (load: number) => {
+  if (load >= 78) return 'critical';
+  if (load >= 62) return 'high';
+  if (load >= 42) return 'medium';
+  return 'low';
+};
 
 function App() {
   const currentPath = useCurrentPath();
@@ -610,6 +732,89 @@ function App() {
               <strong role="cell">{row.firecrab}</strong>
             </div>
           ))}
+        </div>
+
+        <div
+          className="vm-graph-panel"
+          aria-labelledby="vm-graph-title"
+          data-reveal="fade-up"
+        >
+          <div className="vm-graph-heading">
+            <div>
+              <div className="section-kicker">VM vs MicroVM</div>
+              <h3 id="vm-graph-title">일반 VM과 MicroVM의 상대 비교</h3>
+            </div>
+            <p>
+              FireCrab이 목표로 하는 방향은 범용 VM 전체 관리보다 작고 빠른 MicroVM 생성과
+              상태 제어에 집중하는 것입니다.
+            </p>
+          </div>
+
+          <div className="vm-graph-grid">
+            <div className="vm-graph-bars" role="img" aria-label="일반 VM과 MicroVM 상대 그래프">
+              {vmMicroVmGraphMetrics.map((metric, index) => (
+                <article
+                  className="vm-graph-row"
+                  data-reveal="row"
+                  key={metric.label}
+                  style={{
+                    '--vm-score': `${metric.vm}%`,
+                    '--microvm-score': `${metric.microvm}%`,
+                    '--reveal-delay': `${index * 60}ms`,
+                  } as CSSProperties}
+                >
+                  <div className="vm-graph-label">
+                    <strong>{metric.label}</strong>
+                    <span>{metric.note}</span>
+                  </div>
+                  <div className="vm-graph-track-group">
+                    <div className="vm-graph-track">
+                      <span>일반 VM</span>
+                      <div className="vm-graph-track-line">
+                        <i className="vm-bar" />
+                      </div>
+                      <em>{metric.vmLabel}</em>
+                    </div>
+                    <div className="vm-graph-track">
+                      <span>MicroVM</span>
+                      <div className="vm-graph-track-line">
+                        <i className="microvm-bar" />
+                      </div>
+                      <em>{metric.microvmLabel}</em>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="vm-profile-grid" aria-label="VM과 MicroVM 요약">
+              <article className="vm-profile-card" data-reveal="tile">
+                <div className="vm-profile-icon" aria-hidden="true">
+                  <Server size={24} />
+                </div>
+                <h4>일반 VM</h4>
+                <p>범용 OS와 다양한 가상 장치를 포함해 서버 전체를 운영하는 방식.</p>
+                <ul>
+                  <li>넓은 기능 범위</li>
+                  <li>큰 자원 단위</li>
+                  <li>복잡한 운영 기능</li>
+                </ul>
+              </article>
+
+              <article className="vm-profile-card micro" data-reveal="tile" style={revealDelay(1, 80)}>
+                <div className="vm-profile-icon" aria-hidden="true">
+                  <Cpu size={24} />
+                </div>
+                <h4>MicroVM</h4>
+                <p>독립 커널을 가진 작은 VM을 빠르게 만들고 서버 앱 실행에 집중하는 방식.</p>
+                <ul>
+                  <li>작은 실행 단위</li>
+                  <li>빠른 생성 흐름</li>
+                  <li>Firecracker 전용 제어</li>
+                </ul>
+              </article>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -810,6 +1015,10 @@ function DashboardMockupPage() {
     ['Endpoint', selectedMicroVm.endpoint],
     ['Last event', selectedMicroVm.updated],
   ];
+  const heatmapTimes = dashboardHeatmapRows[0]?.cells.map((cell) => cell.time) ?? [];
+  const heatmapGridStyle = {
+    gridTemplateColumns: `minmax(132px, 0.72fr) repeat(${heatmapTimes.length}, minmax(52px, 1fr))`,
+  } as CSSProperties;
 
   return (
     <div className="dashboard-shell">
@@ -897,6 +1106,7 @@ function DashboardMockupPage() {
             <a className="is-active" href="#dashboard-overview">Instances</a>
             <a href="#dashboard-create">Launch template</a>
             <a href="#host-title">Host agents</a>
+            <a href="#heatmap-title">Heatmap</a>
             <a href="#log-title">Event log</a>
             <a href="#console-title">Console</a>
           </div>
@@ -1132,6 +1342,58 @@ function DashboardMockupPage() {
                     </div>
                   </article>
                 ))}
+              </div>
+            </section>
+
+            <section className="dashboard-panel dashboard-heatmap-panel" aria-labelledby="heatmap-title">
+              <div className="dashboard-panel-head">
+                <div>
+                  <span>Monitoring</span>
+                  <h2 id="heatmap-title">Host Agent load heatmap</h2>
+                </div>
+                <div className="dashboard-heatmap-legend" aria-label="Heatmap load level">
+                  <span className="level-low">Low</span>
+                  <span className="level-medium">Medium</span>
+                  <span className="level-high">High</span>
+                  <span className="level-critical">Critical</span>
+                </div>
+              </div>
+              <div className="dashboard-heatmap-scroll">
+                <div className="dashboard-heatmap" role="table" aria-label="Host Agent 시간대별 부하 Heatmap">
+                  <div className="dashboard-heatmap-times" role="row" style={heatmapGridStyle}>
+                    <span role="columnheader">Host / Time</span>
+                    {heatmapTimes.map((time) => (
+                      <span role="columnheader" key={time}>{time}</span>
+                    ))}
+                  </div>
+                  {dashboardHeatmapRows.map((row) => (
+                    <div className="dashboard-heatmap-row" role="row" style={heatmapGridStyle} key={row.host}>
+                      <div className="dashboard-heatmap-host" role="rowheader">
+                        <strong>{row.host}</strong>
+                        <span>{row.role}</span>
+                      </div>
+                      {row.cells.map((cell, cellIndex) => {
+                        const heatLevel = getDashboardHeatLevel(cell.load);
+
+                        return (
+                          <span
+                            className={`dashboard-heatmap-cell level-${heatLevel}`}
+                            role="cell"
+                            style={{
+                              '--heat': `${cell.load}%`,
+                              '--heat-delay': `${cellIndex * 24}ms`,
+                            } as CSSProperties}
+                            title={`${row.host} ${cell.time} load ${cell.load}% / ${cell.microvms} MicroVM`}
+                            aria-label={`${row.host} ${cell.time} 부하 ${cell.load}%, MicroVM ${cell.microvms}개`}
+                            key={`${row.host}-${cell.time}`}
+                          >
+                            <span className="dashboard-heatmap-value">{cell.load}</span>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
               </div>
             </section>
 
