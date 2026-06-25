@@ -46,20 +46,6 @@ type Comparison = {
   firecrab: string;
 };
 
-type ArchitectureLayer = {
-  title: string;
-  description: string;
-  icon: IconComponent;
-  isPrimary?: boolean;
-};
-
-type ArchitectureColumn = {
-  title: string;
-  subtitle: string;
-  layers: ArchitectureLayer[];
-  summary: string;
-};
-
 type WhyReason = {
   title: string;
   description: string;
@@ -225,74 +211,6 @@ const comparisons: Comparison[] = [
     label: '차별화 핵심',
     vmPlatform: '범용성과 기능 다양성',
     firecrab: '경량성, 단순성, Firecracker 전용성',
-  },
-];
-
-const architectureColumns: ArchitectureColumn[] = [
-  {
-    title: '기존 VM 플랫폼',
-    subtitle: '범용 서버 가상화 관리 스택',
-    summary: 'VM 자체와 주변 인프라 기능을 넓게 관리합니다.',
-    layers: [
-      {
-        title: 'Management UI',
-        description: '관리자가 VM, Storage, Network를 설정.',
-        icon: Server,
-      },
-      {
-        title: 'VM Platform',
-        description: 'Cluster, HA, Backup까지 포괄.',
-        icon: Network,
-      },
-      {
-        title: 'Hypervisor',
-        description: 'KVM, QEMU, ESXi 기반 가상화.',
-        icon: Cpu,
-      },
-      {
-        title: 'General VM',
-        description: 'BIOS / UEFI, VGA, 다양한 장치 포함.',
-        icon: Box,
-      },
-      {
-        title: 'Guest OS + App',
-        description: 'OS 접속 후 애플리케이션 설치·운영.',
-        icon: TerminalSquare,
-      },
-    ],
-  },
-  {
-    title: 'FireCrab',
-    subtitle: 'Firecracker 전용 MicroVM 관리 스택',
-    summary: 'MicroVM 생성과 상태 관리에 필요한 기능만 집중합니다.',
-    layers: [
-      {
-        title: 'Web Dashboard',
-        description: '이미지 타입과 자원 사양 선택.',
-        icon: Server,
-      },
-      {
-        title: 'FireCrab Control',
-        description: 'MicroVM Spec 저장, Lifecycle 제어.',
-        icon: Activity,
-        isPrimary: true,
-      },
-      {
-        title: 'MicroVM Manager',
-        description: '생성, 시작, 중지, 삭제 흐름 관리.',
-        icon: GitBranch,
-      },
-      {
-        title: 'Firecracker',
-        description: 'vCPU, Memory, RootFS, Network 구성.',
-        icon: Flame,
-      },
-      {
-        title: 'MicroVM',
-        description: 'Kernel, RootFS, Serial 중심의 작은 VM.',
-        icon: Cloud,
-      },
-    ],
   },
 ];
 
@@ -573,46 +491,6 @@ function App() {
               <strong role="cell">{row.firecrab}</strong>
             </div>
           ))}
-        </div>
-
-        <div className="architecture-compare" aria-label="VM 플랫폼과 FireCrab 아키텍처 비교">
-          <div className="architecture-compare-heading" data-reveal="fade-up">
-            <span>Architecture View</span>
-            <strong>관리 범위가 넓은 VM 플랫폼, MicroVM 제어에 집중한 FireCrab</strong>
-          </div>
-          <div className="architecture-columns">
-            {architectureColumns.map((column, columnIndex) => (
-              <article className="architecture-card" key={column.title} data-reveal="fade-up" style={revealDelay(columnIndex, 90)}>
-                <div className="architecture-card-head">
-                  <span>{column.subtitle}</span>
-                  <h3>{column.title}</h3>
-                  <p>{column.summary}</p>
-                </div>
-                <div className="architecture-stack">
-                  {column.layers.map((layer, layerIndex) => {
-                    const Icon = layer.icon;
-
-                    return (
-                      <div
-                        className={`architecture-layer${layer.isPrimary ? ' is-primary' : ''}`}
-                        key={layer.title}
-                        data-reveal="row"
-                        style={revealDelay(layerIndex + columnIndex, 45)}
-                      >
-                        <div className="architecture-layer-icon" aria-hidden="true">
-                          <Icon size={20} strokeWidth={2.2} />
-                        </div>
-                        <div>
-                          <strong>{layer.title}</strong>
-                          <p>{layer.description}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </article>
-            ))}
-          </div>
         </div>
       </section>
 
