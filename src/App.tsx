@@ -534,7 +534,7 @@ function App() {
   useScrollReveal();
   const activeDeploymentStep = useCyclingIndex(deploymentSteps.length, 1700);
 
-  if (currentPath === '/templates') {
+  if (currentPath === '/' || currentPath === '/template' || currentPath === '/templates') {
     return <TemplatesPage />;
   }
 
@@ -549,7 +549,7 @@ function App() {
         </a>
         <nav className="nav-links" aria-label="주요 섹션">
           <a href="#overview">개요</a>
-          <a href="/templates">Templates</a>
+          <a href="/template">Templates</a>
           <a href="#difference">차별점</a>
           <a href="#roadmap">MVP</a>
         </nav>
@@ -564,7 +564,7 @@ function App() {
             웹 대시보드에서 Firecracker MicroVM을 생성하고, 자원 설정·상태·콘솔·로그를 가볍게 관리합니다.
           </p>
           <div className="hero-actions" aria-label="핵심 흐름 바로가기">
-            <a className="primary-action" href="/templates">
+            <a className="primary-action" href="/template">
               <Box size={18} />
               템플릿 둘러보기
             </a>

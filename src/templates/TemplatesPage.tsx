@@ -372,7 +372,7 @@ export default function TemplatesPage() {
     <div className="tm-page">
       <header className="tm-header">
         <div className="tm-header-inner">
-          <a className="tm-brand" href="/templates" aria-label="Firecrab templates home">
+          <a className="tm-brand" href="/template" aria-label="Firecrab templates home">
             <span className="tm-brand-mark"><img src="/firecrab-icon.png" alt="" /></span>
             <span><strong>Firecrab</strong><small>Templates</small></span>
           </a>
@@ -628,7 +628,7 @@ export default function TemplatesPage() {
 
       <footer className="tm-footer">
         <div>
-          <a className="tm-brand" href="/templates"><span className="tm-brand-mark"><img src="/firecrab-icon.png" alt="" /></span><span><strong>Firecrab</strong><small>MicroVM Templates</small></span></a>
+          <a className="tm-brand" href="/template"><span className="tm-brand-mark"><img src="/firecrab-icon.png" alt="" /></span><span><strong>Firecrab</strong><small>MicroVM Templates</small></span></a>
           <p>Firecracker 기반 MicroVM을 템플릿으로 정의하고, Go API와 Rust CLI로 실행합니다.</p>
         </div>
         <nav aria-label="Footer navigation"><a href="#catalog">Templates</a><a href="#workflow">Workflow</a><a href="#architecture">Architecture</a><a href="#team">Team</a><a href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={13} />GitHub</a></nav>
