@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   ArrowRight,
   Box,
@@ -34,6 +34,14 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react';
+import {
+  siGo,
+  siNginx,
+  siPostgresql,
+  siReact,
+  siUbuntu,
+  type SimpleIcon,
+} from 'simple-icons';
 import './TemplatesPage.css';
 
 type Category = 'API' | 'Web' | 'Data' | 'Base';
@@ -45,7 +53,7 @@ type Template = {
   version: string;
   eyebrow: string;
   description: string;
-  icon: LucideIcon;
+  brandIcon: SimpleIcon;
   tone: 'blue' | 'orange' | 'violet' | 'green' | 'cyan' | 'slate';
   owner: string;
   ownership: string;
@@ -78,7 +86,7 @@ const templates: Template[] = [
     version: 'v2.4.0',
     eyebrow: 'Firecrab official',
     description: 'Go 기반 HTTP API를 위한 최소 RootFS, 헬스 체크, 비공개 네트워크가 준비된 서비스 템플릿입니다.',
-    icon: Braces,
+    brandIcon: siGo,
     tone: 'blue',
     owner: 'Leader · 정현',
     ownership: 'Go API 공동 설계 · Backend implementation',
@@ -100,7 +108,7 @@ const templates: Template[] = [
     version: 'v1.6.0',
     eyebrow: 'Team template',
     description: '브랜치별 프론트엔드 프리뷰를 빠르게 격리하고 검수할 수 있는 경량 웹 런타임입니다.',
-    icon: Code2,
+    brandIcon: siReact,
     tone: 'violet',
     owner: 'astronaut',
     ownership: 'Frontend Dashboard',
@@ -121,7 +129,7 @@ const templates: Template[] = [
     version: 'v3.1.1',
     eyebrow: 'Verified image',
     description: '지속 볼륨, 백업 정책, 내부 전용 엔드포인트를 포함하는 데이터베이스 템플릿입니다.',
-    icon: Database,
+    brandIcon: siPostgresql,
     tone: 'cyan',
     owner: 'Firecrab Core',
     ownership: 'Data workload',
@@ -142,7 +150,7 @@ const templates: Template[] = [
     version: '24.04.3',
     eyebrow: 'Base image',
     description: 'cloud-init과 Firecracker 커널 구성이 검증된 범용 최소 이미지입니다.',
-    icon: Server,
+    brandIcon: siUbuntu,
     tone: 'slate',
     owner: 'Firecrab Core',
     ownership: 'Base image',
@@ -163,7 +171,7 @@ const templates: Template[] = [
     version: 'v2.2.4',
     eyebrow: 'Verified image',
     description: '정적 자산, 리버스 프록시, 엣지 TLS 종료에 맞춘 작은 웹 서버 템플릿입니다.',
-    icon: Globe2,
+    brandIcon: siNginx,
     tone: 'green',
     owner: 'Firecrab Core',
     ownership: 'Edge runtime',
@@ -229,6 +237,18 @@ const principles: Array<{ icon: LucideIcon; label: string; title: string; descri
 
 const categories: Array<'All' | Category> = ['All', 'API', 'Web', 'Data', 'Base'];
 const repositoryUrl = 'https://github.com/SteelCrab/firecrab';
+const cliCommand = `firecrab template deploy go-api \\
+  --region ap-northeast-2 \\
+  --memory 1024 \\
+  --network private`;
+
+function BrandIcon({ icon }: { icon: SimpleIcon }) {
+  return (
+    <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+      <path d={icon.path} fill="currentColor" />
+    </svg>
+  );
+}
 
 export default function TemplatesPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -237,6 +257,10 @@ export default function TemplatesPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState('');
+  const [terminalStarted, setTerminalStarted] = useState(false);
+  const [typedCommand, setTypedCommand] = useState('');
+  const [terminalStage, setTerminalStage] = useState(0);
+  const terminalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -261,6 +285,63 @@ export default function TemplatesPage() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
+  useEffect(() => {
+    const terminal = terminalRef.current;
+    if (!terminal) return undefined;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (reducedMotion.matches || !('IntersectionObserver' in window)) {
+      setTypedCommand(cliCommand);
+      setTerminalStage(4);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        setTerminalStarted(true);
+        observer.disconnect();
+      },
+      { threshold: 0.45 },
+    );
+
+    observer.observe(terminal);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!terminalStarted) return undefined;
+
+    let index = 0;
+    let typingTimer = 0;
+    const revealTimers: number[] = [];
+    let cancelled = false;
+
+    const typeNextCharacter = () => {
+      if (cancelled) return;
+      index += 1;
+      setTypedCommand(cliCommand.slice(0, index));
+
+      if (index < cliCommand.length) {
+        const currentCharacter = cliCommand[index - 1];
+        typingTimer = window.setTimeout(typeNextCharacter, currentCharacter === '\n' ? 150 : 28);
+        return;
+      }
+
+      [1, 2, 3, 4].forEach((stage, stageIndex) => {
+        revealTimers.push(window.setTimeout(() => setTerminalStage(stage), 420 + stageIndex * 420));
+      });
+    };
+
+    typingTimer = window.setTimeout(typeNextCharacter, 360);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(typingTimer);
+      revealTimers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [terminalStarted]);
+
   const filteredTemplates = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     return templates.filter((template) => {
@@ -274,8 +355,6 @@ export default function TemplatesPage() {
       return matchesCategory && matchesQuery;
     });
   }, [activeCategory, query]);
-
-  const SelectedTemplateIcon = selectedTemplate?.icon;
 
   const copyCommand = async (template: Template) => {
     const command = `firecrab template deploy ${template.id} --region ap-northeast-2`;
@@ -360,10 +439,9 @@ export default function TemplatesPage() {
                 <aside className="tm-template-rail">
                   <span className="tm-rail-label">Featured</span>
                   {templates.slice(0, 3).map((template, index) => {
-                    const TemplateIcon = template.icon;
                     return (
                       <button className={index === 0 ? 'is-selected' : ''} type="button" onClick={() => setSelectedTemplate(template)} key={template.id}>
-                        <span className={`tm-template-icon is-small ${template.tone}`}><TemplateIcon size={14} /></span>
+                        <span className="tm-template-icon is-small" style={{ '--glyph-color': `#${template.brandIcon.hex}` } as CSSProperties}><BrandIcon icon={template.brandIcon} /></span>
                         <span><strong>{template.name}</strong><small>{template.version}</small></span>
                         {index === 0 ? <CheckCircle2 size={13} /> : null}
                       </button>
@@ -374,7 +452,7 @@ export default function TemplatesPage() {
 
                 <div className="tm-template-spec">
                   <div className="tm-spec-head">
-                    <span className="tm-template-icon is-large blue"><Braces size={20} /></span>
+                    <span className="tm-template-icon is-large" style={{ '--glyph-color': `#${siGo.hex}` } as CSSProperties}><BrandIcon icon={siGo} /></span>
                     <span><small>OFFICIAL TEMPLATE</small><strong>Go API Service</strong></span>
                     <span className="tm-verified"><ShieldCheck size={13} />Verified</span>
                   </div>
@@ -458,12 +536,11 @@ export default function TemplatesPage() {
           {filteredTemplates.length ? (
             <div className="tm-template-grid">
               {filteredTemplates.map((template) => {
-                const TemplateIcon = template.icon;
                 return (
-                  <article className={`tm-template-card${template.featured ? ' is-featured' : ''}`} style={{ '--template-accent': `var(--tm-${template.tone})` } as CSSProperties} key={template.id}>
+                  <article className="tm-template-card" style={{ '--template-accent': `#${template.brandIcon.hex}` } as CSSProperties} key={template.id}>
                     <div className="tm-card-topline"><span>{template.eyebrow}</span><span>{template.version}</span></div>
                     <div className="tm-card-heading">
-                      <span className={`tm-template-icon is-large ${template.tone}`}><TemplateIcon size={20} /></span>
+                      <span className="tm-template-icon is-large" style={{ '--glyph-color': `#${template.brandIcon.hex}` } as CSSProperties}><BrandIcon icon={template.brandIcon} /></span>
                       <span><small>{template.category}</small><h3>{template.name}</h3></span>
                     </div>
                     <p>{template.description}</p>
@@ -505,18 +582,14 @@ export default function TemplatesPage() {
             </div>
           </div>
 
-          <div className="tm-terminal-card" aria-label="Firecrab CLI deployment example">
+          <div className="tm-terminal-card" ref={terminalRef} aria-label="Firecrab CLI deployment example">
             <div className="tm-terminal-head"><span><i /><i /><i /></span><strong>firecrab — deploy</strong><small>Rust CLI</small></div>
-            <pre><code><span className="tm-prompt">$</span> firecrab template deploy go-api \
-  --region ap-northeast-2 \
-  --memory 1024 \
-  --network private
-
-<span className="tm-muted">→</span> resolving template <span className="tm-cyan">go-api@v2.4.0</span>
-<span className="tm-muted">→</span> validating signed manifest
-<span className="tm-muted">→</span> attaching rootfs and tap device
-<span className="tm-green">✓</span> microVM ready in <span className="tm-cyan">186ms</span></code></pre>
-            <div className="tm-terminal-result">
+            <pre aria-label={`${cliCommand}. Template resolves, manifest validates, root filesystem attaches, and the MicroVM becomes ready in 186 milliseconds.`}><code aria-hidden="true"><span className="tm-prompt">$</span>{' '}<span className="tm-typed-command">{typedCommand}</span><span className={`tm-terminal-cursor${terminalStage > 0 ? ' is-complete' : ''}`} />
+{terminalStage >= 1 ? <span className="tm-terminal-line"><span className="tm-muted">→</span> resolving template <span className="tm-cyan">go-api@v2.4.0</span></span> : null}
+{terminalStage >= 2 ? <span className="tm-terminal-line"><span className="tm-muted">→</span> validating signed manifest</span> : null}
+{terminalStage >= 3 ? <span className="tm-terminal-line"><span className="tm-muted">→</span> attaching rootfs and tap device</span> : null}
+{terminalStage >= 4 ? <span className="tm-terminal-line"><span className="tm-green">✓</span> microVM ready in <span className="tm-cyan">186ms</span></span> : null}</code></pre>
+            <div className={`tm-terminal-result${terminalStage >= 4 ? ' is-visible' : ''}`}>
               <div><span>INSTANCE</span><strong>fc-go-api-07</strong></div>
               <div><span>PRIVATE IP</span><strong>10.42.8.14</strong></div>
               <div><span>STATE</span><strong><i />running</strong></div>
@@ -566,7 +639,7 @@ export default function TemplatesPage() {
         <div className="tm-modal-layer" role="presentation" onMouseDown={() => setSelectedTemplate(null)}>
           <section className="tm-template-modal" role="dialog" aria-modal="true" aria-labelledby="template-modal-title" onMouseDown={(event) => event.stopPropagation()}>
             <div className="tm-modal-head">
-              <span className={`tm-template-icon is-large ${selectedTemplate.tone}`}>{SelectedTemplateIcon ? <SelectedTemplateIcon size={20} /> : null}</span>
+              <span className="tm-template-icon is-large" style={{ '--glyph-color': `#${selectedTemplate.brandIcon.hex}` } as CSSProperties}><BrandIcon icon={selectedTemplate.brandIcon} /></span>
               <span><small>{selectedTemplate.eyebrow} · {selectedTemplate.version}</small><h2 id="template-modal-title">{selectedTemplate.name}</h2></span>
               <button type="button" aria-label="Close template details" onClick={() => setSelectedTemplate(null)}><X size={18} /></button>
             </div>
