@@ -2,16 +2,11 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import {
   ArrowRight,
   Box,
-  Braces,
   Check,
   CheckCircle2,
   ChevronRight,
-  Cloud,
-  Code2,
-  Command,
   Copy,
   Cpu,
-  Database,
   GitBranch,
   Github,
   Globe2,
@@ -25,10 +20,7 @@ import {
   Search,
   Server,
   ShieldCheck,
-  Sparkles,
-  TerminalSquare,
   Timer,
-  Users,
   Workflow,
   X,
   Zap,
@@ -38,7 +30,9 @@ import {
   siGo,
   siNginx,
   siPostgresql,
+  siPython,
   siReact,
+  siSpringboot,
   siUbuntu,
   type SimpleIcon,
 } from 'simple-icons';
@@ -55,27 +49,16 @@ type Template = {
   description: string;
   brandIcon: SimpleIcon;
   tone: 'blue' | 'orange' | 'violet' | 'green' | 'cyan' | 'slate';
-  owner: string;
-  ownership: string;
   runtime: string;
   architecture: string;
   cpu: string;
   memory: string;
   disk: string;
-  ready: string;
+  network: string;
   deployments: string;
   updated: string;
   tags: string[];
   featured?: boolean;
-};
-
-type TeamMember = {
-  initials: string;
-  name: string;
-  title: string;
-  responsibility: string;
-  tags: string[];
-  tone: 'ink' | 'blue' | 'violet';
 };
 
 const templates: Template[] = [
@@ -88,14 +71,12 @@ const templates: Template[] = [
     description: 'Go 기반 HTTP API를 위한 최소 RootFS, 헬스 체크, 비공개 네트워크가 준비된 서비스 템플릿입니다.',
     brandIcon: siGo,
     tone: 'blue',
-    owner: 'Leader · 정현',
-    ownership: 'Go API 공동 설계 · Backend implementation',
     runtime: 'Go runtime',
     architecture: 'amd64 / arm64',
-    cpu: '2 vCPU',
-    memory: '1 GiB',
-    disk: '8 GiB',
-    ready: '~14 sec',
+    cpu: '1 vCPU',
+    memory: '512 MiB',
+    disk: '4 GiB',
+    network: 'private-net',
     deployments: '128 launches',
     updated: 'Updated 2 days ago',
     tags: ['REST API', 'Health check', 'Private network'],
@@ -110,14 +91,12 @@ const templates: Template[] = [
     description: '브랜치별 프론트엔드 프리뷰를 빠르게 격리하고 검수할 수 있는 경량 웹 런타임입니다.',
     brandIcon: siReact,
     tone: 'violet',
-    owner: 'astronaut',
-    ownership: 'Frontend Dashboard',
     runtime: 'Node runtime',
     architecture: 'amd64 / arm64',
-    cpu: '2 vCPU',
-    memory: '2 GiB',
-    disk: '10 GiB',
-    ready: '~18 sec',
+    cpu: '1 vCPU',
+    memory: '512 MiB',
+    disk: '4 GiB',
+    network: 'preview-net',
     deployments: '96 launches',
     updated: 'Updated yesterday',
     tags: ['Preview URL', 'Branch deploy', 'TLS ready'],
@@ -131,14 +110,12 @@ const templates: Template[] = [
     description: '지속 볼륨, 백업 정책, 내부 전용 엔드포인트를 포함하는 데이터베이스 템플릿입니다.',
     brandIcon: siPostgresql,
     tone: 'cyan',
-    owner: 'Firecrab Core',
-    ownership: 'Data workload',
     runtime: 'PostgreSQL 16',
     architecture: 'amd64',
-    cpu: '4 vCPU',
-    memory: '8 GiB',
-    disk: '80 GiB',
-    ready: '~26 sec',
+    cpu: '2 vCPU',
+    memory: '4 GiB',
+    disk: '40 GiB',
+    network: 'data-net',
     deployments: '42 launches',
     updated: 'Updated 1 week ago',
     tags: ['Persistent volume', 'Daily backup', 'Private only'],
@@ -152,14 +129,12 @@ const templates: Template[] = [
     description: 'cloud-init과 Firecracker 커널 구성이 검증된 범용 최소 이미지입니다.',
     brandIcon: siUbuntu,
     tone: 'slate',
-    owner: 'Firecrab Core',
-    ownership: 'Base image',
     runtime: 'Ubuntu 24.04 LTS',
     architecture: 'amd64 / arm64',
     cpu: '1 vCPU',
     memory: '512 MiB',
     disk: '4 GiB',
-    ready: '~9 sec',
+    network: 'default-net',
     deployments: '316 launches',
     updated: 'Updated 3 days ago',
     tags: ['cloud-init', 'Minimal RootFS', 'Signed'],
@@ -173,44 +148,53 @@ const templates: Template[] = [
     description: '정적 자산, 리버스 프록시, 엣지 TLS 종료에 맞춘 작은 웹 서버 템플릿입니다.',
     brandIcon: siNginx,
     tone: 'green',
-    owner: 'Firecrab Core',
-    ownership: 'Edge runtime',
     runtime: 'Nginx stable',
     architecture: 'amd64 / arm64',
     cpu: '1 vCPU',
-    memory: '512 MiB',
-    disk: '4 GiB',
-    ready: '~11 sec',
+    memory: '256 MiB',
+    disk: '2 GiB',
+    network: 'edge-net',
     deployments: '203 launches',
     updated: 'Updated 4 days ago',
     tags: ['Reverse proxy', 'TLS', 'Static assets'],
   },
-];
-
-const team: TeamMember[] = [
   {
-    initials: 'LD',
-    name: 'Leader',
-    title: 'Maintainer',
-    responsibility: '제품 방향, Go API 설계, Rust CLI와 릴리스를 책임집니다.',
-    tags: ['Go API Design', 'Rust CLI', 'Releases'],
-    tone: 'ink',
+    id: 'spring-api',
+    name: 'Spring Boot API',
+    category: 'API',
+    version: 'v1.2.0',
+    eyebrow: 'Verified image',
+    description: 'Spring Boot 애플리케이션을 위한 경량 JRE, 헬스 체크, 기본 네트워크 구성이 포함된 템플릿입니다.',
+    brandIcon: siSpringboot,
+    tone: 'green',
+    runtime: 'Java / Spring Boot',
+    architecture: 'amd64 / arm64',
+    cpu: '2 vCPU',
+    memory: '2 GiB',
+    disk: '8 GiB',
+    network: 'private-net',
+    deployments: '61 launches',
+    updated: 'Updated 3 days ago',
+    tags: ['Spring Boot', 'Actuator', 'Private network'],
   },
   {
-    initials: 'JH',
-    name: '정현',
-    title: 'Backend Developer',
-    responsibility: 'Go API를 공동 설계하고 백엔드 구현과 계약을 다듬습니다.',
-    tags: ['Go Backend', 'API Co-design', 'Contracts'],
+    id: 'python-service',
+    name: 'Python Service',
+    category: 'API',
+    version: 'v1.4.0',
+    eyebrow: 'Verified image',
+    description: 'Python 웹 서비스와 배치 작업을 빠르게 시작할 수 있도록 런타임과 기본 실행 구성을 묶은 템플릿입니다.',
+    brandIcon: siPython,
     tone: 'blue',
-  },
-  {
-    initials: 'AS',
-    name: 'astronaut',
-    title: 'Frontend Developer',
-    responsibility: '템플릿 경험과 Firecrab 프론트엔드 대시보드를 구현합니다.',
-    tags: ['Frontend Dashboard', 'Interaction', 'React'],
-    tone: 'violet',
+    runtime: 'Python runtime',
+    architecture: 'amd64 / arm64',
+    cpu: '1 vCPU',
+    memory: '512 MiB',
+    disk: '4 GiB',
+    network: 'private-net',
+    deployments: '89 launches',
+    updated: 'Updated yesterday',
+    tags: ['ASGI / WSGI', 'Batch ready', 'Health check'],
   },
 ];
 
@@ -218,29 +202,29 @@ const principles: Array<{ icon: LucideIcon; label: string; title: string; descri
   {
     icon: Layers3,
     label: 'REPEATABLE',
-    title: '한 번 정의하고, 같은 방식으로 실행',
-    description: '커널, RootFS, 자원, 네트워크 정책을 하나의 버전으로 묶어 환경 차이를 줄입니다.',
+    title: '한 번 정의하고, 어디서든 동일하게 실행',
+    description: '이미지, 자원, 네트워크 설정을 버전으로 관리해 환경마다 달라지는 실행 조건을 줄입니다.',
   },
   {
     icon: LockKeyhole,
     label: 'ISOLATED',
-    title: '컨테이너의 속도에 가까운 VM 격리',
-    description: 'Firecracker의 작은 실행 단위로 독립 커널과 명확한 보안 경계를 제공합니다.',
+    title: '작고 명확한 MicroVM 격리',
+    description: '워크로드마다 독립된 커널과 최소한의 실행 구성을 제공해 격리 경계를 분명하게 유지합니다.',
   },
   {
     icon: Workflow,
     label: 'AUTOMATABLE',
-    title: 'UI, Go API, Rust CLI가 같은 계약을 사용',
-    description: '사람의 클릭과 자동화가 동일한 템플릿 스펙을 공유해 운영 흐름이 어긋나지 않습니다.',
+    title: '반복 배포를 명령으로 연결',
+    description: '템플릿 ID와 실행 옵션을 CLI에서 그대로 사용해 반복 작업과 배포 파이프라인을 간결하게 구성합니다.',
   },
 ];
 
 const categories: Array<'All' | Category> = ['All', 'API', 'Web', 'Data', 'Base'];
 const repositoryUrl = 'https://github.com/SteelCrab/firecrab';
 const cliCommand = `firecrab template deploy go-api \\
-  --region ap-northeast-2 \\
-  --memory 1024 \\
-  --network private`;
+  --network private-net \\
+  --memory 512 \\
+  --vcpus 1`;
 
 function BrandIcon({ icon }: { icon: SimpleIcon }) {
   return (
@@ -292,7 +276,7 @@ export default function TemplatesPage() {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (reducedMotion.matches || !('IntersectionObserver' in window)) {
       setTypedCommand(cliCommand);
-      setTerminalStage(4);
+      setTerminalStage(5);
       return undefined;
     }
 
@@ -328,7 +312,7 @@ export default function TemplatesPage() {
         return;
       }
 
-      [1, 2, 3, 4].forEach((stage, stageIndex) => {
+      [1, 2, 3, 4, 5].forEach((stage, stageIndex) => {
         revealTimers.push(window.setTimeout(() => setTerminalStage(stage), 420 + stageIndex * 420));
       });
     };
@@ -348,7 +332,7 @@ export default function TemplatesPage() {
       const matchesCategory = activeCategory === 'All' || template.category === activeCategory;
       const matchesQuery =
         !normalized ||
-        [template.name, template.description, template.runtime, template.owner, ...template.tags]
+        [template.name, template.description, template.runtime, ...template.tags]
           .join(' ')
           .toLowerCase()
           .includes(normalized);
@@ -357,7 +341,7 @@ export default function TemplatesPage() {
   }, [activeCategory, query]);
 
   const copyCommand = async (template: Template) => {
-    const command = `firecrab template deploy ${template.id} --region ap-northeast-2`;
+    const command = `firecrab template deploy ${template.id} --network private-net`;
     try {
       await navigator.clipboard.writeText(command);
     } catch {
@@ -381,7 +365,6 @@ export default function TemplatesPage() {
             <a className="is-active" href="#catalog">Templates</a>
             <a href="#workflow">How it works</a>
             <a href="#architecture">Architecture</a>
-            <a href="#team">Team</a>
           </nav>
 
           <div className="tm-header-actions">
@@ -401,7 +384,6 @@ export default function TemplatesPage() {
             <a href="#catalog" onClick={() => setMobileMenuOpen(false)}>Templates</a>
             <a href="#workflow" onClick={() => setMobileMenuOpen(false)}>How it works</a>
             <a href="#architecture" onClick={() => setMobileMenuOpen(false)}>Architecture</a>
-            <a href="#team" onClick={() => setMobileMenuOpen(false)}>Team</a>
             <a href={repositoryUrl} target="_blank" rel="noreferrer" onClick={() => setMobileMenuOpen(false)}>GitHub ↗</a>
           </nav>
         ) : null}
@@ -410,11 +392,10 @@ export default function TemplatesPage() {
       <main>
         <section className="tm-hero" aria-labelledby="templates-hero-title">
           <div className="tm-hero-copy">
-            <div className="tm-eyebrow"><Sparkles size={14} />Firecracker-native workload templates</div>
             <h1 id="templates-hero-title">격리된 실행 환경을,<br /><span>템플릿 하나로.</span></h1>
             <p>
-              Go API 서비스부터 데이터 워크로드까지. 검증된 이미지와 운영 정책을 하나로 묶어
-              어디서든 같은 MicroVM을 시작하세요.
+              Firecrab은 커널, RootFS, 자원, 네트워크 정책을 하나의 템플릿으로 정의해
+              어디서든 동일한 MicroVM 환경을 빠르고 일관되게 실행합니다.
             </p>
             <div className="tm-hero-actions">
               <a className="tm-primary-cta" href="#catalog">템플릿 둘러보기 <ArrowRight size={16} /></a>
@@ -427,17 +408,20 @@ export default function TemplatesPage() {
             </div>
           </div>
 
-          <div className="tm-product-stage" aria-label="Go API template product preview">
+          <div className="tm-product-stage" aria-label="Firecrab template console preview">
             <div className="tm-stage-glow" aria-hidden="true" />
             <div className="tm-product-window">
               <div className="tm-window-bar">
-                <span className="tm-window-dots"><i /><i /><i /></span>
-                <span className="tm-window-title"><Box size={13} />firecrab / templates</span>
-                <span className="tm-registry-state"><i />Registry synced</span>
+                <span className="tm-window-title">
+                  <span className="tm-console-mark"><Box size={15} /></span>
+                  <span><strong>Firecrab Console</strong><small>Template Registry</small></span>
+                </span>
+                <span className="tm-window-project"><small>Project</small><strong>firecrab-production</strong></span>
+                <a className="tm-window-github" href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={14} />GitHub <ArrowRight size={12} /></a>
               </div>
               <div className="tm-window-body">
                 <aside className="tm-template-rail">
-                  <span className="tm-rail-label">Featured</span>
+                  <span className="tm-rail-label">Template library</span>
                   {templates.slice(0, 3).map((template, index) => {
                     return (
                       <button className={index === 0 ? 'is-selected' : ''} type="button" onClick={() => setSelectedTemplate(template)} key={template.id}>
@@ -451,6 +435,7 @@ export default function TemplatesPage() {
                 </aside>
 
                 <div className="tm-template-spec">
+                  <div className="tm-spec-toolbar"><span>Templates <ChevronRight size={12} /> Go API Service</span><span className="tm-registry-state"><i />Registry synced</span></div>
                   <div className="tm-spec-head">
                     <span className="tm-template-icon is-large" style={{ '--glyph-color': `#${siGo.hex}` } as CSSProperties}><BrandIcon icon={siGo} /></span>
                     <span><small>OFFICIAL TEMPLATE</small><strong>Go API Service</strong></span>
@@ -458,8 +443,8 @@ export default function TemplatesPage() {
                   </div>
                   <p>Production-ready Go service with health checks, private networking, and a minimal RootFS.</p>
                   <div className="tm-spec-grid">
-                    <div><Cpu size={14} /><span><small>Compute</small><strong>2 vCPU</strong></span></div>
-                    <div><HardDrive size={14} /><span><small>Memory</small><strong>1 GiB</strong></span></div>
+                    <div><Cpu size={14} /><span><small>Compute</small><strong>1 vCPU</strong></span></div>
+                    <div><HardDrive size={14} /><span><small>Memory</small><strong>512 MiB</strong></span></div>
                     <div><Network size={14} /><span><small>Network</small><strong>Private</strong></span></div>
                     <div><Globe2 size={14} /><span><small>Arch</small><strong>Multi-arch</strong></span></div>
                   </div>
@@ -480,11 +465,11 @@ export default function TemplatesPage() {
         </section>
 
         <section className="tm-technology-strip" aria-label="Firecrab technology overview">
-          <span>Built for modern private cloud</span>
-          <div><strong>Firecracker</strong><i /></div>
-          <div><strong>Go Control API</strong><i /></div>
-          <div><strong>Rust CLI</strong><i /></div>
-          <div><strong>React Interface</strong></div>
+          <span>Built for reusable MicroVMs</span>
+          <div><strong>Versioned templates</strong><i /></div>
+          <div><strong>Signed manifests</strong><i /></div>
+          <div><strong>CLI deploy</strong><i /></div>
+          <div><strong>Private networking</strong></div>
         </section>
 
         <section className="tm-principles" id="workflow" aria-labelledby="principles-title">
@@ -528,7 +513,7 @@ export default function TemplatesPage() {
             <label className="tm-search-box">
               <Search size={16} />
               <span className="tm-sr-only">Search templates</span>
-              <input id="template-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="이름, 런타임, 소유자 검색" />
+              <input id="template-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="이름 또는 런타임 검색" />
               <kbd>/</kbd>
             </label>
           </div>
@@ -547,10 +532,9 @@ export default function TemplatesPage() {
                     <div className="tm-card-facts">
                       <span><Package size={14} /><small>Runtime</small><strong>{template.runtime}</strong></span>
                       <span><Globe2 size={14} /><small>Architecture</small><strong>{template.architecture}</strong></span>
-                      <span><Timer size={14} /><small>Ready</small><strong>{template.ready}</strong></span>
+                      <span><Network size={14} /><small>Network</small><strong>{template.network}</strong></span>
                     </div>
                     <div className="tm-card-footer">
-                      <span><span className="tm-owner-avatar">{template.owner === 'Leader · 정현' ? 'LJ' : template.owner === 'astronaut' ? 'AS' : 'FC'}</span><small>Maintained by</small><strong>{template.owner}</strong></span>
                       <button className="tm-card-primary" type="button" onClick={() => setSelectedTemplate(template)}>자세히 보기 <ArrowRight size={14} /></button>
                     </div>
                   </article>
@@ -569,69 +553,45 @@ export default function TemplatesPage() {
 
         <section className="tm-architecture-section" id="architecture" aria-labelledby="architecture-title">
           <div className="tm-architecture-copy">
-            <span>ONE CONTRACT, THREE SURFACES</span>
-            <h2 id="architecture-title">사람과 자동화가<br />같은 언어로 실행합니다.</h2>
+            <span>DEPLOY FROM THE CLI</span>
+            <h2 id="architecture-title">웹에서 고른 템플릿을,<br />CLI에서도 그대로.</h2>
             <p>
-              React 인터페이스, Go Control API, Rust CLI가 하나의 템플릿 명세를 공유합니다.
-              클릭으로 시작해도, 파이프라인에서 호출해도 같은 MicroVM이 만들어집니다.
+              Firecrab 템플릿은 웹뿐 아니라 CLI에서도 동일한 ID와 옵션으로 배포할 수 있습니다.
+              반복 작업은 명령어로 연결하고 실행 결과는 터미널에서 바로 확인합니다.
             </p>
             <div className="tm-architecture-layers">
-              <div><span><Braces size={16} /></span><p><strong>Go Control API</strong><small>Leader + 정현 · 공동 설계와 백엔드 구현</small></p></div>
-              <div><span><TerminalSquare size={16} /></span><p><strong>Rust CLI</strong><small>Leader · 자동화와 운영 도구</small></p></div>
-              <div><span><Code2 size={16} /></span><p><strong>React Interface</strong><small>astronaut · 템플릿 경험과 프론트엔드</small></p></div>
+              <div><span>01</span><p><strong>Template</strong><small>웹과 CLI에서 동일한 템플릿 ID를 사용합니다.</small></p></div>
+              <div><span>02</span><p><strong>Options</strong><small>네트워크 이름과 자원 값을 명령에서 지정합니다.</small></p></div>
+              <div><span>03</span><p><strong>Result</strong><small>생성된 인스턴스, IP, 상태를 CLI에서 확인합니다.</small></p></div>
             </div>
           </div>
 
           <div className="tm-terminal-card" ref={terminalRef} aria-label="Firecrab CLI deployment example">
-            <div className="tm-terminal-head"><span><i /><i /><i /></span><strong>firecrab — deploy</strong><small>Rust CLI</small></div>
+            <div className="tm-terminal-head"><span><i /><i /><i /></span><strong>firecrab — deploy</strong><small>CLI</small></div>
             <pre aria-label={`${cliCommand}. Template resolves, manifest validates, root filesystem attaches, and the MicroVM becomes ready in 186 milliseconds.`}><code aria-hidden="true"><span className="tm-prompt">$</span>{' '}<span className="tm-typed-command">{typedCommand}</span><span className={`tm-terminal-cursor${terminalStage > 0 ? ' is-complete' : ''}`} />
 {terminalStage >= 1 ? <span className="tm-terminal-line"><span className="tm-muted">→</span> resolving template <span className="tm-cyan">go-api@v2.4.0</span></span> : null}
 {terminalStage >= 2 ? <span className="tm-terminal-line"><span className="tm-muted">→</span> validating signed manifest</span> : null}
 {terminalStage >= 3 ? <span className="tm-terminal-line"><span className="tm-muted">→</span> attaching rootfs and tap device</span> : null}
-{terminalStage >= 4 ? <span className="tm-terminal-line"><span className="tm-green">✓</span> microVM ready in <span className="tm-cyan">186ms</span></span> : null}</code></pre>
-            <div className={`tm-terminal-result${terminalStage >= 4 ? ' is-visible' : ''}`}>
-              <div><span>INSTANCE</span><strong>fc-go-api-07</strong></div>
-              <div><span>PRIVATE IP</span><strong>10.42.8.14</strong></div>
-              <div><span>STATE</span><strong><i />running</strong></div>
-            </div>
-          </div>
-        </section>
-
-        <section className="tm-team-section" id="team" aria-labelledby="team-title">
-          <div className="tm-team-intro">
-            <span>SMALL TEAM, CLEAR OWNERSHIP</span>
-            <h2 id="team-title">세 명이 만들고,<br />책임은 선명하게.</h2>
-            <p>Firecrab은 작은 팀의 빠른 의사결정과 명확한 기술 소유권을 제품 구조에 그대로 반영합니다.</p>
-            <div className="tm-team-total"><Users size={17} /><span><strong>3 core contributors</strong><small>Product, Go backend, Rust CLI, Frontend</small></span></div>
-          </div>
-          <div className="tm-team-list">
-            {team.map((member, index) => (
-              <article key={member.name}>
-                <span className="tm-team-index">0{index + 1}</span>
-                <span className={`tm-team-avatar ${member.tone}`}>{member.initials}</span>
-                <span className="tm-team-name"><small>{member.title}</small><strong>{member.name}</strong></span>
-                <p>{member.responsibility}</p>
-                <div>{member.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
-              </article>
-            ))}
+{terminalStage >= 4 ? <span className="tm-terminal-line"><span className="tm-green">✓</span> microVM ready in <span className="tm-cyan">186ms</span></span> : null}
+{terminalStage >= 5 ? <span className="tm-cli-result"><span className="tm-cli-result-complete"><span className="tm-green">✓</span> deployment complete</span><span className="tm-cli-result-line"><span>INSTANCE</span><strong>fc-go-api-07</strong></span><span className="tm-cli-result-line"><span>PRIVATE IP</span><strong>10.42.8.14</strong></span><span className="tm-cli-result-line"><span>STATE</span><strong className="tm-cli-state">running</strong></span></span> : null}</code></pre>
           </div>
         </section>
 
         <section className="tm-final-cta" aria-labelledby="final-cta-title">
           <span className="tm-final-mark"><img src="/firecrab-icon.png" alt="" /></span>
-          <span className="tm-final-kicker">FIRECRAB TEMPLATES</span>
-          <h2 id="final-cta-title">매번 새로 만들지 말고,<br />좋은 시작점을 공유하세요.</h2>
-          <p>검증된 템플릿에서 첫 MicroVM을 시작하고, 팀의 실행 방식을 하나의 버전으로 관리하세요.</p>
-          <div><a className="tm-final-primary" href="#catalog">템플릿 선택하기 <ArrowRight size={15} /></a><a className="tm-final-secondary" href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={14} />GitHub에서 보기</a></div>
+          <span className="tm-final-kicker">BUILD FIRECRAB TOGETHER</span>
+          <h2 id="final-cta-title">함께 만드는 Firecrab,<br />새로운 기여자를 기다립니다.</h2>
+          <p>아이디어, 코드, 문서, 피드백까지 어떤 형태의 기여도 환영합니다. 저장소에서 프로젝트를 살펴보고 함께 다음 버전을 만들어 주세요.</p>
+          <div><a className="tm-final-primary" href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={14} />기여하러 가기</a><a className="tm-final-secondary" href="/">메인 페이지 <ArrowRight size={15} /></a></div>
         </section>
       </main>
 
       <footer className="tm-footer">
         <div>
           <a className="tm-brand" href="/template"><span className="tm-brand-mark"><img src="/firecrab-icon.png" alt="" /></span><span><strong>Firecrab</strong><small>MicroVM Templates</small></span></a>
-          <p>Firecracker 기반 MicroVM을 템플릿으로 정의하고, Go API와 Rust CLI로 실행합니다.</p>
+          <p>MicroVM 실행 환경을 템플릿으로 정의하고, 웹과 CLI에서 일관되게 배포합니다.</p>
         </div>
-        <nav aria-label="Footer navigation"><a href="#catalog">Templates</a><a href="#workflow">Workflow</a><a href="#architecture">Architecture</a><a href="#team">Team</a><a href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={13} />GitHub</a></nav>
+        <nav aria-label="Footer navigation"><a href="#catalog">Templates</a><a href="#workflow">Workflow</a><a href="#architecture">CLI</a><a href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={13} />GitHub</a></nav>
         <span>© 2026 Firecrab Core</span>
       </footer>
 
@@ -647,20 +607,19 @@ export default function TemplatesPage() {
               <div className="tm-modal-main">
                 <p>{selectedTemplate.description}</p>
                 <div className="tm-modal-tags">{selectedTemplate.tags.map((tag) => <span key={tag}><Check size={11} />{tag}</span>)}</div>
-                <h3>Default configuration</h3>
+                <h3>Minimum production configuration</h3>
                 <dl className="tm-modal-specs">
                   <div><dt><Cpu size={14} />Compute</dt><dd>{selectedTemplate.cpu}</dd></div>
                   <div><dt><Server size={14} />Memory</dt><dd>{selectedTemplate.memory}</dd></div>
                   <div><dt><HardDrive size={14} />RootFS</dt><dd>{selectedTemplate.disk}</dd></div>
-                  <div><dt><Timer size={14} />Ready</dt><dd>{selectedTemplate.ready}</dd></div>
+                  <div><dt><Network size={14} />Network</dt><dd>{selectedTemplate.network}</dd></div>
                   <div><dt><Package size={14} />Runtime</dt><dd>{selectedTemplate.runtime}</dd></div>
                   <div><dt><Globe2 size={14} />Architecture</dt><dd>{selectedTemplate.architecture}</dd></div>
                 </dl>
-                <div className="tm-modal-command"><code><span>$</span> firecrab template deploy {selectedTemplate.id} --region ap-northeast-2</code><button type="button" onClick={() => copyCommand(selectedTemplate)}>{copied ? <Check size={14} /> : <Copy size={14} />}</button></div>
+                <div className="tm-modal-command"><code><span>$</span> firecrab template deploy {selectedTemplate.id} --network private-net</code><button type="button" onClick={() => copyCommand(selectedTemplate)}>{copied ? <Check size={14} /> : <Copy size={14} />}</button></div>
               </div>
               <aside className="tm-modal-side">
-                <span>OWNERSHIP</span>
-                <div className="tm-modal-owner"><span className="tm-owner-avatar">{selectedTemplate.owner === 'Leader · 정현' ? 'LJ' : selectedTemplate.owner === 'astronaut' ? 'AS' : selectedTemplate.owner === 'Leader' ? 'LD' : 'FC'}</span><p><strong>{selectedTemplate.owner}</strong><small>{selectedTemplate.ownership}</small></p></div>
+                <span>RELEASE STATUS</span>
                 <dl><div><dt>Usage</dt><dd>{selectedTemplate.deployments}</dd></div><div><dt>Release</dt><dd>{selectedTemplate.updated}</dd></div><div><dt>Verification</dt><dd><ShieldCheck size={13} />Signed</dd></div></dl>
               </aside>
             </div>
