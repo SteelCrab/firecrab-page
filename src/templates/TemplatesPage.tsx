@@ -13,6 +13,7 @@ import {
   Cpu,
   Database,
   GitBranch,
+  Github,
   Globe2,
   HardDrive,
   Layers3,
@@ -35,7 +36,7 @@ import {
 } from 'lucide-react';
 import './TemplatesPage.css';
 
-type Category = 'API' | 'Tooling' | 'Web' | 'Data' | 'Base';
+type Category = 'API' | 'Web' | 'Data' | 'Base';
 
 type Template = {
   id: string;
@@ -44,7 +45,7 @@ type Template = {
   version: string;
   eyebrow: string;
   description: string;
-  glyph: string;
+  icon: LucideIcon;
   tone: 'blue' | 'orange' | 'violet' | 'green' | 'cyan' | 'slate';
   owner: string;
   ownership: string;
@@ -77,7 +78,7 @@ const templates: Template[] = [
     version: 'v2.4.0',
     eyebrow: 'Firecrab official',
     description: 'Go 기반 HTTP API를 위한 최소 RootFS, 헬스 체크, 비공개 네트워크가 준비된 서비스 템플릿입니다.',
-    glyph: 'GO',
+    icon: Braces,
     tone: 'blue',
     owner: 'Leader · 정현',
     ownership: 'Go API 공동 설계 · Backend implementation',
@@ -93,34 +94,13 @@ const templates: Template[] = [
     featured: true,
   },
   {
-    id: 'rust-cli',
-    name: 'Rust CLI Builder',
-    category: 'Tooling',
-    version: 'v1.8.2',
-    eyebrow: 'Maintained by Leader',
-    description: '재현 가능한 Rust CLI 빌드와 릴리스 아티팩트 생성을 위한 격리 빌더입니다.',
-    glyph: 'RS',
-    tone: 'orange',
-    owner: 'Leader',
-    ownership: 'Maintainer · Rust CLI',
-    runtime: 'Rust toolchain',
-    architecture: 'amd64',
-    cpu: '4 vCPU',
-    memory: '4 GiB',
-    disk: '24 GiB',
-    ready: '~31 sec',
-    deployments: '74 launches',
-    updated: 'Updated 5 days ago',
-    tags: ['Cargo cache', 'Release build', 'SBOM'],
-  },
-  {
     id: 'frontend-preview',
     name: 'Frontend Preview',
     category: 'Web',
     version: 'v1.6.0',
     eyebrow: 'Team template',
     description: '브랜치별 프론트엔드 프리뷰를 빠르게 격리하고 검수할 수 있는 경량 웹 런타임입니다.',
-    glyph: 'UI',
+    icon: Code2,
     tone: 'violet',
     owner: 'astronaut',
     ownership: 'Frontend Dashboard',
@@ -141,7 +121,7 @@ const templates: Template[] = [
     version: 'v3.1.1',
     eyebrow: 'Verified image',
     description: '지속 볼륨, 백업 정책, 내부 전용 엔드포인트를 포함하는 데이터베이스 템플릿입니다.',
-    glyph: 'PG',
+    icon: Database,
     tone: 'cyan',
     owner: 'Firecrab Core',
     ownership: 'Data workload',
@@ -162,7 +142,7 @@ const templates: Template[] = [
     version: '24.04.3',
     eyebrow: 'Base image',
     description: 'cloud-init과 Firecracker 커널 구성이 검증된 범용 최소 이미지입니다.',
-    glyph: 'UB',
+    icon: Server,
     tone: 'slate',
     owner: 'Firecrab Core',
     ownership: 'Base image',
@@ -183,7 +163,7 @@ const templates: Template[] = [
     version: 'v2.2.4',
     eyebrow: 'Verified image',
     description: '정적 자산, 리버스 프록시, 엣지 TLS 종료에 맞춘 작은 웹 서버 템플릿입니다.',
-    glyph: 'NX',
+    icon: Globe2,
     tone: 'green',
     owner: 'Firecrab Core',
     ownership: 'Edge runtime',
@@ -247,7 +227,8 @@ const principles: Array<{ icon: LucideIcon; label: string; title: string; descri
   },
 ];
 
-const categories: Array<'All' | Category> = ['All', 'API', 'Tooling', 'Web', 'Data', 'Base'];
+const categories: Array<'All' | Category> = ['All', 'API', 'Web', 'Data', 'Base'];
+const repositoryUrl = 'https://github.com/SteelCrab/firecrab';
 
 export default function TemplatesPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -294,6 +275,8 @@ export default function TemplatesPage() {
     });
   }, [activeCategory, query]);
 
+  const SelectedTemplateIcon = selectedTemplate?.icon;
+
   const copyCommand = async (template: Template) => {
     const command = `firecrab template deploy ${template.id} --region ap-northeast-2`;
     try {
@@ -324,6 +307,9 @@ export default function TemplatesPage() {
 
           <div className="tm-header-actions">
             <a className="tm-text-link" href="#architecture">기술 구성</a>
+            <a className="tm-github-link" href={repositoryUrl} target="_blank" rel="noreferrer" aria-label="Open SteelCrab Firecrab repository on GitHub">
+              <Github size={15} /><span>GitHub</span>
+            </a>
             <a className="tm-small-cta" href="#catalog">템플릿 보기 <ArrowRight size={14} /></a>
             <button className="tm-menu-button" type="button" aria-label="Open navigation" aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen((open) => !open)}>
               {mobileMenuOpen ? <X size={19} /> : <Menu size={19} />}
@@ -337,6 +323,7 @@ export default function TemplatesPage() {
             <a href="#workflow" onClick={() => setMobileMenuOpen(false)}>How it works</a>
             <a href="#architecture" onClick={() => setMobileMenuOpen(false)}>Architecture</a>
             <a href="#team" onClick={() => setMobileMenuOpen(false)}>Team</a>
+            <a href={repositoryUrl} target="_blank" rel="noreferrer" onClick={() => setMobileMenuOpen(false)}>GitHub ↗</a>
           </nav>
         ) : null}
       </header>
@@ -347,7 +334,7 @@ export default function TemplatesPage() {
             <div className="tm-eyebrow"><Sparkles size={14} />Firecracker-native workload templates</div>
             <h1 id="templates-hero-title">격리된 실행 환경을,<br /><span>템플릿 하나로.</span></h1>
             <p>
-              Go API 서비스부터 Rust CLI 빌드까지. 검증된 이미지와 운영 정책을 하나로 묶어
+              Go API 서비스부터 데이터 워크로드까지. 검증된 이미지와 운영 정책을 하나로 묶어
               어디서든 같은 MicroVM을 시작하세요.
             </p>
             <div className="tm-hero-actions">
@@ -372,19 +359,22 @@ export default function TemplatesPage() {
               <div className="tm-window-body">
                 <aside className="tm-template-rail">
                   <span className="tm-rail-label">Featured</span>
-                  {templates.slice(0, 3).map((template, index) => (
-                    <button className={index === 0 ? 'is-selected' : ''} type="button" onClick={() => setSelectedTemplate(template)} key={template.id}>
-                      <span className={`tm-mini-glyph ${template.tone}`}>{template.glyph}</span>
-                      <span><strong>{template.name}</strong><small>{template.version}</small></span>
-                      {index === 0 ? <CheckCircle2 size={13} /> : null}
-                    </button>
-                  ))}
+                  {templates.slice(0, 3).map((template, index) => {
+                    const TemplateIcon = template.icon;
+                    return (
+                      <button className={index === 0 ? 'is-selected' : ''} type="button" onClick={() => setSelectedTemplate(template)} key={template.id}>
+                        <span className={`tm-template-icon is-small ${template.tone}`}><TemplateIcon size={14} /></span>
+                        <span><strong>{template.name}</strong><small>{template.version}</small></span>
+                        {index === 0 ? <CheckCircle2 size={13} /> : null}
+                      </button>
+                    );
+                  })}
                   <span className="tm-rail-count">+ 9 private templates</span>
                 </aside>
 
                 <div className="tm-template-spec">
                   <div className="tm-spec-head">
-                    <span className="tm-large-glyph blue">GO</span>
+                    <span className="tm-template-icon is-large blue"><Braces size={20} /></span>
                     <span><small>OFFICIAL TEMPLATE</small><strong>Go API Service</strong></span>
                     <span className="tm-verified"><ShieldCheck size={13} />Verified</span>
                   </div>
@@ -467,31 +457,28 @@ export default function TemplatesPage() {
 
           {filteredTemplates.length ? (
             <div className="tm-template-grid">
-              {filteredTemplates.map((template) => (
-                <article className={`tm-template-card${template.featured ? ' is-featured' : ''}`} style={{ '--template-accent': `var(--tm-${template.tone})` } as CSSProperties} key={template.id}>
-                  <div className="tm-card-topline"><span>{template.eyebrow}</span><span>{template.version}</span></div>
-                  <div className="tm-card-heading">
-                    <span className={`tm-large-glyph ${template.tone}`}>{template.glyph}</span>
-                    <span><small>{template.category}</small><h3>{template.name}</h3></span>
-                  </div>
-                  <p>{template.description}</p>
-                  <div className="tm-card-tags">{template.tags.slice(0, template.featured ? 3 : 2).map((tag) => <span key={tag}>{tag}</span>)}</div>
-                  <dl className="tm-card-specs">
-                    <div><dt>Runtime</dt><dd>{template.runtime}</dd></div>
-                    <div><dt>Defaults</dt><dd>{template.cpu} · {template.memory}</dd></div>
-                    <div><dt>Ready</dt><dd>{template.ready}</dd></div>
-                  </dl>
-                  <div className="tm-card-owner">
-                    <span className="tm-owner-avatar">{template.owner === 'Leader · 정현' ? 'LJ' : template.owner === 'astronaut' ? 'AS' : template.owner === 'Leader' ? 'LD' : 'FC'}</span>
-                    <span><small>Maintained by</small><strong>{template.owner}</strong></span>
-                    <span>{template.deployments}</span>
-                  </div>
-                  <div className="tm-card-actions">
-                    <button className="tm-card-primary" type="button" onClick={() => setSelectedTemplate(template)}>템플릿 보기 <ArrowRight size={14} /></button>
-                    <button className="tm-card-copy" type="button" aria-label={`Copy ${template.name} CLI command`} onClick={() => copyCommand(template)}><Copy size={14} /></button>
-                  </div>
-                </article>
-              ))}
+              {filteredTemplates.map((template) => {
+                const TemplateIcon = template.icon;
+                return (
+                  <article className={`tm-template-card${template.featured ? ' is-featured' : ''}`} style={{ '--template-accent': `var(--tm-${template.tone})` } as CSSProperties} key={template.id}>
+                    <div className="tm-card-topline"><span>{template.eyebrow}</span><span>{template.version}</span></div>
+                    <div className="tm-card-heading">
+                      <span className={`tm-template-icon is-large ${template.tone}`}><TemplateIcon size={20} /></span>
+                      <span><small>{template.category}</small><h3>{template.name}</h3></span>
+                    </div>
+                    <p>{template.description}</p>
+                    <div className="tm-card-facts">
+                      <span><Package size={14} /><small>Runtime</small><strong>{template.runtime}</strong></span>
+                      <span><Globe2 size={14} /><small>Architecture</small><strong>{template.architecture}</strong></span>
+                      <span><Timer size={14} /><small>Ready</small><strong>{template.ready}</strong></span>
+                    </div>
+                    <div className="tm-card-footer">
+                      <span><span className="tm-owner-avatar">{template.owner === 'Leader · 정현' ? 'LJ' : template.owner === 'astronaut' ? 'AS' : 'FC'}</span><small>Maintained by</small><strong>{template.owner}</strong></span>
+                      <button className="tm-card-primary" type="button" onClick={() => setSelectedTemplate(template)}>자세히 보기 <ArrowRight size={14} /></button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           ) : (
             <div className="tm-empty-state">
@@ -562,7 +549,7 @@ export default function TemplatesPage() {
           <span className="tm-final-kicker">FIRECRAB TEMPLATES</span>
           <h2 id="final-cta-title">매번 새로 만들지 말고,<br />좋은 시작점을 공유하세요.</h2>
           <p>검증된 템플릿에서 첫 MicroVM을 시작하고, 팀의 실행 방식을 하나의 버전으로 관리하세요.</p>
-          <div><a className="tm-final-primary" href="#catalog">템플릿 선택하기 <ArrowRight size={15} /></a><a className="tm-final-secondary" href="#architecture">아키텍처 보기</a></div>
+          <div><a className="tm-final-primary" href="#catalog">템플릿 선택하기 <ArrowRight size={15} /></a><a className="tm-final-secondary" href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={14} />GitHub에서 보기</a></div>
         </section>
       </main>
 
@@ -571,7 +558,7 @@ export default function TemplatesPage() {
           <a className="tm-brand" href="/templates"><span className="tm-brand-mark"><img src="/firecrab-icon.png" alt="" /></span><span><strong>Firecrab</strong><small>MicroVM Templates</small></span></a>
           <p>Firecracker 기반 MicroVM을 템플릿으로 정의하고, Go API와 Rust CLI로 실행합니다.</p>
         </div>
-        <nav aria-label="Footer navigation"><a href="#catalog">Templates</a><a href="#workflow">Workflow</a><a href="#architecture">Architecture</a><a href="#team">Team</a></nav>
+        <nav aria-label="Footer navigation"><a href="#catalog">Templates</a><a href="#workflow">Workflow</a><a href="#architecture">Architecture</a><a href="#team">Team</a><a href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={13} />GitHub</a></nav>
         <span>© 2026 Firecrab Core</span>
       </footer>
 
@@ -579,7 +566,7 @@ export default function TemplatesPage() {
         <div className="tm-modal-layer" role="presentation" onMouseDown={() => setSelectedTemplate(null)}>
           <section className="tm-template-modal" role="dialog" aria-modal="true" aria-labelledby="template-modal-title" onMouseDown={(event) => event.stopPropagation()}>
             <div className="tm-modal-head">
-              <span className={`tm-large-glyph ${selectedTemplate.tone}`}>{selectedTemplate.glyph}</span>
+              <span className={`tm-template-icon is-large ${selectedTemplate.tone}`}>{SelectedTemplateIcon ? <SelectedTemplateIcon size={20} /> : null}</span>
               <span><small>{selectedTemplate.eyebrow} · {selectedTemplate.version}</small><h2 id="template-modal-title">{selectedTemplate.name}</h2></span>
               <button type="button" aria-label="Close template details" onClick={() => setSelectedTemplate(null)}><X size={18} /></button>
             </div>
