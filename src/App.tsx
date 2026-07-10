@@ -31,6 +31,7 @@ import {
   siUbuntu,
   type SimpleIcon,
 } from 'simple-icons';
+import TemplatesPage from './templates/TemplatesPage';
 import './App.css';
 
 type IconComponent = typeof Flame;
@@ -404,9 +405,10 @@ const roadmap: Stage[] = [
 
 const stack = [
   ['Frontend', 'React, TypeScript'],
-  ['Backend', 'Rust, Axum, Tokio'],
+  ['Backend', 'Go'],
+  ['CLI', 'Rust'],
   ['Database', 'PostgreSQL'],
-  ['API Server', 'REST API, WebSocket'],
+  ['API Server', 'Go REST API, WebSocket'],
   ['MicroVM Engine', 'Firecracker'],
   ['Host OS', 'Ubuntu Server / Debian'],
   ['Console', 'Serial Console, Web SSH'],
@@ -532,8 +534,8 @@ function App() {
   useScrollReveal();
   const activeDeploymentStep = useCyclingIndex(deploymentSteps.length, 1700);
 
-  if (currentPath === '/dashboard') {
-    return <DashboardMockupPage />;
+  if (currentPath === '/templates') {
+    return <TemplatesPage />;
   }
 
   return (
@@ -546,9 +548,8 @@ function App() {
           <span>FireCrab</span>
         </a>
         <nav className="nav-links" aria-label="주요 섹션">
-          <a href="/dashboard">대시보드</a>
           <a href="#overview">개요</a>
-          <a href="#templates">템플릿</a>
+          <a href="/templates">Templates</a>
           <a href="#difference">차별점</a>
           <a href="#roadmap">MVP</a>
         </nav>
@@ -563,9 +564,9 @@ function App() {
             웹 대시보드에서 Firecracker MicroVM을 생성하고, 자원 설정·상태·콘솔·로그를 가볍게 관리합니다.
           </p>
           <div className="hero-actions" aria-label="핵심 흐름 바로가기">
-            <a className="primary-action" href="/dashboard">
-              <LayoutDashboard size={18} />
-              대시보드 보기
+            <a className="primary-action" href="/templates">
+              <Box size={18} />
+              템플릿 둘러보기
             </a>
             <a className="secondary-action" href="#deploy-flow">
               <PlayCircle size={18} />
