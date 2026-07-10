@@ -4,10 +4,8 @@ import {
   Box,
   Check,
   CheckCircle2,
-  ChevronRight,
   Copy,
   Cpu,
-  GitBranch,
   Github,
   Globe2,
   HardDrive,
@@ -20,14 +18,16 @@ import {
   Search,
   Server,
   ShieldCheck,
-  Timer,
   Workflow,
   X,
   Zap,
   type LucideIcon,
 } from 'lucide-react';
 import {
+  siFedora,
   siGo,
+  siMongodb,
+  siMysql,
   siNginx,
   siPostgresql,
   siPython,
@@ -121,6 +121,44 @@ const templates: Template[] = [
     tags: ['Persistent volume', 'Daily backup', 'Private only'],
   },
   {
+    id: 'mysql',
+    name: 'MySQL 8.4',
+    category: 'Data',
+    version: 'v1.0.0',
+    eyebrow: 'Verified image',
+    description: '영구 볼륨, 자동 백업, 내부 전용 접속 구성을 포함한 MySQL LTS 데이터베이스 템플릿입니다.',
+    brandIcon: siMysql,
+    tone: 'blue',
+    runtime: 'MySQL 8.4 LTS',
+    architecture: 'amd64 / arm64',
+    cpu: '2 vCPU',
+    memory: '4 GiB',
+    disk: '40 GiB',
+    network: 'data-net',
+    deployments: '37 launches',
+    updated: 'Updated 2 days ago',
+    tags: ['Persistent volume', 'Point-in-time backup', 'Private only'],
+  },
+  {
+    id: 'mongodb',
+    name: 'MongoDB 8.0',
+    category: 'Data',
+    version: 'v1.0.0',
+    eyebrow: 'Verified image',
+    description: '문서형 워크로드를 위한 영구 스토리지, 백업 정책, 내부 네트워크가 준비된 MongoDB 템플릿입니다.',
+    brandIcon: siMongodb,
+    tone: 'green',
+    runtime: 'MongoDB 8.0',
+    architecture: 'amd64 / arm64',
+    cpu: '2 vCPU',
+    memory: '4 GiB',
+    disk: '40 GiB',
+    network: 'data-net',
+    deployments: '29 launches',
+    updated: 'Updated yesterday',
+    tags: ['Persistent volume', 'Replica ready', 'Private only'],
+  },
+  {
     id: 'ubuntu-minimal',
     name: 'Ubuntu Minimal',
     category: 'Base',
@@ -138,6 +176,25 @@ const templates: Template[] = [
     deployments: '316 launches',
     updated: 'Updated 3 days ago',
     tags: ['cloud-init', 'Minimal RootFS', 'Signed'],
+  },
+  {
+    id: 'fedora-minimal',
+    name: 'Fedora Minimal',
+    category: 'Base',
+    version: 'v1.0.0',
+    eyebrow: 'Base image',
+    description: '작은 RootFS와 cloud-init 구성을 갖춘 범용 Fedora 기반 MicroVM 이미지입니다.',
+    brandIcon: siFedora,
+    tone: 'blue',
+    runtime: 'Fedora minimal',
+    architecture: 'amd64 / arm64',
+    cpu: '1 vCPU',
+    memory: '512 MiB',
+    disk: '4 GiB',
+    network: 'default-net',
+    deployments: '24 launches',
+    updated: 'Updated today',
+    tags: ['cloud-init', 'dnf', 'Minimal RootFS'],
   },
   {
     id: 'nginx-edge',
@@ -195,6 +252,42 @@ const templates: Template[] = [
     deployments: '89 launches',
     updated: 'Updated yesterday',
     tags: ['ASGI / WSGI', 'Batch ready', 'Health check'],
+  },
+];
+
+const computeTopology = [
+  {
+    name: 'compute-01',
+    status: 'Available',
+    load: '72%',
+    subnet: 'subnet-app',
+    cidr: '10.42.8.0/24',
+    workloads: [
+      { name: 'api-01', address: '10.42.8.14' },
+      { name: 'api-02', address: '10.42.8.18' },
+    ],
+  },
+  {
+    name: 'compute-02',
+    status: 'Available',
+    load: '54%',
+    subnet: 'subnet-worker',
+    cidr: '10.42.12.0/24',
+    workloads: [
+      { name: 'worker-01', address: '10.42.12.7' },
+      { name: 'worker-02', address: '10.42.12.11' },
+    ],
+  },
+  {
+    name: 'compute-03',
+    status: 'Scale ready',
+    load: '28%',
+    subnet: 'subnet-edge',
+    cidr: '10.42.16.0/24',
+    workloads: [
+      { name: 'edge-01', address: '10.42.16.5' },
+      { name: 'preview-01', address: '10.42.16.9' },
+    ],
   },
 ];
 
@@ -408,60 +501,28 @@ export default function TemplatesPage() {
             </div>
           </div>
 
-          <div className="tm-product-stage" aria-label="Firecrab template console preview">
-            <div className="tm-stage-glow" aria-hidden="true" />
-            <div className="tm-product-window">
-              <div className="tm-window-bar">
-                <span className="tm-window-title">
-                  <span className="tm-console-mark"><Box size={15} /></span>
-                  <span><strong>Firecrab Console</strong><small>Template Registry</small></span>
-                </span>
-                <span className="tm-window-project"><small>Project</small><strong>firecrab-production</strong></span>
-                <a className="tm-window-github" href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={14} />GitHub <ArrowRight size={12} /></a>
-              </div>
-              <div className="tm-window-body">
-                <aside className="tm-template-rail">
-                  <span className="tm-rail-label">Template library</span>
-                  {templates.slice(0, 3).map((template, index) => {
-                    return (
-                      <button className={index === 0 ? 'is-selected' : ''} type="button" onClick={() => setSelectedTemplate(template)} key={template.id}>
-                        <span className="tm-template-icon is-small" style={{ '--glyph-color': `#${template.brandIcon.hex}` } as CSSProperties}><BrandIcon icon={template.brandIcon} /></span>
-                        <span><strong>{template.name}</strong><small>{template.version}</small></span>
-                        {index === 0 ? <CheckCircle2 size={13} /> : null}
-                      </button>
-                    );
-                  })}
-                  <span className="tm-rail-count">+ 9 private templates</span>
-                </aside>
-
-                <div className="tm-template-spec">
-                  <div className="tm-spec-toolbar"><span>Templates <ChevronRight size={12} /> Go API Service</span><span className="tm-registry-state"><i />Registry synced</span></div>
-                  <div className="tm-spec-head">
-                    <span className="tm-template-icon is-large" style={{ '--glyph-color': `#${siGo.hex}` } as CSSProperties}><BrandIcon icon={siGo} /></span>
-                    <span><small>OFFICIAL TEMPLATE</small><strong>Go API Service</strong></span>
-                    <span className="tm-verified"><ShieldCheck size={13} />Verified</span>
-                  </div>
-                  <p>Production-ready Go service with health checks, private networking, and a minimal RootFS.</p>
-                  <div className="tm-spec-grid">
-                    <div><Cpu size={14} /><span><small>Compute</small><strong>1 vCPU</strong></span></div>
-                    <div><HardDrive size={14} /><span><small>Memory</small><strong>512 MiB</strong></span></div>
-                    <div><Network size={14} /><span><small>Network</small><strong>Private</strong></span></div>
-                    <div><Globe2 size={14} /><span><small>Arch</small><strong>Multi-arch</strong></span></div>
-                  </div>
-                  <div className="tm-launch-flow">
-                    <div className="is-done"><span><Check size={11} /></span><strong>Manifest</strong><small>Validated</small></div>
-                    <i />
-                    <div className="is-done"><span><Check size={11} /></span><strong>RootFS</strong><small>Mounted</small></div>
-                    <i />
-                    <div className="is-live"><span><Zap size={11} /></span><strong>MicroVM</strong><small>Ready</small></div>
-                  </div>
-                  <button className="tm-window-action" type="button" onClick={() => setSelectedTemplate(templates[0])}>Open template <ArrowRight size={14} /></button>
+          <div className="tm-ha-stage" aria-label="High availability compute and network architecture">
+            <div className="tm-ha-canvas">
+              <section className="tm-ha-tree" aria-label="Connected compute topology">
+                <div className="tm-ha-tree-root"><span><Network size={17} /></span><p><strong>Compute fabric</strong><small>3 connected nodes · subnet aware</small></p></div>
+                <span className="tm-ha-tree-trunk" aria-hidden="true"><i /></span>
+                <div className="tm-ha-tree-branches">
+                  {computeTopology.map((compute, index) => (
+                    <article className="tm-ha-tree-node" style={{ '--node-load': compute.load, '--packet-delay': `${index * 0.7}s` } as CSSProperties} key={compute.name}>
+                      <span className="tm-ha-tree-branch" aria-hidden="true"><i /></span>
+                      <header><span>{index === 2 ? <Zap size={15} /> : <Server size={15} />}</span><p><strong>{compute.name}</strong><small><i />{compute.status}</small></p></header>
+                      <i className="tm-ha-node-load" />
+                      <ul>
+                        <li className="is-subnet"><Network size={13} /><span><strong>{compute.subnet}</strong><small>{compute.cidr}</small></span></li>
+                        {compute.workloads.map((workload) => <li key={workload.name}><Box size={13} /><span><strong>{workload.name}</strong><small>Running · {workload.address}</small></span></li>)}
+                      </ul>
+                    </article>
+                  ))}
                 </div>
-              </div>
+              </section>
             </div>
-            <div className="tm-stage-note tm-stage-note-top"><Timer size={14} /><span><strong>186 ms</strong><small>MicroVM boot</small></span></div>
-            <div className="tm-stage-note tm-stage-note-bottom"><GitBranch size={14} /><span><strong>v2.4.0</strong><small>signed release</small></span></div>
           </div>
+
         </section>
 
         <section className="tm-technology-strip" aria-label="Firecrab technology overview">
@@ -585,15 +646,6 @@ export default function TemplatesPage() {
           <div><a className="tm-final-primary" href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={14} />기여하러 가기</a><a className="tm-final-secondary" href="/">메인 페이지 <ArrowRight size={15} /></a></div>
         </section>
       </main>
-
-      <footer className="tm-footer">
-        <div>
-          <a className="tm-brand" href="/template"><span className="tm-brand-mark"><img src="/firecrab-icon.png" alt="" /></span><span><strong>Firecrab</strong><small>MicroVM Templates</small></span></a>
-          <p>MicroVM 실행 환경을 템플릿으로 정의하고, 웹과 CLI에서 일관되게 배포합니다.</p>
-        </div>
-        <nav aria-label="Footer navigation"><a href="#catalog">Templates</a><a href="#workflow">Workflow</a><a href="#architecture">CLI</a><a href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={13} />GitHub</a></nav>
-        <span>© 2026 Firecrab Core</span>
-      </footer>
 
       {selectedTemplate ? (
         <div className="tm-modal-layer" role="presentation" onMouseDown={() => setSelectedTemplate(null)}>
