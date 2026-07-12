@@ -31,6 +31,7 @@ import {
   siUbuntu,
   type SimpleIcon,
 } from 'simple-icons';
+import LandingPage from './landing/LandingPage';
 import TemplatesPage from './templates/TemplatesPage';
 import './App.css';
 
@@ -531,10 +532,17 @@ const dashboardTemplates: DashboardTemplateOption[] = [
 
 function App() {
   const currentPath = useCurrentPath();
-  useScrollReveal();
-  const activeDeploymentStep = useCyclingIndex(deploymentSteps.length, 1700);
+  const isLandingRoute = currentPath === '/';
+  const isTemplateRoute = currentPath === '/template' || currentPath === '/templates';
+  const isLegacyRoute = !isLandingRoute && !isTemplateRoute;
+  useScrollReveal(isLegacyRoute);
+  const activeDeploymentStep = useCyclingIndex(isLegacyRoute ? deploymentSteps.length : 0, 1700);
 
-  if (currentPath === '/' || currentPath === '/template' || currentPath === '/templates') {
+  if (isLandingRoute) {
+    return <LandingPage />;
+  }
+
+  if (isTemplateRoute) {
     return <TemplatesPage />;
   }
 
@@ -1310,8 +1318,12 @@ function useCyclingIndex(length: number, intervalMs: number) {
   return index;
 }
 
-function useScrollReveal() {
+function useScrollReveal(enabled: boolean) {
   useEffect(() => {
+    if (!enabled) {
+      return undefined;
+    }
+
     const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
 
     if (!elements.length) {
@@ -1349,7 +1361,7 @@ function useScrollReveal() {
     elements.forEach((element) => observer.observe(element));
 
     return () => observer.disconnect();
-  }, []);
+  }, [enabled]);
 }
 
 function BrandIcon({ icon }: { icon: SimpleIcon }) {
