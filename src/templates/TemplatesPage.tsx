@@ -259,7 +259,6 @@ const computeTopology = [
   {
     name: 'compute-01',
     status: 'Available',
-    load: '72%',
     subnet: 'subnet-app',
     cidr: '10.42.8.0/24',
     workloads: [
@@ -270,7 +269,6 @@ const computeTopology = [
   {
     name: 'compute-02',
     status: 'Available',
-    load: '54%',
     subnet: 'subnet-worker',
     cidr: '10.42.12.0/24',
     workloads: [
@@ -281,7 +279,6 @@ const computeTopology = [
   {
     name: 'compute-03',
     status: 'Scale ready',
-    load: '28%',
     subnet: 'subnet-edge',
     cidr: '10.42.16.0/24',
     workloads: [
@@ -334,7 +331,8 @@ export default function TemplatesPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState('');
-  const [terminalStarted, setTerminalStarted] = useState(false);
+  const [terminalVisible, setTerminalVisible] = useState(false);
+  const [terminalResetting, setTerminalResetting] = useState(false);
   const [typedCommand, setTypedCommand] = useState('');
   const [terminalStage, setTerminalStage] = useState(0);
   const terminalRef = useRef<HTMLDivElement>(null);
@@ -375,11 +373,9 @@ export default function TemplatesPage() {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
-        setTerminalStarted(true);
-        observer.disconnect();
+        setTerminalVisible(entries.some((entry) => entry.isIntersecting));
       },
-      { threshold: 0.45 },
+      { threshold: 0.35 },
     );
 
     observer.observe(terminal);
@@ -387,37 +383,55 @@ export default function TemplatesPage() {
   }, []);
 
   useEffect(() => {
-    if (!terminalStarted) return undefined;
+    if (!terminalVisible) return undefined;
 
-    let index = 0;
-    let typingTimer = 0;
-    const revealTimers: number[] = [];
-    let cancelled = false;
+    const controller = new AbortController();
 
-    const typeNextCharacter = () => {
-      if (cancelled) return;
-      index += 1;
-      setTypedCommand(cliCommand.slice(0, index));
+    const wait = (duration: number) => new Promise<boolean>((resolve) => {
+      let timer = 0;
+      const onAbort = () => {
+        window.clearTimeout(timer);
+        resolve(false);
+      };
 
-      if (index < cliCommand.length) {
-        const currentCharacter = cliCommand[index - 1];
-        typingTimer = window.setTimeout(typeNextCharacter, currentCharacter === '\n' ? 150 : 28);
-        return;
+      timer = window.setTimeout(() => {
+        controller.signal.removeEventListener('abort', onAbort);
+        resolve(true);
+      }, duration);
+      controller.signal.addEventListener('abort', onAbort, { once: true });
+    });
+
+    const playTerminal = async () => {
+      while (!controller.signal.aborted) {
+        setTerminalResetting(false);
+        setTypedCommand('');
+        setTerminalStage(0);
+
+        if (!(await wait(420))) return;
+
+        for (let index = 1; index <= cliCommand.length; index += 1) {
+          setTypedCommand(cliCommand.slice(0, index));
+          const currentCharacter = cliCommand[index - 1];
+          if (!(await wait(currentCharacter === '\n' ? 130 : 28))) return;
+        }
+
+        for (let stage = 1; stage <= 5; stage += 1) {
+          if (!(await wait(320))) return;
+          setTerminalStage(stage);
+        }
+
+        if (!(await wait(1600))) return;
+        setTerminalResetting(true);
+        if (!(await wait(180))) return;
+        setTypedCommand('');
+        setTerminalStage(0);
+        setTerminalResetting(false);
       }
-
-      [1, 2, 3, 4, 5].forEach((stage, stageIndex) => {
-        revealTimers.push(window.setTimeout(() => setTerminalStage(stage), 420 + stageIndex * 420));
-      });
     };
 
-    typingTimer = window.setTimeout(typeNextCharacter, 360);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(typingTimer);
-      revealTimers.forEach((timer) => window.clearTimeout(timer));
-    };
-  }, [terminalStarted]);
+    void playTerminal();
+    return () => controller.abort();
+  }, [terminalVisible]);
 
   const filteredTemplates = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -496,7 +510,6 @@ export default function TemplatesPage() {
             </div>
             <div className="tm-hero-proof" aria-label="Firecrab template benefits">
               <span><Check size={13} />Versioned RootFS</span>
-              <span><Check size={13} />Signed manifests</span>
               <span><Check size={13} />Closed-network ready</span>
             </div>
           </div>
@@ -504,14 +517,13 @@ export default function TemplatesPage() {
           <div className="tm-ha-stage" aria-label="High availability compute and network architecture">
             <div className="tm-ha-canvas">
               <section className="tm-ha-tree" aria-label="Connected compute topology">
-                <div className="tm-ha-tree-root"><span><Network size={17} /></span><p><strong>Compute fabric</strong><small>3 connected nodes · subnet aware</small></p></div>
+                <div className="tm-ha-tree-root"><span><img src="/firecrab-icon.png" alt="" /></span><p><strong>Compute fabric</strong><small>3 connected nodes · subnet aware</small></p></div>
                 <span className="tm-ha-tree-trunk" aria-hidden="true"><i /></span>
                 <div className="tm-ha-tree-branches">
                   {computeTopology.map((compute, index) => (
-                    <article className="tm-ha-tree-node" style={{ '--node-load': compute.load, '--packet-delay': `${index * 0.7}s` } as CSSProperties} key={compute.name}>
+                    <article className="tm-ha-tree-node" style={{ '--packet-delay': `${index * 0.7}s` } as CSSProperties} key={compute.name}>
                       <span className="tm-ha-tree-branch" aria-hidden="true"><i /></span>
                       <header><span>{index === 2 ? <Zap size={15} /> : <Server size={15} />}</span><p><strong>{compute.name}</strong><small><i />{compute.status}</small></p></header>
-                      <i className="tm-ha-node-load" />
                       <ul>
                         <li className="is-subnet"><Network size={13} /><span><strong>{compute.subnet}</strong><small>{compute.cidr}</small></span></li>
                         {compute.workloads.map((workload) => <li key={workload.name}><Box size={13} /><span><strong>{workload.name}</strong><small>Running · {workload.address}</small></span></li>)}
@@ -523,14 +535,6 @@ export default function TemplatesPage() {
             </div>
           </div>
 
-        </section>
-
-        <section className="tm-technology-strip" aria-label="Firecrab technology overview">
-          <span>Built for reusable MicroVMs</span>
-          <div><strong>Versioned templates</strong><i /></div>
-          <div><strong>Signed manifests</strong><i /></div>
-          <div><strong>CLI deploy</strong><i /></div>
-          <div><strong>Private networking</strong></div>
         </section>
 
         <section className="tm-principles" id="workflow" aria-labelledby="principles-title">
@@ -627,7 +631,7 @@ export default function TemplatesPage() {
             </div>
           </div>
 
-          <div className="tm-terminal-card" ref={terminalRef} aria-label="Firecrab CLI deployment example">
+          <div className={`tm-terminal-card${terminalResetting ? ' is-resetting' : ''}`} ref={terminalRef} aria-label="Firecrab CLI deployment example">
             <div className="tm-terminal-head"><span><i /><i /><i /></span><strong>firecrab — deploy</strong><small>CLI</small></div>
             <pre aria-label={`${cliCommand}. Template resolves, manifest validates, root filesystem attaches, and the MicroVM becomes ready in 186 milliseconds.`}><code aria-hidden="true"><span className="tm-prompt">$</span>{' '}<span className="tm-typed-command">{typedCommand}</span><span className={`tm-terminal-cursor${terminalStage > 0 ? ' is-complete' : ''}`} />
 {terminalStage >= 1 ? <span className="tm-terminal-line"><span className="tm-muted">→</span> resolving template <span className="tm-cyan">go-api@v2.4.0</span></span> : null}

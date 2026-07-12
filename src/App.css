@@ -46,7 +46,6 @@
   height: 56px;
   aspect-ratio: 1 / 1;
   border-radius: 9px;
-  image-rendering: pixelated;
   object-fit: contain;
 }
 
@@ -154,7 +153,6 @@
   aspect-ratio: 1 / 1;
   flex: 0 0 30px;
   border-radius: 5px;
-  image-rendering: pixelated;
   object-fit: contain;
 }
 
@@ -3365,7 +3363,6 @@
 .dashboard-brand img {
   width: 42px;
   height: 42px;
-  image-rendering: pixelated;
   object-fit: contain;
 }
 
@@ -4345,7 +4342,6 @@ button.dashboard-instance-row:focus-visible,
 .dashboard-global-brand img {
   width: 30px;
   height: 30px;
-  image-rendering: pixelated;
   object-fit: contain;
 }
 
