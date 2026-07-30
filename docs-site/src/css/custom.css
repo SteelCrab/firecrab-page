@@ -106,10 +106,6 @@
   object-fit: contain;
 }
 
-.navbar__logo img {
-  border-radius: 6px;
-}
-
 .navbar__title {
   color: var(--fc-ink);
   font-family: var(--ifm-heading-font-family);
@@ -158,6 +154,78 @@
 .main-wrapper {
   width: var(--fc-shell);
   margin: 0 auto;
+}
+
+/* ── /blog 목록: 카드 그리드 (랜딩 .fc-stack-card 와 같은 카드 언어) ── */
+
+/* 목록 페이지의 사이드바는 카드가 곧 목록이라 중복이다. 폭을 카드에 준다. */
+.blog-list-page .row > aside {
+  display: none;
+}
+
+.blog-list-page main.col {
+  --ifm-col-width: 100%;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+/* 높이는 그리드 stretch 에 맡긴다. height:100% 를 주면 트랙이 콘텐츠보다 커져
+   footer 의 margin-top:auto 가 카드마다 빈 공간을 만든다. */
+.blog-list-page main > article {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+  padding: 24px;
+  border: 1px solid var(--fc-line);
+  border-radius: 16px;
+  background: var(--ifm-background-surface-color, #fff);
+  transition: border-color 170ms ease, box-shadow 170ms ease, transform 170ms ease;
+}
+
+.blog-list-page main > article:hover {
+  border-color: rgba(199, 71, 36, 0.7);
+  box-shadow: 0 16px 36px -22px rgba(28, 23, 18, 0.42);
+  transform: translateY(-3px);
+}
+
+/* 카드 안에서는 목록용 큰 제목이 과하다. */
+.blog-list-page main > article header h2 {
+  margin-bottom: 0;
+  font-size: 1.2rem;
+  line-height: 1.45;
+}
+
+/* 날짜 · 읽는 시간 */
+.blog-list-page main > article header time {
+  font-variant-numeric: tabular-nums;
+}
+
+.blog-list-page main > article header h2 + div {
+  margin: 6px 0 0;
+  color: var(--ifm-color-emphasis-600);
+  font-size: 0.85rem;
+}
+
+/* 작성자 블록은 카드마다 반복되면 시선을 뺏는다. 글 상세에는 그대로 남는다. */
+.blog-list-page main > article header .row {
+  display: none;
+}
+
+.blog-list-page main > article > div:not(:first-child) {
+  font-size: 0.92rem;
+}
+
+/* 태그 · 자세히 보기 줄은 카드 바닥에 붙인다. */
+.blog-list-page main > article footer {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+/* 페이지네이션은 그리드 한 줄 전체를 쓴다. */
+.blog-list-page main > nav {
+  grid-column: 1 / -1;
 }
 
 @media (max-width: 996px) {

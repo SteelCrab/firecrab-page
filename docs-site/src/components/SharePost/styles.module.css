@@ -1,0 +1,51 @@
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--fc-line);
+}
+
+.label {
+  margin-right: 4px;
+  color: var(--ifm-color-emphasis-600);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--fc-line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fc-ink);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+}
+
+.button:hover {
+  border-color: var(--fc-accent);
+  color: var(--fc-accent);
+  background: transparent;
+  text-decoration: none;
+}
+
+.copied {
+  border-color: var(--fc-accent);
+  color: var(--fc-accent);
+}
+
+.button svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}

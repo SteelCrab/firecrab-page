@@ -17,7 +17,8 @@ const editUrl = 'https://github.com/SteelCrab/firecrab-page/tree/main/docs-site/
 const config: Config = {
   title: 'FireCrab',
   tagline: 'Firecracker 기반 MicroVM 관리 플랫폼',
-  favicon: 'img/favicon.svg',
+  // 랜딩(index.html)의 <link rel="icon"> 과 같은 파일이어야 탭 아이콘이 통일된다.
+  favicon: 'img/firecrab-icon.png',
 
   future: {
     v4: true, // Improve compatibility with the upcoming Docusaurus v4
