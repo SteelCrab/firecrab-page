@@ -1,6 +1,6 @@
 ---
 slug: microstorage
-title: "MicroStorage: 물리적 디스크 고르게 쓰기"
+title: MicroStorage - 물리적 디스크 고르게 쓰기
 authors: [steelcrab]
 tags: [devlog, storage, guide, microstorage]
 ---
