@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Cloudflare Workers (Git 연결 빌드 → npm run build → npx wrangler deploy)
+  // 정적 사이트 only: Vite 랜딩 + Docusaurus docs/blog 를 dist/ 로 합친 뒤 에셋으로 서빙.
+  "name": "firecrab-page",
+  "compatibility_date": "2026-07-31",
+  "assets": {
+    // package.json build 가 만드는 최종 출력 (scripts/merge-docs-build.mjs 이후)
+    "directory": "./dist",
+    // Docusaurus 가 dist/404.html 을 둔다. SPA 모드(single-page-application)로 두면
+    // /docs·/blog 가 랜딩 index.html 로 삼켜지므로 반드시 404-page.
+    "not_found_handling": "404-page"
+  },
+  // public/_headers → dist/_headers (Vite 복사). Workers static assets 가 네이티브 지원.
+  "observability": {
+    "enabled": true
+  }
+}

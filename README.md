@@ -41,27 +41,32 @@ npm run build:docs # docs site only
 after `vite build` because Vite empties `dist/` first. The script refuses to run if the
 docs build produced an `index.html`, which would overwrite the landing page.
 
-## Deployment (Cloudflare Pages)
+## Deployment (Cloudflare Workers + static assets)
+
+Git-connected Workers Builds (dashboard) runs:
 
 | Setting | Value |
 | --- | --- |
 | Build command | `npm run build` |
-| Build output directory | `dist` |
+| Deploy command | `npx wrangler deploy` |
 | Root directory | repository root |
+| Production branch | `main` |
 | Node.js version | from `.node-version` (22) |
 
-No routing config file is needed, and adding one would break the site. Two Cloudflare
-Pages behaviours drive this:
+Repo config lives in `wrangler.jsonc`:
 
-- `_redirects` rules are applied **even when a matching static asset exists**, so a
-  catch-all SPA rewrite (`/* /index.html 200`) would swallow `/docs`, `/blog` and the
-  hashed asset directories.
-- Pages only switches into SPA mode when the output has no top-level `404.html`. Ours
-  has one (Docusaurus generates it), so unmatched paths render the Docusaurus 404 page
-  and every real file is served directly.
+| Field | Value | Why |
+| --- | --- | --- |
+| `assets.directory` | `./dist` | Final merge of Vite landing + Docusaurus |
+| `assets.not_found_handling` | `404-page` | Serve Docusaurus `404.html` for missing paths |
 
-`public/_headers` sets long-lived immutable caching for the two hashed asset
-directories; Vite copies it to the deployment root.
+Do **not** set `not_found_handling` to `single-page-application`. That rewrites every
+unknown path to the landing `index.html` and would hide `/docs` and `/blog` when a
+file is missing (and break real 404s). Workers also apply `dist/_headers` natively
+(same rules as Pages); Vite copies `public/_headers` into `dist/`.
+
+After the first successful deploy, attach the custom domain `firecrab.dev` to this
+Worker in the dashboard (or via routes) so production traffic hits the new deployment.
 
 ## Stack
 
