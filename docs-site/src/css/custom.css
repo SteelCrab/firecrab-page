@@ -1,0 +1,38 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* 랜딩(src/landing/LandingPage.css)의 --fc-accent: #c74724 를 기준으로 맞춘 팔레트 */
+:root {
+  --ifm-color-primary: #c74724;
+  --ifm-color-primary-dark: #b34020;
+  --ifm-color-primary-darker: #a93c1f;
+  --ifm-color-primary-darkest: #8b3219;
+  --ifm-color-primary-light: #d9502a;
+  --ifm-color-primary-lighter: #da5834;
+  --ifm-color-primary-lightest: #e07052;
+  --ifm-code-font-size: 95%;
+  --ifm-font-family-base: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ifm-heading-font-family: "Space Grotesk", "Pretendard Variable", Pretendard,
+    sans-serif;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #e2785a;
+  --ifm-color-primary-dark: #df6a4a;
+  --ifm-color-primary-darker: #de6442;
+  --ifm-color-primary-darkest: #db5732;
+  --ifm-color-primary-light: #e5856a;
+  --ifm-color-primary-lighter: #e68c72;
+  --ifm-color-primary-lightest: #e99983;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+.navbar__logo img {
+  border-radius: 6px;
+}

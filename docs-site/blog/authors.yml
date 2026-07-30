@@ -1,0 +1,8 @@
+steelcrab:
+  name: SteelCrab
+  title: FireCrab maintainer
+  url: https://github.com/SteelCrab
+  image_url: https://github.com/SteelCrab.png
+  page: true
+  socials:
+    github: SteelCrab

@@ -1,0 +1,14 @@
+release:
+  label: 릴리스
+  permalink: /release
+  description: FireCrab 릴리스 소식
+
+firecracker:
+  label: Firecracker
+  permalink: /firecracker
+  description: Firecracker와 MicroVM 관련 글
+
+devlog:
+  label: 개발 기록
+  permalink: /devlog
+  description: 구현 과정과 설계 결정 기록

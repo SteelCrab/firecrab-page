@@ -1,0 +1,38 @@
+{
+  "link.title.문서": {
+    "message": "Docs",
+    "description": "The title of the footer links column with title=문서 in the footer"
+  },
+  "link.title.제품": {
+    "message": "Product",
+    "description": "The title of the footer links column with title=제품 in the footer"
+  },
+  "link.title.커뮤니티": {
+    "message": "Community",
+    "description": "The title of the footer links column with title=커뮤니티 in the footer"
+  },
+  "link.item.label.소개": {
+    "message": "Introduction",
+    "description": "The label of footer link with label=소개 linking to /"
+  },
+  "link.item.label.블로그": {
+    "message": "Blog",
+    "description": "The label of footer link with label=블로그 linking to /blog"
+  },
+  "link.item.label.GitHub": {
+    "message": "GitHub",
+    "description": "The label of footer link with label=GitHub linking to https://github.com/SteelCrab/firecrab"
+  },
+  "link.item.label.Issues": {
+    "message": "Issues",
+    "description": "The label of footer link with label=Issues linking to https://github.com/SteelCrab/firecrab/issues"
+  },
+  "link.item.label.Discussions": {
+    "message": "Discussions",
+    "description": "The label of footer link with label=Discussions linking to https://github.com/SteelCrab/firecrab/discussions"
+  },
+  "copyright": {
+    "message": "© 2026 FireCrab.",
+    "description": "The footer copyright"
+  }
+}

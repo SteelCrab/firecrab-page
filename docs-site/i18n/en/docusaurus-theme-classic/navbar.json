@@ -1,0 +1,22 @@
+{
+  "title": {
+    "message": "FireCrab",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "FireCrab",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.문서": {
+    "message": "Docs",
+    "description": "Navbar item with label 문서"
+  },
+  "item.label.블로그": {
+    "message": "Blog",
+    "description": "Navbar item with label 블로그"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  }
+}

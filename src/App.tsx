@@ -32,7 +32,6 @@ import {
   type SimpleIcon,
 } from 'simple-icons';
 import LandingPage from './landing/LandingPage';
-import TemplatesPage from './templates/TemplatesPage';
 import './App.css';
 
 type IconComponent = typeof Flame;
@@ -533,17 +532,12 @@ const dashboardTemplates: DashboardTemplateOption[] = [
 function App() {
   const currentPath = useCurrentPath();
   const isLandingRoute = currentPath === '/';
-  const isTemplateRoute = currentPath === '/template' || currentPath === '/templates';
-  const isLegacyRoute = !isLandingRoute && !isTemplateRoute;
+  const isLegacyRoute = !isLandingRoute;
   useScrollReveal(isLegacyRoute);
   const activeDeploymentStep = useCyclingIndex(isLegacyRoute ? deploymentSteps.length : 0, 1700);
 
   if (isLandingRoute) {
     return <LandingPage />;
-  }
-
-  if (isTemplateRoute) {
-    return <TemplatesPage />;
   }
 
   return (
@@ -557,7 +551,7 @@ function App() {
         </a>
         <nav className="nav-links" aria-label="주요 섹션">
           <a href="#overview">개요</a>
-          <a href="/template">Templates</a>
+          <a href="#templates">Templates</a>
           <a href="#difference">차별점</a>
           <a href="#roadmap">MVP</a>
         </nav>
@@ -572,7 +566,7 @@ function App() {
             웹 대시보드에서 Firecracker MicroVM을 생성하고, 자원 설정·상태·콘솔·로그를 가볍게 관리합니다.
           </p>
           <div className="hero-actions" aria-label="핵심 흐름 바로가기">
-            <a className="primary-action" href="/template">
+            <a className="primary-action" href="#templates">
               <Box size={18} />
               템플릿 둘러보기
             </a>

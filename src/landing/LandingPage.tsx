@@ -587,7 +587,8 @@ export default function LandingPage() {
             <a href="#features">기능</a>
             <a href="#stack">호환성</a>
             <a href="#compare">비교</a>
-            <a href="/template">템플릿</a>
+            <a href="/docs">문서</a>
+            <a href="/blog">블로그</a>
           </nav>
           <div className="fc-nav-actions">
             <a className="fc-nav-github" href={repositoryUrl} target="_blank" rel="noreferrer">
@@ -617,7 +618,8 @@ export default function LandingPage() {
           <a href="#features" onClick={() => setMobileMenuOpen(false)}>기능</a>
           <a href="#stack" onClick={() => setMobileMenuOpen(false)}>호환성</a>
           <a href="#compare" onClick={() => setMobileMenuOpen(false)}>비교</a>
-          <a href="/template" onClick={() => setMobileMenuOpen(false)}>템플릿</a>
+          <a href="/docs" onClick={() => setMobileMenuOpen(false)}>문서</a>
+          <a href="/blog" onClick={() => setMobileMenuOpen(false)}>블로그</a>
           <a href={repositoryUrl} target="_blank" rel="noreferrer" onClick={() => setMobileMenuOpen(false)}>GitHub ↗</a>
         </nav>
       </header>
@@ -635,7 +637,7 @@ export default function LandingPage() {
               <a className="fc-primary-action" href={repositoryUrl} target="_blank" rel="noreferrer">
                 GitHub에서 코드 보기 <span aria-hidden="true">→</span>
               </a>
-              <a className="fc-secondary-action" href="/template">템플릿 살펴보기</a>
+              <a className="fc-secondary-action" href="#stack">구성 예시 살펴보기</a>
             </div>
             <dl className="fc-hero-stats" aria-label="FireCrab 주요 수치">
               <div><dt>&lt;125ms</dt><dd>Firecracker 공식 시작 지표</dd></div>
@@ -805,7 +807,7 @@ export default function LandingPage() {
             <div><img src="/firecrab-icon.png" alt="" aria-hidden="true" /><strong>FireCrab</strong></div>
             <p>Firecracker 운영 도구를 향해 확장 중인 오픈소스 프로젝트.</p>
           </div>
-          <nav aria-label="제품 링크"><strong>제품</strong><a href="#features">기능</a><a href="/template">템플릿</a><a href={repositoryUrl} target="_blank" rel="noreferrer">GitHub</a></nav>
+          <nav aria-label="제품 링크"><strong>제품</strong><a href="#features">기능</a><a href="#stack">호환성</a><a href="/docs">문서</a><a href="/blog">블로그</a><a href={repositoryUrl} target="_blank" rel="noreferrer">GitHub</a></nav>
           <nav aria-label="리소스 링크"><strong>리소스</strong><a href={`${repositoryUrl}/blob/main/docs/api.md`} target="_blank" rel="noreferrer">API 문서</a><a href={`${repositoryUrl}/issues`} target="_blank" rel="noreferrer">커뮤니티</a></nav>
         </div>
         <div className="fc-footer-bottom">© 2026 FireCrab.</div>
