@@ -82,9 +82,10 @@ const config: Config = {
   themeConfig: {
     image: 'img/og.png',
     colorMode: {
-      // 랜딩이 라이트 전용이라 기본값을 맞춘다. OS 설정을 따라가면 랜딩은 밝고 문서만
-      // 어두워져 헤더가 페이지마다 달라 보인다. 토글은 남겨 사용자가 고를 수 있게 둔다.
+      // 랜딩이 라이트 전용이라 다크 모드를 두지 않는다. 남겨두면 문서에만 토글이 생겨
+      // 상단 바 구성이 랜딩과 달라진다.
       defaultMode: 'light',
+      disableSwitch: true,
       respectPrefersColorScheme: false,
     },
     navbar: {
@@ -95,7 +96,24 @@ const config: Config = {
         // 기본값은 baseUrl(=/)인데 그건 랜딩이라 Docusaurus 라우트가 없다. 브랜드는 문서 홈으로.
         href: '/docs',
       },
+      // 랜딩 헤더(.fc-nav-links)와 같은 항목·순서를 유지한다. 랜딩 섹션 앵커는 baseUrl
+      // 밖이라 원시 HTML로 넣는다.
       items: [
+        {
+          type: 'html',
+          position: 'left',
+          value: `<a class="navbar__item navbar__link" href="/#features">${t('기능', 'Features')}</a>`,
+        },
+        {
+          type: 'html',
+          position: 'left',
+          value: `<a class="navbar__item navbar__link" href="/#stack">${t('호환성', 'Compatibility')}</a>`,
+        },
+        {
+          type: 'html',
+          position: 'left',
+          value: `<a class="navbar__item navbar__link" href="/#compare">${t('비교', 'Comparison')}</a>`,
+        },
         {
           type: 'docSidebar',
           sidebarId: 'docsSidebar',
@@ -104,17 +122,10 @@ const config: Config = {
         },
         {to: '/blog', label: '블로그', position: 'left'},
         {
-          type: 'html',
-          position: 'left',
-          value: `<a class="navbar__item navbar__link" href="${landingUrl}">${t('홈', 'Home')}</a>`,
-        },
-        {type: 'localeDropdown', position: 'right'},
-        {
           href: repositoryUrl,
           label: 'GitHub',
           position: 'right',
         },
-        // 랜딩 헤더의 액션 버튼과 같은 구성(GitHub 링크 + 강조 CTA)을 유지한다.
         {
           href: repositoryUrl,
           label: '현재 구현 보기',
@@ -150,6 +161,15 @@ const config: Config = {
           items: [
             {label: 'Issues', href: `${repositoryUrl}/issues`},
             {label: 'Discussions', href: `${repositoryUrl}/discussions`},
+          ],
+        },
+        // 상단 바를 랜딩과 같게 유지하려고 로케일 드롭다운을 뺐으므로 언어 전환은 여기에 둔다.
+        // 서로 다른 로케일 빌드의 경로라 Docusaurus 라우트가 아니고, 원시 HTML로 넣는다.
+        {
+          title: '언어',
+          items: [
+            {html: '<a class="footer__link-item" href="/docs">한국어</a>'},
+            {html: '<a class="footer__link-item" href="/en/docs">English</a>'},
           ],
         },
       ],

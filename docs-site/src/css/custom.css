@@ -35,6 +35,8 @@
   --ifm-navbar-shadow: none;
   --ifm-navbar-link-color: #4a4038;
   --ifm-navbar-link-hover-color: var(--fc-accent);
+  /* 랜딩은 링크 사이가 gap 30px 뿐이다. 항목 패딩이 남아 있으면 간격이 두 배가 된다. */
+  --ifm-navbar-item-padding-horizontal: 0;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -126,6 +128,11 @@
 /* ── 액션: 랜딩 .fc-nav-github / .fc-nav-cta ── */
 .navbar__items--right .navbar__link {
   padding: 9px 12px;
+}
+
+/* 랜딩 헤더에는 외부 링크 아이콘이 없다. */
+.navbar__link svg[class*='iconExternalLink'] {
+  display: none;
 }
 
 .navbar .navbar__link.fc-navbar-cta {

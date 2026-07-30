@@ -34,5 +34,9 @@
   "copyright": {
     "message": "© 2026 FireCrab.",
     "description": "The footer copyright"
+  },
+  "link.title.언어": {
+    "message": "Language",
+    "description": "The title of the footer links column with title=언어 in the footer"
   }
 }
