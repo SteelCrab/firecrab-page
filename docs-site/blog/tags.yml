@@ -12,3 +12,13 @@ devlog:
   label: 개발 기록
   permalink: /devlog
   description: 구현 과정과 설계 결정 기록
+
+storage:
+  label: 스토리지
+  permalink: /storage
+  description: MicroStorage와 디스크·풀 관련 글
+
+guide:
+  label: 가이드
+  permalink: /guide
+  description: 기능 사용법과 운영 가이드
