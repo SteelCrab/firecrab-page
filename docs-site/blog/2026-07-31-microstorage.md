@@ -25,10 +25,12 @@ AWS로 치면 EBS 풀/볼륨 위치에 가깝고, 파티션을 새로 쪼개 주
 - `w_await` 수백 ms
 - 대시보드 “디스크 준비”에 오래 멈춘 것처럼 보임
 
-:::important 2026-07-21 실측
-NVMe 하드웨어 문제는 아니었습니다. **한 큐에 I/O가 몰린 것**입니다.  
-소프트웨어 버그(템플릿 재해싱·타임아웃 orphan)도 겹쳤고, 그 수정은 별도 기록으로 남겼습니다.  
+:::important[2026-07-21 실측]
+
+NVMe 하드웨어 문제는 아니었습니다. **한 큐에 I/O가 몰린 것**입니다.
+소프트웨어 버그(템플릿 재해싱·타임아웃 orphan)도 겹쳤고, 그 수정은 별도 기록으로 남겼습니다.
 이 글의 주제는 **디스크 경로를 나누는 쪽**입니다.
+
 :::
 
 네트워크를 MicroNetwork로 나눈 것처럼, **디스크 경로도 나눌 수 있어야** 합니다.
@@ -102,8 +104,10 @@ POST /api/vms
 - 없는 id / 여유 공간 &lt; `diskGb` → **복사 전에** `400` (`storageRoot`)
 - 실제 파일 위치: `{root path}/vms/{vm-id}/…` (아래 generation 절)
 
-:::note 호환
+:::note[호환]
+
 풀을 안 쓰면 예전과 같이 `data/vms/{id}/`입니다. 기존 스크립트는 깨지지 않습니다.
+
 :::
 
 ## 2. MicroStorage 서비스
@@ -142,9 +146,11 @@ GET /api/storage/devices
 
 `/proc/mounts`(가능하면 `lsblk`)로 실디스크 마운트만 고릅니다. UI에서 행을 고르면 path가 채워집니다.
 
-:::important 신뢰 경계
-API는 보통 비특권입니다. 파티션 조작은 root·파괴적 작업입니다.  
+:::important[신뢰 경계]
+
+API는 보통 비특권입니다. 파티션 조작은 root·파괴적 작업입니다.
 클라이언트가 임의 path를 넘기면 host 전역 쓰기가 되므로 **등록된 id만** 받습니다.
+
 :::
 
 ### 실무 흐름
@@ -188,8 +194,10 @@ export FIRECRAB_STORAGE_ROOTS="local=data:fast=/mnt/disk2"
 - DB: `vms.disk_generation`, `vms.last_runtime_id` (UUID text)
 - 구현: `firecrab-api/src/artifacts.rs` — `VmArtifactPaths`
 
-:::note 이름
+:::note[이름]
+
 주차 메모의 `disks/{gen}.ext4`와 같은 뜻입니다. 실제 트리는 `d/{gen}.ext4` + `r/{runtime}/`입니다.
+
 :::
 
 ### 시점별 동작
