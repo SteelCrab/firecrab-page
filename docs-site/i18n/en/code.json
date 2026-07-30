@@ -326,19 +326,13 @@
     "message": "Tags",
     "description": "The title of the tag list page"
   },
-  "blog.share.label": {
-    "message": "Share"
-  },
   "blog.share.copied": {
     "message": "Copied"
   },
   "blog.share.copy": {
     "message": "Copy link"
   },
-  "blog.share.x": {
-    "message": "Share on X"
-  },
-  "blog.share.linkedin": {
-    "message": "Share on LinkedIn"
+  "blog.share.copyTitle": {
+    "message": "Copy link to this post"
   }
 }

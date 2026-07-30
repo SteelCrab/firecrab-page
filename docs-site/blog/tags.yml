@@ -22,3 +22,8 @@ guide:
   label: 가이드
   permalink: /guide
   description: 기능 사용법과 운영 가이드
+
+microstorage:
+  label: MicroStorage
+  permalink: /microstorage
+  description: MicroStorage 기능과 스토리지 풀 관련 글

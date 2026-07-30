@@ -158,16 +158,13 @@
 
 /* ── /blog 목록: 카드 그리드 (랜딩 .fc-stack-card 와 같은 카드 언어) ── */
 
-/* 목록 페이지의 사이드바는 카드가 곧 목록이라 중복이다. 폭을 카드에 준다. */
-.blog-list-page .row > aside {
-  display: none;
-}
-
+/* 사이드바(col--3)를 빼고 남는 폭을 전부 카드 그리드에 준다. 기본값 col--7 은
+   오른쪽 2칸이 비어 카드가 좁아진다. */
 .blog-list-page main.col {
-  --ifm-col-width: 100%;
-  max-width: 100%;
+  --ifm-col-width: 75%;
+  max-width: 75%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
 }
 
@@ -176,7 +173,7 @@
 .blog-list-page main > article {
   display: flex;
   flex-direction: column;
-  margin-bottom: 0;
+  /* 목록용 margin-bottom--xl 은 theme/BlogPostItem/Container 에서 걷어낸다. */
   padding: 24px;
   border: 1px solid var(--fc-line);
   border-radius: 16px;
@@ -208,8 +205,31 @@
   font-size: 0.85rem;
 }
 
-/* 작성자 블록은 카드마다 반복되면 시선을 뺏는다. 글 상세에는 그대로 남는다. */
+/* 작성자: 아이콘 · 닉네임 · 역할. 카드에 맞게 축소한다. */
 .blog-list-page main > article header .row {
+  margin-top: 14px;
+  margin-bottom: 0;
+}
+
+.blog-list-page main > article .avatar {
+  margin-bottom: 0;
+}
+
+.blog-list-page main > article .avatar__photo {
+  width: 34px;
+  height: 34px;
+}
+
+.blog-list-page main > article .avatar__name {
+  font-size: 0.85rem;
+}
+
+.blog-list-page main > article .avatar__intro small {
+  font-size: 0.76rem;
+}
+
+/* 소셜 링크까지 들어가면 카드가 번잡해진다. 글 상세에는 그대로 남는다. */
+.blog-list-page main > article [class*='authorSocials'] {
   display: none;
 }
 
@@ -217,10 +237,27 @@
   font-size: 0.92rem;
 }
 
-/* 태그 · 자세히 보기 줄은 카드 바닥에 붙인다. */
-.blog-list-page main > article footer {
-  margin-top: auto;
+/* 태그 · 자세히 보기 줄은 카드 바닥에 붙인다. 원본은 Infima 그리드(col--9 / col--3)라
+   카드 폭에서는 "자세히 보기"가 접힌다. 폭을 내용에 맞춘 flex 로 바꾼다. */
+.blog-list-page main > article footer.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: auto 0 0;
   padding-top: 16px;
+  gap: 12px;
+}
+
+.blog-list-page main > article footer.row > .col {
+  --ifm-col-width: auto;
+  max-width: none;
+  flex: 0 1 auto;
+  padding: 0;
+}
+
+.blog-list-page main > article footer.row > .col:last-child {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 /* 페이지네이션은 그리드 한 줄 전체를 쓴다. */
