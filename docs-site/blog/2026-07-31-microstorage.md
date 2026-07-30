@@ -43,6 +43,122 @@ NVMe 하드웨어 문제는 아니었습니다. **한 큐에 I/O가 몰린 것**
 | MicroStorage 서비스 | 풀 등록·수동 재할당·마운트 탐색 | 완료 |
 | disk generation / artifact | start마다 깨지지 않는 rootfs·runtime 레이아웃 | 완료 |
 
+## 아키텍처
+
+MicroStorage는 “파티션을 만드는 서비스”가 아니라, **이미 있는 마운트 위에 이름 붙인 풀을 두고**, 그 풀 안에서 VM 디스크 파일을 고르게 분산하는 층입니다.
+
+### 전체 구조
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  Dashboard / API 클라이언트                                   │
+│  · storageRoot 선택  · MicroStorage CRUD  · devices 탐색      │
+└────────────────────────────┬────────────────────────────────┘
+                             │ 등록된 id만 (path 직접 입력 없음)
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│  firecrab-api                                               │
+│  ┌──────────────┐  ┌────────────────┐  ┌─────────────────┐  │
+│  │ GET /storage │  │ micro-storages │  │ VM create/start │  │
+│  │ + /devices   │  │ CRUD           │  │ storageRoot     │  │
+│  └──────┬───────┘  └────────┬───────┘  └────────┬────────┘  │
+│         │                   │                   │           │
+│         └───────────────────┼───────────────────┘           │
+│                             ▼                               │
+│                   storage root resolver                     │
+│              (default · env · MicroStorage DB)              │
+│                             │                               │
+│                             ▼                               │
+│                   VmArtifactPaths                           │
+│              durable gen  /  ephemeral runtime              │
+└────────────────────────────┬────────────────────────────────┘
+                             │  파일 I/O 만 (mkfs/fdisk 없음)
+           ┌─────────────────┼─────────────────┐
+           ▼                 ▼                 ▼
+    ┌────────────┐    ┌────────────┐    ┌────────────┐
+    │ default    │    │ env root   │    │ Micro-     │
+    │ data/      │    │ /mnt/...   │    │ Storage    │
+    │ (cwd)      │    │            │    │ /mnt/disk2 │
+    └─────┬──────┘    └─────┬──────┘    └─────┬──────┘
+          │                 │                 │
+          └─────────────────┴─────────────────┘
+                            │
+              호스트 물리 디스크 (이미 마운트됨)
+              NVMe0 · NVMe1 · …
+```
+
+### 요청 흐름
+
+**1) 풀 등록 (운영자)**
+
+```text
+devices 목록 조회  →  path 선택  →  POST /micro-storages
+                                       (절대 path, id 발급)
+```
+
+**2) VM 생성**
+
+```text
+POST /vms { storageRoot }
+        │
+        ▼
+  root id resolve  →  statvfs(여유 공간)  →  부족하면 400
+        │                                    (복사 전 거부)
+        ▼
+  VM 레코드에 root 연결  (이 시점엔 rootfs 파일 없을 수 있음)
+```
+
+**3) 첫 start**
+
+```text
+generation UUID 발급
+        │
+        ▼
+  {root}/vms/{vm_id}/d/.{gen}.tmp  ← 템플릿 복사
+        │
+        ▼
+  rename → d/{gen}.ext4  (atomic publish)
+        │
+        ▼
+  grow · specialize
+        │
+        ▼
+  r/{runtime_id}/  ← fc.json · fc.sock · console.log
+```
+
+**4) stop → start**
+
+```text
+같은 d/{gen}.ext4  재사용   (내용·inode 유지)
+새   r/{runtime_id}/        (config·socket 만 교체)
+```
+
+### 디스크 위 레이아웃
+
+한 VM이 한 root에 앉은 뒤의 호스트 경로:
+
+```text
+{vms_root}/                          ← default | env | MicroStorage path
+  vms/
+    {vm_id}/
+      d/
+        {generation}.ext4            # 영구 rootfs
+        .{generation}.tmp            # 준비 중 임시 (실패 시 삭제)
+      r/
+        {runtime_id}/
+          fc.json
+          fc.sock
+          console.log
+```
+
+| 구분 | 경로 | 수명 |
+| --- | --- | --- |
+| durable | `d/{generation}.ext4` | stop/start 후에도 유지 |
+| ephemeral | `r/{runtime}/…` | start마다 새로 |
+| 신뢰 경계 | API에는 **root id**만 | 절대 path는 서버가 resolve |
+
+동시 start 때 I/O가 갈라지는 지점은 여기입니다. VM A는 `/mnt/disk2/vms/…`, VM B는 `data/vms/…`에 두면 **물리 장치 큐가 둘로 나뉩니다.**
+
 아래는 그 순서대로 무엇·왜·어떻게만 짚습니다.
 
 ## 1. VM 생성 시 물리 디스크 선택
