@@ -18,5 +18,9 @@
   "item.label.GitHub": {
     "message": "GitHub",
     "description": "Navbar item with label GitHub"
+  },
+  "item.label.현재 구현 보기": {
+    "message": "See the code",
+    "description": "Navbar item with label 현재 구현 보기"
   }
 }

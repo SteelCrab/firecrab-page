@@ -82,7 +82,10 @@ const config: Config = {
   themeConfig: {
     image: 'img/og.png',
     colorMode: {
-      respectPrefersColorScheme: true,
+      // 랜딩이 라이트 전용이라 기본값을 맞춘다. OS 설정을 따라가면 랜딩은 밝고 문서만
+      // 어두워져 헤더가 페이지마다 달라 보인다. 토글은 남겨 사용자가 고를 수 있게 둔다.
+      defaultMode: 'light',
+      respectPrefersColorScheme: false,
     },
     navbar: {
       title: 'FireCrab',
@@ -110,6 +113,13 @@ const config: Config = {
           href: repositoryUrl,
           label: 'GitHub',
           position: 'right',
+        },
+        // 랜딩 헤더의 액션 버튼과 같은 구성(GitHub 링크 + 강조 CTA)을 유지한다.
+        {
+          href: repositoryUrl,
+          label: '현재 구현 보기',
+          position: 'right',
+          className: 'fc-navbar-cta',
         },
       ],
     },

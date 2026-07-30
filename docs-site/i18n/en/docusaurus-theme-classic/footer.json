@@ -13,7 +13,7 @@
   },
   "link.item.label.소개": {
     "message": "Introduction",
-    "description": "The label of footer link with label=소개 linking to /"
+    "description": "The label of footer link with label=소개 linking to /docs"
   },
   "link.item.label.블로그": {
     "message": "Blog",
