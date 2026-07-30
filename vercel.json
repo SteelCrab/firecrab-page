@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "source": "/((?!docs($|/)|blog($|/)|en($|/)).*)",
+      "source": "/((?!docs/|docs$|blog/|blog$|en/|en$).*)",
       "destination": "/index.html"
     }
   ]
