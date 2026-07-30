@@ -19,7 +19,7 @@ npm run serve
 ```
 
 `npm run deploy` (GitHub Pages) is unused here — the root build merges `build/` into the
-landing page's `dist/` and Vercel serves both from one domain.
+landing page's `dist/` and Cloudflare Pages serves both from one domain.
 
 ## Notes
 

@@ -1,0 +1,10 @@
+# Cloudflare Pages 헤더 규칙. Vite가 public/ 을 dist/ 로 복사해 배포 루트에 놓는다.
+# 두 빌드 모두 파일명에 해시가 박히므로 장기 캐시가 안전하다.
+#   /app-assets/*  Vite (랜딩)  — vite.config.ts 의 build.assetsDir
+#   /assets/*      Docusaurus (문서·블로그)
+
+/app-assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
