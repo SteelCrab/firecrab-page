@@ -35,6 +35,12 @@ const config: Config = {
 
   onBrokenLinks: 'throw',
 
+  // 블로그·문서 아키텍처 다이어그램용. ```mermaid 코드 블록을 렌더한다.
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
+
   i18n: {
     defaultLocale: 'ko',
     locales: ['ko', 'en'],

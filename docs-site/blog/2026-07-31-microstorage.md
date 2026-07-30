@@ -27,9 +27,7 @@ AWS로 치면 EBS 풀/볼륨 위치에 가깝고, 파티션을 새로 쪼개 주
 
 :::important[2026-07-21 실측]
 
-NVMe 하드웨어 문제는 아니었습니다. **한 큐에 I/O가 몰린 것**입니다.
-소프트웨어 버그(템플릿 재해싱·타임아웃 orphan)도 겹쳤고, 그 수정은 별도 기록으로 남겼습니다.
-이 글의 주제는 **디스크 경로를 나누는 쪽**입니다.
+NVMe 하드웨어 문제가 아니라, **한 큐에 I/O가 몰린 것**이었습니다.
 
 :::
 
@@ -49,106 +47,96 @@ MicroStorage는 “파티션을 만드는 서비스”가 아니라, **이미 �
 
 ### 전체 구조
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  Dashboard / API 클라이언트                                   │
-│  · storageRoot 선택  · MicroStorage CRUD  · devices 탐색      │
-└────────────────────────────┬────────────────────────────────┘
-                             │ 등록된 id만 (path 직접 입력 없음)
-                             ▼
-┌─────────────────────────────────────────────────────────────┐
-│  firecrab-api                                               │
-│  ┌──────────────┐  ┌────────────────┐  ┌─────────────────┐  │
-│  │ GET /storage │  │ micro-storages │  │ VM create/start │  │
-│  │ + /devices   │  │ CRUD           │  │ storageRoot     │  │
-│  └──────┬───────┘  └────────┬───────┘  └────────┬────────┘  │
-│         │                   │                   │           │
-│         └───────────────────┼───────────────────┘           │
-│                             ▼                               │
-│                   storage root resolver                     │
-│              (default · env · MicroStorage DB)              │
-│                             │                               │
-│                             ▼                               │
-│                   VmArtifactPaths                           │
-│              durable gen  /  ephemeral runtime              │
-└────────────────────────────┬────────────────────────────────┘
-                             │  파일 I/O 만 (mkfs/fdisk 없음)
-           ┌─────────────────┼─────────────────┐
-           ▼                 ▼                 ▼
-    ┌────────────┐    ┌────────────┐    ┌────────────┐
-    │ default    │    │ env root   │    │ Micro-     │
-    │ data/      │    │ /mnt/...   │    │ Storage    │
-    │ (cwd)      │    │            │    │ /mnt/disk2 │
-    └─────┬──────┘    └─────┬──────┘    └─────┬──────┘
-          │                 │                 │
-          └─────────────────┴─────────────────┘
-                            │
-              호스트 물리 디스크 (이미 마운트됨)
-              NVMe0 · NVMe1 · …
+```mermaid
+flowchart TB
+  client["Dashboard / API 클라이언트<br/>storageRoot 선택 · MicroStorage CRUD · devices 탐색"]
+
+  subgraph api["firecrab-api"]
+    storageApi["GET /storage<br/>+ /devices"]
+    microApi["micro-storages<br/>CRUD"]
+    vmApi["VM create / start<br/>storageRoot"]
+    resolver["storage root resolver<br/>default · env · MicroStorage DB"]
+    artifacts["VmArtifactPaths<br/>durable gen / ephemeral runtime"]
+    storageApi --> resolver
+    microApi --> resolver
+    vmApi --> resolver
+    resolver --> artifacts
+  end
+
+  defaultRoot["default<br/>data/ cwd"]
+  envRoot["env root<br/>/mnt/..."]
+  microRoot["MicroStorage<br/>/mnt/disk2"]
+  disks["호스트 물리 디스크<br/>이미 마운트됨 · NVMe0 · NVMe1 · …"]
+
+  client -->|"등록된 id만 · path 직접 입력 없음"| api
+  artifacts -->|"파일 I/O 만 · mkfs/fdisk 없음"| defaultRoot
+  artifacts --> envRoot
+  artifacts --> microRoot
+  defaultRoot --> disks
+  envRoot --> disks
+  microRoot --> disks
 ```
 
 ### 요청 흐름
 
-**1) 풀 등록 (운영자)**
-
-```text
-devices 목록 조회  →  path 선택  →  POST /micro-storages
-                                       (절대 path, id 발급)
+```mermaid
+flowchart LR
+  subgraph reg["1. 풀 등록 운영자"]
+    d1["devices 목록"] --> d2["path 선택"] --> d3["POST /micro-storages<br/>절대 path · id 발급"]
+  end
 ```
 
-**2) VM 생성**
-
-```text
-POST /vms { storageRoot }
-        │
-        ▼
-  root id resolve  →  statvfs(여유 공간)  →  부족하면 400
-        │                                    (복사 전 거부)
-        ▼
-  VM 레코드에 root 연결  (이 시점엔 rootfs 파일 없을 수 있음)
+```mermaid
+flowchart TD
+  subgraph create["2. VM 생성"]
+    c1["POST /vms · storageRoot"] --> c2["root id resolve"]
+    c2 --> c3{"statvfs<br/>여유 ≥ diskGb?"}
+    c3 -->|부족| c4["400 · 복사 전 거부"]
+    c3 -->|충분| c5["VM 레코드에 root 연결"]
+  end
 ```
 
-**3) 첫 start**
-
-```text
-generation UUID 발급
-        │
-        ▼
-  {root}/vms/{vm_id}/d/.{gen}.tmp  ← 템플릿 복사
-        │
-        ▼
-  rename → d/{gen}.ext4  (atomic publish)
-        │
-        ▼
-  grow · specialize
-        │
-        ▼
-  r/{runtime_id}/  ← fc.json · fc.sock · console.log
+```mermaid
+flowchart TD
+  subgraph first["3. 첫 start"]
+    s1["generation UUID 발급"] --> s2["d/.gen.tmp 템플릿 복사"]
+    s2 --> s3["rename → d/gen.ext4<br/>atomic publish"]
+    s3 --> s4["grow · specialize"]
+    s4 --> s5["r/runtime_id/<br/>fc.json · fc.sock · console.log"]
+  end
 ```
 
-**4) stop → start**
-
-```text
-같은 d/{gen}.ext4  재사용   (내용·inode 유지)
-새   r/{runtime_id}/        (config·socket 만 교체)
+```mermaid
+flowchart LR
+  subgraph restart["4. stop → start"]
+    r1["같은 d/gen.ext4 재사용<br/>내용 · inode 유지"]
+    r2["새 r/runtime_id/<br/>config · socket 만 교체"]
+  end
+  r1 --- r2
 ```
 
 ### 디스크 위 레이아웃
 
 한 VM이 한 root에 앉은 뒤의 호스트 경로:
 
-```text
-{vms_root}/                          ← default | env | MicroStorage path
-  vms/
-    {vm_id}/
-      d/
-        {generation}.ext4            # 영구 rootfs
-        .{generation}.tmp            # 준비 중 임시 (실패 시 삭제)
-      r/
-        {runtime_id}/
-          fc.json
-          fc.sock
-          console.log
+```mermaid
+flowchart TB
+  root["vms_root<br/>default | env | MicroStorage path"]
+  vms["vms/"]
+  vmid["vm_id/"]
+  d["d/"]
+  r["r/"]
+  gen["generation.ext4<br/>영구 rootfs"]
+  tmp[".generation.tmp<br/>준비 중 임시"]
+  rt["runtime_id/"]
+  fc["fc.json · fc.sock · console.log"]
+
+  root --> vms --> vmid
+  vmid --> d
+  vmid --> r
+  d --> gen
+  d --> tmp
+  r --> rt --> fc
 ```
 
 | 구분 | 경로 | 수명 |
