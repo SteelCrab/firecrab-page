@@ -24,23 +24,23 @@ VM을 띄울 때 “어느 네트워크에 넣을지”를 고르면, 그 VM은 
 
 ## 그림으로 보면
 
-![MicroNetwork 토폴로지: 호스트 한 대의 NAT 뒤에 여러 MicroNetwork](/img/micronetwork-topology.jpg)
+![MicroNetwork 아키텍처: CODE → HOST, INTERNET ↔ NAT, 여러 MicroNetwork](/img/micronetworks-architecture.png)
 
 한 호스트 위에서의 계층은 대략 이렇게 읽으면 된다.
 
 ```text
-INTERNET
-   │
-  NAT (공유 masquerade, 호스트 1개)
-   │
-   ├── MicroNetwork A  (internet on)  ← 왼쪽 subnet
-   │      └── VM(들)
-   │
-   └── MicroNetwork B  (internet on)  ← 오른쪽 subnet
-          └── VM(들)
+CODE → HOST
+         │
+INTERNET ↔ NAT (공유 masquerade, 호스트 1개)
+              │
+   ┌──────────┴──────────┐
+   │                     │
+MicroNetwork A      MicroNetwork B
+ (internet on)       (internet on)
+   └── VM(들)           └── VM(들)
 ```
 
-왼쪽의 HOST·INTERNET은 물리 호스트와 uplink다.  
+왼쪽의 CODE·HOST·INTERNET은 컨트롤 플레인과 물리 호스트, uplink다.  
 그 안쪽 MicroInfra 박스 전체가 firecrab이 관리하는 영역이고,  
 가운데 보라색 NAT는 **호스트 하나에 공유되는 masquerade**다.  
 네트워크마다 NAT 장비를 두는 게 아니다.
