@@ -3,6 +3,8 @@ slug: microstorage
 title: MicroStorage - 물리적 디스크 고르게 쓰기
 authors: [steelcrab]
 tags: [devlog, storage, guide, microstorage]
+# 링크 공유(OG/Twitter) 포스터 = 글 메인 이미지
+image: /img/microstorage-og.png
 ---
 
 ![MicroStorage](/img/microstorage-icon.png)
