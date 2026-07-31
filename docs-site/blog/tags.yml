@@ -27,3 +27,13 @@ microstorage:
   label: MicroStorage
   permalink: /microstorage
   description: MicroStorage 기능과 스토리지 풀 관련 글
+
+network:
+  label: 네트워크
+  permalink: /network
+  description: MicroNetwork와 가상 네트워크 관련 글
+
+micronetwork:
+  label: MicroNetwork
+  permalink: /micronetwork
+  description: MicroNetwork 기능과 VPC 스타일 격리 관련 글
