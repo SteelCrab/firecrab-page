@@ -22,6 +22,34 @@ AWS로 치면 **VPC + Subnet**을 합쳐 놓은 것에 가깝다.
 VM을 띄울 때 “어느 네트워크에 넣을지”를 고르면, 그 VM은 그 네트워크의 IP를 받고,  
 다른 MicroNetwork의 VM과는 기본적으로 통신하지 못한다.
 
+## 그림으로 보면
+
+![MicroNetwork 토폴로지: 호스트 한 대의 NAT 뒤에 여러 MicroNetwork](/img/micronetwork-topology.jpg)
+
+한 호스트 위에서의 계층은 대략 이렇게 읽으면 된다.
+
+```text
+INTERNET
+   │
+  NAT (공유 masquerade, 호스트 1개)
+   │
+   ├── MicroNetwork A  (internet on)  ← 왼쪽 subnet
+   │      └── VM(들)
+   │
+   └── MicroNetwork B  (internet on)  ← 오른쪽 subnet
+          └── VM(들)
+```
+
+왼쪽의 HOST·INTERNET은 물리 호스트와 uplink다.  
+그 안쪽 MicroInfra 박스 전체가 firecrab이 관리하는 영역이고,  
+가운데 보라색 NAT는 **호스트 하나에 공유되는 masquerade**다.  
+네트워크마다 NAT 장비를 두는 게 아니다.
+
+다이어그램의 각 “subnet” 박스가 MicroNetwork 하나다.  
+둘 다 `internet on`이면 둘 다 그 공유 NAT를 타고 밖으로 나간다.  
+다만 서로 다른 bridge·CIDR에 묶여 있으므로, 같은 호스트 안에서도 east-west는 기본적으로 막혀 있다.  
+(internet off인 MicroNetwork는 이 그림에서 NAT 가지가 빠진 상태라고 보면 된다.)
+
 ## 원래는 네트워크가 하나뿐이었다
 
 초기 firecrab 네트워크는 단순했다.
