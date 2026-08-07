@@ -21,10 +21,16 @@ Korean is the default locale; untranslated pages fall back to the Korean source.
 
 ```bash
 npm install
-npm run dev        # landing page
+npm run dev        # landing + prebuilt Korean/English docs/blog on port 5173
 
-npm run dev:docs   # docs site (installs docs-site deps on first run)
+npm run dev:landing # landing only; expects an existing docs-site/build for docs routes
+npm run dev:docs    # live Docusaurus editing for the default Korean locale
 ```
+
+The unified `npm run dev` builds both Docusaurus locales once, then serves `/`, `/docs`,
+`/blog`, `/en/docs`, and `/en/blog` from the Vite origin. Restart it after editing docs or
+blog content. Use `npm run dev:docs` when live-reloading documentation is more important
+than testing the unified origin.
 
 `docs-site/` has its own `package.json` so the landing page (React 18) and Docusaurus
 (React 19) do not share a dependency tree.

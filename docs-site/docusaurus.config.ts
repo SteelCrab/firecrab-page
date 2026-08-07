@@ -11,6 +11,8 @@ const currentLocale = process.env.DOCUSAURUS_CURRENT_LOCALE ?? 'ko';
 const t = <T,>(ko: T, en: T): T => (currentLocale === 'en' ? en : ko);
 
 const landingUrl = '/';
+const docsUrl = currentLocale === 'en' ? '/en/docs' : '/docs';
+const blogUrl = currentLocale === 'en' ? '/en/blog' : '/blog';
 const repositoryUrl = 'https://github.com/SteelCrab/firecrab';
 const editUrl = 'https://github.com/SteelCrab/firecrab-page/tree/main/docs-site/';
 
@@ -101,7 +103,7 @@ const config: Config = {
         alt: 'FireCrab',
         src: 'img/firecrab-icon.png',
         // 기본값은 baseUrl(=/)인데 그건 랜딩이라 Docusaurus 라우트가 없다. 브랜드는 문서 홈으로.
-        href: '/docs',
+        href: docsUrl,
       },
       // 랜딩 헤더(.fc-nav-links)와 같은 항목·순서를 유지한다. 랜딩 섹션 앵커는 baseUrl
       // 밖이라 원시 HTML로 넣는다.
@@ -109,25 +111,29 @@ const config: Config = {
         {
           type: 'html',
           position: 'left',
-          value: `<a class="navbar__item navbar__link" href="/#features">${t('기능', 'Features')}</a>`,
+          value: `<a class="navbar__item navbar__link" href="/#product">${t('제품', 'Product')}</a>`,
         },
         {
           type: 'html',
           position: 'left',
-          value: `<a class="navbar__item navbar__link" href="/#stack">${t('호환성', 'Compatibility')}</a>`,
+          value: `<a class="navbar__item navbar__link" href="/#workflow">${t('사용 흐름', 'Workflow')}</a>`,
         },
         {
           type: 'html',
           position: 'left',
-          value: `<a class="navbar__item navbar__link" href="/#compare">${t('비교', 'Comparison')}</a>`,
+          value: `<a class="navbar__item navbar__link" href="/#install">${t('설치', 'Install')}</a>`,
         },
         {
           type: 'docSidebar',
           sidebarId: 'docsSidebar',
           position: 'left',
-          label: '문서',
+          label: t('문서', 'Docs'),
         },
-        {to: '/blog', label: '블로그', position: 'left'},
+        {
+          type: 'html',
+          position: 'left',
+          value: `<a class="navbar__item navbar__link" href="${blogUrl}">${t('블로그', 'Blog')}</a>`,
+        },
         {
           href: repositoryUrl,
           label: 'GitHub',
@@ -135,7 +141,7 @@ const config: Config = {
         },
         {
           href: repositoryUrl,
-          label: '현재 구현 보기',
+          label: t('현재 구현 보기', 'View source'),
           position: 'right',
           className: 'fc-navbar-cta',
         },
@@ -145,14 +151,14 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: '문서',
+          title: t('문서', 'Docs'),
           items: [
-            {label: '소개', to: '/docs'},
-            {label: '블로그', to: '/blog'},
+            {label: t('소개', 'Introduction'), href: docsUrl},
+            {label: t('블로그', 'Blog'), href: blogUrl},
           ],
         },
         {
-          title: '제품',
+          title: t('제품', 'Product'),
           items: [
             {
               html: `<a class="footer__link-item" href="${landingUrl}">${t(
@@ -164,7 +170,7 @@ const config: Config = {
           ],
         },
         {
-          title: '커뮤니티',
+          title: t('커뮤니티', 'Community'),
           items: [
             {label: 'Issues', href: `${repositoryUrl}/issues`},
             {label: 'Discussions', href: `${repositoryUrl}/discussions`},
@@ -173,7 +179,7 @@ const config: Config = {
         // 상단 바를 랜딩과 같게 유지하려고 로케일 드롭다운을 뺐으므로 언어 전환은 여기에 둔다.
         // 서로 다른 로케일 빌드의 경로라 Docusaurus 라우트가 아니고, 원시 HTML로 넣는다.
         {
-          title: '언어',
+          title: t('언어', 'Language'),
           items: [
             {html: '<a class="footer__link-item" href="/docs">한국어</a>'},
             {html: '<a class="footer__link-item" href="/en/docs">English</a>'},

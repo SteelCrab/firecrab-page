@@ -1,854 +1,392 @@
-import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Blocks,
+  ArrowRight,
   Check,
-  Copy,
+  CheckCircle2,
+  Clipboard,
+  Github,
+  Languages,
   Menu,
-  Settings,
-  ShieldCheck,
-  TerminalSquare,
   X,
-  Zap,
 } from 'lucide-react';
-import {
-  siDebian,
-  siGithub,
-  siGitlab,
-  siMysql,
-  siNginx,
-  siNodedotjs,
-  siPostgresql,
-  siPython,
-  siRedis,
-  siSpringboot,
-  siUbuntu,
-  type SimpleIcon,
-} from 'simple-icons';
 import './LandingPage.css';
 
-type VmSpec = {
-  label: string;
-  vcpu: number;
-  memory: string;
-};
-
-type StackItem = {
-  slug: string;
-  name: string;
-  category: 'Base' | 'API' | 'Web' | 'Data';
-  categoryColor: string;
-  iconBackground: string;
-  brandColor: string;
-  icon: SimpleIcon;
-  description: string;
-  features: string[];
-  versions: string[];
-  specs: VmSpec[];
-};
-
-type RepositoryCard = {
-  name: string;
-  host: string;
-  branch: string;
-  icon: SimpleIcon;
-  color: string;
-};
-
 const repositoryUrl = 'https://github.com/SteelCrab/firecrab';
-const firecrackerMetricsUrl = 'https://github.com/firecracker-microvm/firecracker/blob/main/FAQ.md';
-const accent = '#c74724';
+const installCommand = 'git clone https://github.com/SteelCrab/firecrab.git\ncd firecrab\n./install.sh';
+type Language = 'ko' | 'en';
 
-const osSpecs: VmSpec[] = [
-  { label: 'Small', vcpu: 1, memory: '512MB' },
-  { label: 'Medium', vcpu: 2, memory: '1024MB' },
-  { label: 'Large', vcpu: 4, memory: '2048MB' },
-];
-
-const runtimeSpecs: VmSpec[] = [
-  { label: 'Small', vcpu: 1, memory: '1024MB' },
-  { label: 'Medium', vcpu: 2, memory: '2048MB' },
-  { label: 'Large', vcpu: 4, memory: '4096MB' },
-];
-
-const stackItems: StackItem[] = [
+const productViews = [
   {
-    slug: 'ubuntu',
-    name: 'Ubuntu',
-    category: 'Base',
-    categoryColor: '#c2410c',
-    iconBackground: '#fff0e6',
-    brandColor: '#e95420',
-    icon: siUbuntu,
-    description: 'cloud-init이 검증된 범용 최소 이미지.',
-    features: ['cloud-init 기본 지원', '자동 보안 업데이트', 'systemd 기반 부팅'],
-    versions: ['24.04', '22.04', '20.04'],
-    specs: osSpecs,
+    id: 'm2',
+    label: 'M2',
+    title: { ko: '내 서버에 만드는 전용 M2', en: 'Your own M2, on your server' },
+    description: {
+      ko: 'M2는 FireCrab의 실행 단위인 MicroMachine입니다. M2Image, CPU, 메모리, 디스크, MicroNetwork와 저장 위치를 조합해 독립된 Firecracker microVM을 만듭니다.',
+      en: 'M2 is FireCrab’s MicroMachine runtime unit. Combine an M2Image, CPU, memory, disk, MicroNetwork, and storage location into an isolated Firecracker microVM.',
+    },
+    image: '/dashboard-microvm.png',
+    alt: { ko: 'FireCrab M2 생성 폼과 실행 중인 M2 목록', en: 'FireCrab M2 creation form and running M2 list' },
+    icon: '/m2-icon.png',
+    details: { ko: ['생성·시작·중지·삭제', 'M2별 시작 과정과 상태', '브라우저 시리얼 콘솔'], en: ['Create, start, stop, and delete', 'Startup progress and state per M2', 'Browser serial console'] },
+    secondary: {
+      label: 'TERMINAL',
+      title: { ko: '실행 중인 M2에 바로 연결', en: 'Connect directly to a running M2' },
+      description: {
+        ko: '브라우저 시리얼 콘솔에서 부팅 로그와 로그인 프롬프트를 실시간으로 확인하고 명령을 입력합니다. 콘솔 로그 복사·저장과 M2의 사양, 네트워크, 스토리지 정보도 한 화면에서 볼 수 있습니다.',
+        en: 'Use the browser serial console to watch boot logs and the login prompt in real time, then enter commands. Copy or save console logs and inspect the M2’s specs, network, and storage on the same screen.',
+      },
+      image: '/dashboard-terminal.png',
+      alt: { ko: '실행 중인 M2의 브라우저 시리얼 Terminal', en: 'Browser serial Terminal connected to a running M2' },
+      icon: '/m2-icon.png',
+      imagePosition: 'center 34%',
+    },
   },
   {
-    slug: 'debian',
-    name: 'Debian',
-    category: 'Base',
-    categoryColor: '#c2410c',
-    iconBackground: '#fff0e6',
-    brandColor: '#a81d33',
-    icon: siDebian,
-    description: '안정성 중심의 경량 베이스 이미지.',
-    features: ['최소 RootFS', '장기 지원(LTS)', 'APT 패키지 관리'],
-    versions: ['12', '11'],
-    specs: osSpecs,
+    id: 'micronetwork',
+    label: 'MicroNetwork',
+    title: { ko: '직접 설계하는 격리 네트워크', en: 'Isolated networks you define' },
+    description: {
+      ko: 'MicroNetwork는 bridge, gateway, DHCP, NAT와 방화벽 규칙을 하나의 명시적인 네트워크로 관리합니다. 서로 다른 네트워크의 M2는 기본적으로 분리됩니다.',
+      en: 'MicroNetwork manages a bridge, gateway, DHCP, NAT, and firewall rules as one explicit network. M2s on different networks are isolated by default.',
+    },
+    image: '/dashboard-networks.png',
+    alt: { ko: 'FireCrab MicroNetwork 생성과 네트워크 목록', en: 'FireCrab MicroNetwork creation and network list' },
+    icon: '/micronetwork-icon.png',
+    details: { ko: ['사용자 정의 subnet CIDR', '네트워크별 인터넷 정책', '고정 IPv4·MAC·hostname'], en: ['Custom subnet CIDR', 'Internet policy per network', 'Persistent IPv4, MAC, and hostname'] },
+    secondary: null,
   },
   {
-    slug: 'python',
-    name: 'Python',
-    category: 'API',
-    categoryColor: '#315fc5',
-    iconBackground: '#eaf0fe',
-    brandColor: '#3776ab',
-    icon: siPython,
-    description: '웹 서비스와 배치 작업용 런타임.',
-    features: ['pip / venv 사전 구성', 'gunicorn 기본 포함', '헬스체크 엔드포인트'],
-    versions: ['3.12', '3.11', '3.10'],
-    specs: runtimeSpecs,
+    id: 'microstorage',
+    label: 'MicroStorage',
+    title: { ko: '워크로드에 맞춰 고르는 저장 위치', en: 'Storage placement per workload' },
+    description: {
+      ko: 'MicroStorage는 호스트에 마운트된 디렉터리를 M2 스토리지 풀로 등록합니다. 기본 디스크, NVMe, 별도 SSD 등 원하는 위치에 VM rootfs를 분산할 수 있습니다.',
+      en: 'MicroStorage registers host-mounted directories as M2 storage pools. Place VM root filesystems across a default disk, NVMe, or separate SSDs.',
+    },
+    image: '/dashboard-microvm.png',
+    alt: { ko: 'FireCrab M2 생성 화면의 MicroStorage 저장 위치 선택', en: 'Selecting a MicroStorage location while creating an M2' },
+    icon: '/microstorage-icon.png',
+    details: { ko: ['기존 마운트 경로 등록', 'M2별 저장 위치 선택', '중지 후에도 rootfs 유지'], en: ['Register existing mount paths', 'Choose storage per M2', 'Persistent rootfs across restarts'] },
+    secondary: null,
   },
   {
-    slug: 'node',
-    name: 'Node.js',
-    category: 'API',
-    categoryColor: '#315fc5',
-    iconBackground: '#eaf0fe',
-    brandColor: '#339933',
-    icon: siNodedotjs,
-    description: '빠른 API 서버 구동을 위한 런타임.',
-    features: ['npm / pnpm 사전 설치', 'PM2 프로세스 매니저', '헬스체크 엔드포인트'],
-    versions: ['20', '18'],
-    specs: runtimeSpecs,
-  },
-  {
-    slug: 'nginx',
-    name: 'Nginx',
-    category: 'Web',
-    categoryColor: '#087ea4',
-    iconBackground: '#e6f7fd',
-    brandColor: '#009639',
-    icon: siNginx,
-    description: '정적 자산과 리버스 프록시용 웹 서버.',
-    features: ['리버스 프록시 사전 구성', 'TLS 종료 지원', 'gzip / brotli 압축'],
-    versions: ['1.25', '1.24'],
-    specs: osSpecs,
-  },
-  {
-    slug: 'redis',
-    name: 'Redis',
-    category: 'Data',
-    categoryColor: '#7340c8',
-    iconBackground: '#f1ebfe',
-    brandColor: '#dc382d',
-    icon: siRedis,
-    description: '캐시와 큐잉을 위한 인메모리 스토어.',
-    features: ['영구 볼륨 옵션', 'AOF / RDB 백업', '내부 전용 엔드포인트'],
-    versions: ['7.2', '6.2'],
-    specs: runtimeSpecs,
-  },
-  {
-    slug: 'mysql',
-    name: 'MySQL',
-    category: 'Data',
-    categoryColor: '#7340c8',
-    iconBackground: '#f1ebfe',
-    brandColor: '#4479a1',
-    icon: siMysql,
-    description: '영구 볼륨과 백업이 포함된 관계형 DB.',
-    features: ['영구 볼륨 기본 구성', '자동 일일 백업', '내부 전용 엔드포인트'],
-    versions: ['8.0', '5.7'],
-    specs: runtimeSpecs,
-  },
-  {
-    slug: 'postgresql',
-    name: 'PostgreSQL',
-    category: 'Data',
-    categoryColor: '#7340c8',
-    iconBackground: '#f1ebfe',
-    brandColor: '#336791',
-    icon: siPostgresql,
-    description: '내부 전용 엔드포인트를 갖춘 데이터베이스.',
-    features: ['영구 볼륨 기본 구성', '자동 일일 백업', 'pgvector 확장 지원'],
-    versions: ['16', '15', '14'],
-    specs: runtimeSpecs,
-  },
-  {
-    slug: 'spring-boot',
-    name: 'Spring',
-    category: 'API',
-    categoryColor: '#315fc5',
-    iconBackground: '#eaf0fe',
-    brandColor: '#6db33f',
-    icon: siSpringboot,
-    description: '헬스체크가 기본 구성된 Java API 템플릿.',
-    features: ['JRE 사전 설치', 'Actuator 헬스체크', '자동 재시작 정책'],
-    versions: ['3.2', '2.7'],
-    specs: runtimeSpecs,
+    id: 'm2image',
+    label: 'M2Image',
+    title: { ko: 'M2를 시작하는 검증된 이미지', en: 'Verified images that boot M2s' },
+    description: {
+      ko: 'M2Image는 커널, rootfs, initramfs와 부팅 설정을 담은 Firecracker 전용 템플릿입니다. Alpine, Ubuntu, Rocky 이미지를 준비하고 검증해 재사용합니다.',
+      en: 'M2Image is a Firecracker-ready template containing the kernel, rootfs, initramfs, and boot configuration. Prepare, verify, and reuse Alpine, Ubuntu, and Rocky images.',
+    },
+    image: '/dashboard-images.png',
+    alt: { ko: 'FireCrab M2Image 목록과 설치 상태', en: 'FireCrab M2Image list and installation state' },
+    icon: '/m2image-icon.png',
+    details: { ko: ['패키지 다운로드·검증', '임시 builder VM 부트스트랩', '사용 중인 VM 추적'], en: ['Download and verify packages', 'Bootstrap in a temporary builder VM', 'Track M2s using each image'] },
+    secondary: {
+      label: 'MICROBOOT',
+      title: { ko: '배포판을 M2Image로 부트스트랩', en: 'Bootstrap a distribution into an M2Image' },
+      description: {
+        ko: 'MicroBoot는 임시 builder VM을 실행해 운영체제를 설치하고 Firecracker용 이미지로 패키징합니다. 준비, 시스템 설치, 패키징, 마무리 단계를 추적하며 builder 콘솔을 실시간으로 확인할 수 있습니다.',
+        en: 'MicroBoot starts a temporary builder VM, installs the operating system, and packages it as a Firecracker-ready image. Follow preparation, installation, packaging, and finalization while watching the builder console live.',
+      },
+      image: '/dashboard-microboot.png',
+      alt: { ko: 'MicroBoot builder VM의 이미지 설치 진행 과정과 실시간 콘솔', en: 'MicroBoot builder VM image installation progress and live console' },
+      icon: '/microboot-icon.svg',
+      imagePosition: 'center 72%',
+    },
   },
 ];
 
-const featureItems = [
+const workflow = [
   {
-    icon: Zap,
-    background: '#fff3de',
-    color: '#9f3217',
-    title: 'REST API 기반',
-    description: '현재 제공되는 POST /api/vms로 VM 구성 레코드를 로컬 JSON 데이터에 저장합니다.',
+    number: '01',
+    title: { ko: 'MicroNetwork 생성', en: 'Create a MicroNetwork' },
+    description: { ko: '서브넷과 인터넷 정책을 직접 정합니다. 숨겨진 기본 네트워크는 없습니다.', en: 'Define the subnet and internet policy yourself. There is no hidden default network.' },
   },
   {
-    icon: ShieldCheck,
-    background: '#eaf2ea',
-    color: '#2f6f42',
-    title: 'Firecracker 연동 로드맵',
-    description: '실제 microVM 실행과 하드웨어 격리 수명주기 연동은 다음 단계로 확장 중입니다.',
+    number: '02',
+    title: { ko: '이미지와 자원 선택', en: 'Choose image and resources' },
+    description: { ko: '설치된 이미지, vCPU, RAM, 디스크와 저장 위치를 선택해 VM을 만듭니다.', en: 'Create an M2 with an installed image, vCPU, RAM, disk, and storage location.' },
   },
   {
-    icon: Blocks,
-    background: '#edeef7',
-    color: '#4f568f',
-    title: '오픈소스 · 셀프호스팅',
-    description: 'Apache 2.0 라이선스로 소스코드를 확인하고, 여러분의 Linux/KVM 환경에서 직접 운영하세요.',
-  },
-  {
-    icon: TerminalSquare,
-    background: '#fbeae4',
-    color: '#9f3217',
-    title: '웹 대시보드',
-    description: 'React 기반 UI에서 VM 구성을 다루는 운영 경험을 단계적으로 확장하고 있습니다.',
+    number: '03',
+    title: { ko: '시작하고 Terminal 연결', en: 'Start and open Terminal' },
+    description: { ko: '게스트가 네트워크 준비를 보고하면 running으로 전환되고 콘솔에 연결할 수 있습니다.', en: 'Once the guest reports network readiness, it becomes running and the console is available.' },
   },
 ];
-
-const comparisonRows = [
-  ['현재 제공 범위', 'VM 구성 레코드 API', 'VM 실행·관리', '컨테이너 실행·관리'],
-  ['실행 엔진', 'Firecracker 연동 예정', 'QEMU/KVM 등', '컨테이너 런타임'],
-  ['격리 모델', '하드웨어 가상화 목표', '하드웨어 가상화', '커널 네임스페이스 공유'],
-  ['셀프호스팅', '✓ 완전 지원', '벤더별 상이', '✓ 지원'],
-  ['라이선스', 'Apache 2.0', '제품별 상이', '제품별 상이'],
-];
-
-const bootChart = [
-  { label: 'Firecracker', value: '<125ms', width: 8, color: accent, labelColor: '#8a5a16' },
-  { label: '컨테이너', value: '~1초', width: 43, color: '#9aa1ac', labelColor: '#4a4038' },
-  { label: '전통 VM', value: '~30초', width: 100, color: '#9aa1ac', labelColor: '#4a4038' },
-];
-
-const repositoryCards: RepositoryCard[] = [
-  { name: 'web-frontend', host: 'GitHub', branch: 'main', icon: siGithub, color: '#24292f' },
-  { name: 'api-server', host: 'GitHub', branch: 'main', icon: siGithub, color: '#24292f' },
-  { name: 'data-worker', host: 'GitLab', branch: 'main', icon: siGitlab, color: '#fc6d26' },
-];
-
-const deployedVms = [
-  { name: 'web-01', image: 'web-frontend:latest', spec: '1 vCPU · 512MB' },
-  { name: 'api-01', image: 'api-server:latest', spec: '2 vCPU · 1GB' },
-  { name: 'worker-01', image: 'data-worker:latest', spec: '1 vCPU · 512MB' },
-];
-
-const firstCommand = 'cd firecrab-api && cargo run';
-const secondCommand = "curl -X POST http://localhost:3000/api/vms -H 'Content-Type: application/json' -d @vm.json";
-const firstTypingEnd = firstCommand.length * 35;
-const firstOutputAt = firstTypingEnd + 250;
-const secondTypingStart = firstOutputAt + 900;
-const secondTypingEnd = secondTypingStart + secondCommand.length * 35;
-const secondOutputAt = secondTypingEnd + 250;
-const footerAt = secondOutputAt + 300;
-const terminalCycle = footerAt + 2200;
-
-function useTerminalDemo(isActive: boolean) {
-  const [elapsed, setElapsed] = useState(footerAt);
-
-  useEffect(() => {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let interval: number | undefined;
-
-    const stop = () => {
-      if (interval === undefined) return;
-      window.clearInterval(interval);
-      interval = undefined;
-    };
-
-    const syncMotion = () => {
-      stop();
-      if (reducedMotion.matches || !isActive) {
-        setElapsed(footerAt);
-        return;
-      }
-
-      const startedAt = performance.now();
-      setElapsed(0);
-      interval = window.setInterval(() => {
-        setElapsed((performance.now() - startedAt) % terminalCycle);
-      }, 90);
-    };
-
-    syncMotion();
-    reducedMotion.addEventListener('change', syncMotion);
-
-    return () => {
-      stop();
-      reducedMotion.removeEventListener('change', syncMotion);
-    };
-  }, [isActive]);
-
-  const firstLength = Math.min(firstCommand.length, Math.floor(elapsed / 35));
-  const isTypingFirst = elapsed < firstTypingEnd;
-  const isTypingSecond = elapsed >= secondTypingStart && elapsed < secondTypingEnd;
-  const secondLength = isTypingSecond
-    ? Math.min(secondCommand.length, Math.floor((elapsed - secondTypingStart) / 35))
-    : elapsed >= secondTypingStart
-      ? secondCommand.length
-      : 0;
-  const cursorVisible = Math.floor(elapsed / 450) % 2 === 0;
-
-  return {
-    firstText: firstCommand.slice(0, firstLength),
-    firstCursorVisible: isTypingFirst && cursorVisible,
-    showFirstOutput: elapsed >= firstOutputAt,
-    showSecondCommand: elapsed >= secondTypingStart,
-    secondText: secondCommand.slice(0, secondLength),
-    secondCursorVisible: isTypingSecond && cursorVisible,
-    showSecondOutput: elapsed >= secondOutputAt,
-    showFooter: elapsed >= footerAt,
-  };
-}
-
-function BrandIcon({ icon }: { icon: SimpleIcon }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d={icon.path} fill="currentColor" />
-    </svg>
-  );
-}
-
-function getTemplateApiCommand(template: StackItem, version: string, spec: VmSpec) {
-  const memory = Number.parseInt(spec.memory, 10);
-  const payload = JSON.stringify({
-    name: `${template.slug}-vm`,
-    template: `${template.slug}-${version}`,
-    cpu: spec.vcpu,
-    ram: memory,
-  });
-
-  return `curl -X POST http://localhost:3000/api/vms -H 'Content-Type: application/json' -d '${payload}'`;
-}
-
-async function copyText(text: string, fallbackRoot: HTMLElement) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    const activeElement = document.activeElement;
-    const fallback = document.createElement('textarea');
-    fallback.value = text;
-    fallback.setAttribute('readonly', '');
-    fallback.style.position = 'fixed';
-    fallback.style.inset = '0 auto auto -9999px';
-    fallbackRoot.appendChild(fallback);
-
-    try {
-      fallback.focus();
-      fallback.select();
-      return document.execCommand('copy');
-    } catch {
-      return false;
-    } finally {
-      fallback.remove();
-      if (activeElement instanceof HTMLElement) activeElement.focus();
-    }
-  }
-}
-
-function HeroTerminal() {
-  const terminalRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(true);
-  const terminal = useTerminalDemo(isVisible);
-
-  useEffect(() => {
-    const terminalElement = terminalRef.current;
-    if (!terminalElement || !('IntersectionObserver' in window)) return undefined;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.1 },
-    );
-    observer.observe(terminalElement);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div
-      className="fc-terminal"
-      ref={terminalRef}
-      role="img"
-      aria-label="FireCrab API를 실행하고 REST API로 Ubuntu VM 구성 레코드를 생성하는 예시"
-    >
-      <div className="fc-terminal-dots" aria-hidden="true"><span /><span /><span /></div>
-      <div className="fc-terminal-body" aria-hidden="true">
-        <div><span className="fc-terminal-prompt">$</span> {terminal.firstText}<i className={terminal.firstCursorVisible ? 'is-visible' : ''}>▋</i></div>
-        {terminal.showFirstOutput ? (
-          <div className="fc-terminal-output">
-            <span>✓ FireCrab API listening on 0.0.0.0:3000</span>
-            <span>✓ local data store ready</span>
-          </div>
-        ) : null}
-        {terminal.showSecondCommand ? (
-          <div className="fc-terminal-command"><span className="fc-terminal-prompt">$</span> {terminal.secondText}<i className={terminal.secondCursorVisible ? 'is-visible' : ''}>▋</i></div>
-        ) : null}
-        {terminal.showSecondOutput ? <div className="fc-terminal-shell">→ 201 Created · state: Created</div> : null}
-        {terminal.showFooter ? (
-          <div className="fc-terminal-footer">instance: ubuntu-vm · cpu: 2 · ram: 1024MB · state: <strong>Created</strong></div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
 
 export default function LandingPage() {
-  const [selectedTemplate, setSelectedTemplate] = useState<StackItem | null>(null);
-  const [versionIndex, setVersionIndex] = useState(0);
-  const [specIndex, setSpecIndex] = useState(1);
-  const [copyLabel, setCopyLabel] = useState('복사');
-  const [copyStatus, setCopyStatus] = useState('');
+  const [language, setLanguage] = useState<Language>(() => {
+    const browserLanguage = window.navigator.languages?.[0] ?? window.navigator.language;
+    return browserLanguage.toLowerCase().startsWith('ko') ? 'ko' : 'en';
+  });
+  const [activeView, setActiveView] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [chartVisible, setChartVisible] = useState(false);
-  const [connectorPaths, setConnectorPaths] = useState<string[]>([]);
-  const chartRef = useRef<HTMLDivElement>(null);
-  const diagramRef = useRef<HTMLDivElement>(null);
-  const modalRef = useRef<HTMLDialogElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const lastTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const copyResetTimerRef = useRef<number | undefined>(undefined);
-
-  useEffect(() => () => {
-    if (copyResetTimerRef.current !== undefined) {
-      window.clearTimeout(copyResetTimerRef.current);
-    }
-  }, []);
+  const [copied, setCopied] = useState(false);
+  const currentView = productViews[activeView];
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   useEffect(() => {
-    if (!mobileMenuOpen) return undefined;
-
-    const desktop = window.matchMedia('(min-width: 641px)');
-    const closeOnDesktop = () => {
-      if (desktop.matches) setMobileMenuOpen(false);
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMobileMenuOpen(false);
-    };
-
-    desktop.addEventListener('change', closeOnDesktop);
-    document.addEventListener('keydown', closeOnEscape);
-    return () => {
-      desktop.removeEventListener('change', closeOnDesktop);
-      document.removeEventListener('keydown', closeOnEscape);
-    };
-  }, [mobileMenuOpen]);
-
-  useEffect(() => {
-    const chart = chartRef.current;
-    if (!chart) return undefined;
-
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (reducedMotion.matches || !('IntersectionObserver' in window)) {
-      setChartVisible(true);
-      return undefined;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
-        setChartVisible(true);
-        observer.disconnect();
-      },
-      { threshold: 0.3 },
+    document.documentElement.lang = language;
+    document.title = 'FireCrab';
+    document.querySelector('meta[name="description"]')?.setAttribute(
+      'content',
+      language === 'ko'
+        ? 'FireCrab은 사용자가 관리하는 Linux 단일 호스트에서 Firecracker microVM, 격리 네트워크, 이미지와 시리얼 콘솔을 운영하는 오픈소스 플랫폼입니다.'
+        : 'FireCrab is an open-source platform for operating Firecracker microVMs, isolated networks, images, and serial consoles on a Linux host you control.',
     );
+  }, [language]);
 
-    observer.observe(chart);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const diagram = diagramRef.current;
-    if (!diagram) return undefined;
-
-    const measure = () => {
-      if (window.matchMedia('(max-width: 900px)').matches) {
-        setConnectorPaths([]);
-        return;
-      }
-
-      const diagramRect = diagram.getBoundingClientRect();
-      const buildNode = diagram.querySelector<HTMLElement>('[data-fc-node="build"]');
-      const deployPanel = diagram.querySelector<HTMLElement>('[data-fc-node="panel"]');
-      const repositories = diagram.querySelectorAll<HTMLElement>('[data-fc-node="repo"]');
-      if (!buildNode || !deployPanel || !repositories.length) return;
-
-      const buildRect = buildNode.getBoundingClientRect();
-      const panelRect = deployPanel.getBoundingClientRect();
-      const buildY = buildRect.top + buildRect.height / 2 - diagramRect.top;
-      const nextPaths: string[] = [];
-
-      repositories.forEach((repository) => {
-        const repositoryRect = repository.getBoundingClientRect();
-        const x1 = repositoryRect.right - diagramRect.left;
-        const y1 = repositoryRect.top + repositoryRect.height / 2 - diagramRect.top;
-        const x2 = buildRect.left - diagramRect.left - 3;
-        const middleX = (x1 + x2) / 2;
-        nextPaths.push(`M${x1},${y1} C${middleX},${y1} ${middleX},${buildY} ${x2},${buildY}`);
-      });
-
-      const x1 = buildRect.right - diagramRect.left + 3;
-      const x2 = panelRect.left - diagramRect.left - 3;
-      const panelY = panelRect.top + panelRect.height / 2 - diagramRect.top;
-      const middleX = (x1 + x2) / 2;
-      nextPaths.push(`M${x1},${buildY} C${middleX},${buildY} ${middleX},${panelY} ${x2},${panelY}`);
-
-      setConnectorPaths((current) =>
-        current.join('|') === nextPaths.join('|') ? current : nextPaths,
-      );
-    };
-
-    const frame = window.requestAnimationFrame(measure);
-    window.addEventListener('resize', measure);
-    const resizeObserver = 'ResizeObserver' in window ? new ResizeObserver(measure) : null;
-    resizeObserver?.observe(diagram);
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener('resize', measure);
-      resizeObserver?.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!selectedTemplate) return undefined;
-
-    const dialog = modalRef.current;
-    if (!dialog) return undefined;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    if (!dialog.open) dialog.showModal();
-    window.requestAnimationFrame(() => closeButtonRef.current?.focus());
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      if (dialog.open) dialog.close();
-      lastTriggerRef.current?.focus();
-    };
-  }, [selectedTemplate]);
-
-  const openTemplate = (template: StackItem, trigger: HTMLButtonElement) => {
-    lastTriggerRef.current = trigger;
-    setSelectedTemplate(template);
-    setVersionIndex(0);
-    setSpecIndex(Math.min(1, template.specs.length - 1));
-    setCopyLabel('복사');
-    setCopyStatus('');
+  const changeLanguage = (nextLanguage: Language) => {
+    setLanguage(nextLanguage);
   };
 
-  const closeTemplate = () => setSelectedTemplate(null);
-
-  const copyCommand = async () => {
-    if (!selectedTemplate) return;
-    const version = selectedTemplate.versions[versionIndex];
-    const spec = selectedTemplate.specs[specIndex];
-    const dialog = modalRef.current;
-    if (!dialog) return;
-    const copied = await copyText(getTemplateApiCommand(selectedTemplate, version, spec), dialog);
-
-    setCopyLabel(copied ? '복사됨 ✓' : '복사 실패');
-    setCopyStatus(copied ? 'REST API 요청을 클립보드에 복사했습니다.' : '복사하지 못했습니다. 요청을 직접 선택해 주세요.');
-    if (copyResetTimerRef.current !== undefined) window.clearTimeout(copyResetTimerRef.current);
-    copyResetTimerRef.current = window.setTimeout(() => {
-      setCopyLabel('복사');
-      copyResetTimerRef.current = undefined;
-    }, 1600);
+  const copyInstallCommand = async () => {
+    try {
+      await navigator.clipboard.writeText(installCommand);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
   };
-
-  const selectedVersion = selectedTemplate?.versions[versionIndex];
-  const selectedSpec = selectedTemplate?.specs[specIndex];
-  const selectedCommand = selectedTemplate && selectedVersion && selectedSpec
-    ? getTemplateApiCommand(selectedTemplate, selectedVersion, selectedSpec)
-    : '';
 
   return (
-    <div className="fc-landing">
-      <a className="fc-skip-link" href="#main-content">본문으로 건너뛰기</a>
+    <div className="fc-site">
+      <a className="fc-skip-link" href="#main-content">{t('본문으로 건너뛰기', 'Skip to content')}</a>
+
       <header className="fc-header">
-        <div className="fc-nav-wrap">
-          <a className="fc-brand" href="#top" aria-label="FireCrab 홈">
-            <img src="/firecrab-icon.png" alt="" aria-hidden="true" />
-            <span>FireCrab</span>
+        <div className="fc-nav-shell">
+          <a className="fc-wordmark" href="#top" aria-label="FireCrab 홈">
+            <img src="/firecrab-icon.png" alt="" aria-hidden="true" /><span>FireCrab</span>
           </a>
-          <nav className="fc-nav-links" aria-label="주요 섹션">
-            <a href="#features">기능</a>
-            <a href="#stack">호환성</a>
-            <a href="#compare">비교</a>
-            <a href="/docs">문서</a>
-            <a href="/blog">블로그</a>
+
+          <nav className="fc-desktop-nav" aria-label="주요 메뉴">
+            <a href="#product">{t('제품', 'Product')}</a>
+            <a href="#workflow">{t('사용 흐름', 'Workflow')}</a>
+            <a href="#install">{t('설치', 'Install')}</a>
+            <a href={language === 'ko' ? '/docs' : '/en/docs'}>{t('문서', 'Docs')}</a>
+            <a href={language === 'ko' ? '/blog' : '/en/blog'}>{t('블로그', 'Blog')}</a>
           </nav>
+
           <div className="fc-nav-actions">
-            <a className="fc-nav-github" href={repositoryUrl} target="_blank" rel="noreferrer">
-              GitHub
+            <div className="fc-language-switch" aria-label={t('언어 선택', 'Language selector')}>
+              <Languages size={15} aria-hidden="true" />
+              <button type="button" className={language === 'ko' ? 'is-active' : ''} aria-pressed={language === 'ko'} onClick={() => changeLanguage('ko')}>한국어</button>
+              <i aria-hidden="true" />
+              <button type="button" className={language === 'en' ? 'is-active' : ''} aria-pressed={language === 'en'} onClick={() => changeLanguage('en')}>English</button>
+            </div>
+            <a className="fc-github-link" href={repositoryUrl} target="_blank" rel="noreferrer">
+              <Github size={17} /> GitHub
             </a>
-            <a className="fc-nav-cta" href={repositoryUrl} target="_blank" rel="noreferrer">
-              현재 구현 보기
-            </a>
+            <a className="fc-nav-cta" href="#install">{t('설치하기', 'Install')}</a>
           </div>
+
           <button
-            className="fc-mobile-menu-button"
+            className="fc-menu-button"
             type="button"
-            aria-label={mobileMenuOpen ? '메뉴 닫기' : '메뉴 열기'}
-            aria-controls="fc-mobile-menu"
+            aria-label={mobileMenuOpen ? t('메뉴 닫기', 'Close menu') : t('메뉴 열기', 'Open menu')}
             aria-expanded={mobileMenuOpen}
+            aria-controls="fc-mobile-nav"
             onClick={() => setMobileMenuOpen((open) => !open)}
           >
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            {mobileMenuOpen ? <X size={21} /> : <Menu size={21} />}
           </button>
         </div>
-        <nav
-          className="fc-mobile-menu"
-          id="fc-mobile-menu"
-          aria-label="모바일 주요 메뉴"
-          hidden={!mobileMenuOpen}
-        >
-          <a href="#features" onClick={() => setMobileMenuOpen(false)}>기능</a>
-          <a href="#stack" onClick={() => setMobileMenuOpen(false)}>호환성</a>
-          <a href="#compare" onClick={() => setMobileMenuOpen(false)}>비교</a>
-          <a href="/docs" onClick={() => setMobileMenuOpen(false)}>문서</a>
-          <a href="/blog" onClick={() => setMobileMenuOpen(false)}>블로그</a>
+
+        <nav className="fc-mobile-nav" id="fc-mobile-nav" hidden={!mobileMenuOpen} aria-label="모바일 메뉴">
+          <div className="fc-mobile-language">
+            <button type="button" className={language === 'ko' ? 'is-active' : ''} aria-pressed={language === 'ko'} onClick={() => changeLanguage('ko')}>한국어</button>
+            <button type="button" className={language === 'en' ? 'is-active' : ''} aria-pressed={language === 'en'} onClick={() => changeLanguage('en')}>English</button>
+          </div>
+          {[
+            [t('제품', 'Product'), '#product'],
+            [t('사용 흐름', 'Workflow'), '#workflow'],
+            [t('설치', 'Install'), '#install'],
+            [t('문서', 'Docs'), language === 'ko' ? '/docs' : '/en/docs'],
+            [t('블로그', 'Blog'), language === 'ko' ? '/blog' : '/en/blog'],
+          ].map(([label, href]) => (
+            <a href={href} key={label} onClick={() => setMobileMenuOpen(false)}>{label}</a>
+          ))}
           <a href={repositoryUrl} target="_blank" rel="noreferrer" onClick={() => setMobileMenuOpen(false)}>GitHub ↗</a>
         </nav>
       </header>
 
-      <main id="main-content" tabIndex={-1}>
+      <main id="main-content">
         <section className="fc-hero" id="top" aria-labelledby="fc-hero-title">
           <div className="fc-hero-copy">
-            <p className="fc-eyebrow">Open Source MicroVM Platform</p>
-            <h1 id="fc-hero-title">MicroVM 운영을 위한<br />오픈소스 기반</h1>
-            <p className="fc-hero-description">
-              FireCrab은 Firecracker 기반 운영 도구를 목표로 하는 오픈소스 웹 대시보드입니다.
-              현재는 VM 구성 레코드를 로컬 REST API로 생성하며, 실제 microVM 실행 연동은 확장 중입니다.
+            <p className="fc-kicker"><span /> PRIVATE MICROVM CLOUD</p>
+            <h1 id="fc-hero-title">{t('내 서버에 두는', 'A smaller VM platform')}<br /><em>{t('가장 작은 VM 플랫폼.', 'for your own server.')}</em></h1>
+            <p className="fc-hero-lead">
+              {t(
+                'FireCrab은 내가 관리하는 Linux 호스트에서 Firecracker microVM을 실행하는 오픈소스 플랫폼입니다. 강한 격리는 필요하지만 거대한 클라우드 컨트롤 플레인은 필요 없는 환경을 위해 만들었습니다.',
+                'FireCrab is an open-source platform for running Firecracker microVMs on a Linux host you control. It is built for environments that need strong isolation without a large cloud control plane.',
+              )}
             </p>
             <div className="fc-hero-actions">
-              <a className="fc-primary-action" href={repositoryUrl} target="_blank" rel="noreferrer">
-                GitHub에서 코드 보기 <span aria-hidden="true">→</span>
-              </a>
-              <a className="fc-secondary-action" href="#stack">구성 예시 살펴보기</a>
+              <a className="fc-primary-button" href="#install">{t('3줄로 설치하기', 'Install in 3 lines')} <ArrowRight size={18} /></a>
+              <a className="fc-text-button" href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={18} /> {t('소스 코드 보기', 'View source')}</a>
             </div>
-            <dl className="fc-hero-stats" aria-label="FireCrab 주요 수치">
-              <div><dt>&lt;125ms</dt><dd>Firecracker 공식 시작 지표</dd></div>
-              <div><dt>Apache 2.0</dt><dd>오픈소스 라이선스</dd></div>
-              <div><dt>Self-hosted</dt><dd>직접 운영 가능</dd></div>
-            </dl>
+            <ul className="fc-requirement-list" aria-label="핵심 조건">
+              <li><Check size={14} /> Linux + KVM</li>
+              <li><Check size={14} /> Single host</li>
+              <li><Check size={14} /> Apache 2.0</li>
+            </ul>
           </div>
 
-          <HeroTerminal />
+          <figure className="fc-hero-visual">
+            <div className="fc-hero-media">
+              <img src="/dashboard-firecrab-m2.gif" alt={t('FireCrab 대시보드에서 M2와 네트워크, 이미지를 관리하는 데모', 'Demo of managing M2s, networks, and images in the FireCrab dashboard')} />
+            </div>
+          </figure>
         </section>
 
-        <section className="fc-stack-section" id="stack" aria-labelledby="fc-stack-title">
-          <div className="fc-section-inner">
-            <div className="fc-section-heading">
-              <span>Configuration Examples</span>
-              <h2 id="fc-stack-title">지원 예정 스택을 구성 예시로 확인</h2>
-              <p>현재 API에 저장할 VM 구성 값을 미리 살펴보세요. 이미지 빌드와 검증은 로드맵에 포함됩니다.</p>
-            </div>
-            <div className="fc-stack-grid">
-              {stackItems.map((item) => (
-                <button
-                  className="fc-stack-card"
-                  type="button"
-                  onClick={(event) => openTemplate(item, event.currentTarget)}
-                  key={item.slug}
-                >
-                  <span className="fc-stack-icon" style={{ background: item.iconBackground, color: item.brandColor }}>
-                    <BrandIcon icon={item.icon} />
-                  </span>
-                  <span className="fc-stack-category" style={{ color: item.categoryColor }}>{item.category}</span>
-                  <strong>{item.name}</strong>
-                  <span className="fc-stack-description">{item.description}</span>
-                  <span className="fc-stack-link">구성 · API 보기 <span aria-hidden="true">→</span></span>
-                </button>
-              ))}
-            </div>
-          </div>
+        <section className="fc-proof-strip" aria-label="기술 구성">
+          <div><strong>Rust API</strong><span>{t('수명주기와 상태 관리', 'Lifecycle and state management')}</span></div>
+          <div><strong>Firecracker</strong><span>{t('VM마다 하나의 프로세스', 'One process per VM')}</span></div>
+          <div><strong>React Dashboard</strong><span>{t('한국어·영어 지원', 'Korean and English')}</span></div>
+          <div><strong>Self-hosted</strong><span>{t('데이터와 호스트를 직접 소유', 'You own the host and data')}</span></div>
         </section>
 
-        <section className="fc-features" id="features" aria-labelledby="fc-features-title">
-          <div className="fc-section-heading">
-            <span>Core Values</span>
-              <h2 id="fc-features-title">현재 기반부터 다음 단계까지</h2>
-              <p>지금 사용할 수 있는 범위와 Firecracker 연동 로드맵을 구분했습니다.</p>
-          </div>
-          <div className="fc-feature-grid">
-            {featureItems.map((feature) => {
-              const FeatureIcon = feature.icon;
-              return (
-                <article className="fc-feature-card" key={feature.title}>
-                  <span className="fc-feature-icon" style={{ background: feature.background, color: feature.color }} aria-hidden="true">
-                    <FeatureIcon size={21} strokeWidth={1.9} />
-                  </span>
-                  <h3>{feature.title}</h3>
-                  <p>{feature.description}</p>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="fc-comparison-section" id="compare" aria-labelledby="fc-compare-title">
-          <div className="fc-section-inner">
-            <div className="fc-section-heading">
-              <span>Comparison</span>
-              <h2 id="fc-compare-title">기존 VM·컨테이너와 무엇이 다를까요</h2>
-            </div>
-
-            <div className="fc-comparison-scroll">
-              <table className="fc-comparison-table">
-                <thead>
-                  <tr><th scope="col">구분</th><th scope="col">FireCrab</th><th scope="col">Traditional VM</th><th scope="col">Container</th></tr>
-                </thead>
-                <tbody>
-                  {comparisonRows.map(([label, firecrab, vm, container]) => (
-                    <tr key={label}><th scope="row">{label}</th><td>{firecrab}</td><td>{vm}</td><td>{container}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="fc-chart" ref={chartRef}>
-              <h3>시작 시간 참고 (로그 스케일)</h3>
-              <div className="fc-chart-rows" role="img" aria-label="Firecracker 공식 지표 125밀리초 미만, 컨테이너와 전통 VM의 일반적인 예시를 비교한 차트">
-                {bootChart.map((item, index) => (
-                  <div className="fc-chart-row" key={item.label}>
-                    <strong style={{ color: item.labelColor }}>{item.label}</strong>
-                    <span className="fc-chart-track"><i style={{ width: chartVisible ? `${item.width}%` : 0, background: item.color, transitionDelay: `${index * 150}ms` }} /></span>
-                    <b>{item.value}</b>
-                  </div>
-                ))}
-              </div>
-              <p className="fc-chart-source">
-                <a href={firecrackerMetricsUrl} target="_blank" rel="noreferrer">Firecracker 공식 FAQ</a>의 시작 지표를 인용했습니다.
-                나머지 값은 일반적인 예시이며 환경에 따라 달라집니다.
+        <section className="fc-positioning">
+          <p className="fc-section-index">01 / PRODUCT POSITION</p>
+          <div className="fc-positioning-grid">
+            <h2>{t('컨테이너보다 강하게 격리하고,', 'Stronger isolation than containers,')}<br /><span>{t('클라우드보다 작게 운영합니다.', 'smaller operations than a cloud.')}</span></h2>
+            <div>
+              <p>
+                {t(
+                  'FireCrab은 호스팅 서비스도, 멀티 호스트 스케줄러도 아닙니다. 사설 단일 서버에서 서로 격리된 워크로드를 명확한 네트워크·스토리지 정책과 함께 운영하는 도구입니다.',
+                  'FireCrab is not a hosted service or a multi-host scheduler. It runs isolated workloads on a private single server with explicit network and storage policies.',
+                )}
               </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="fc-deploy-section" id="deploy" aria-labelledby="fc-deploy-title">
-          <div className="fc-section-heading">
-            <span>Deployment Blueprint</span>
-            <h2 id="fc-deploy-title">Git에서 마이크로VM까지, 한눈에 보는 운영 흐름</h2>
-            <p>저장소 연결부터 RootFS 빌드와 배포까지, FireCrab이 확장해 갈 운영 흐름입니다. 현재 구현 범위는 GitHub에서 확인하세요.</p>
-          </div>
-
-          <div className="fc-deploy-diagram" ref={diagramRef}>
-            <svg className="fc-connectors" aria-hidden="true">
-              {connectorPaths.map((path, index) => (
-                <g key={path}>
-                  <path className="fc-connector-base" d={path} />
-                  <path className="fc-connector-flow" d={path} style={{ animationDelay: `${index * 0.3}s` }} />
-                </g>
-              ))}
-            </svg>
-
-            <div className="fc-repository-list">
-              {repositoryCards.map((repository) => (
-                <article className="fc-repository-card" data-fc-node="repo" key={repository.name}>
-                  <span style={{ color: repository.color }}><BrandIcon icon={repository.icon} /></span>
-                  <div><strong>{repository.name}</strong><small>{repository.host} · {repository.branch}</small></div>
-                </article>
-              ))}
-            </div>
-
-            <span className="fc-vertical-connector" aria-hidden="true" />
-
-            <div className="fc-build-node">
-              <span className="fc-build-icon" data-fc-node="build" aria-hidden="true"><Settings size={30} /></span>
-              <strong>자동 빌드</strong>
-              <small>Dockerfile · Buildpack<br />RootFS 이미지 생성</small>
-            </div>
-
-            <span className="fc-vertical-connector" aria-hidden="true" />
-
-            <article className="fc-deploy-panel" data-fc-node="panel">
-              <header>
-                <img src="/firecrab-icon.png" alt="" aria-hidden="true" />
-                <div><strong>FireCrab</strong><small>마이크로VM 배포</small></div>
-              </header>
-              <div className="fc-deployed-vms">
-                {deployedVms.map((vm) => (
-                  <div className="fc-vm-card" key={vm.name}>
-                    <div><span aria-hidden="true"><i /></span><strong>{vm.name}</strong><em>● running</em></div>
-                    <p><span>{vm.image}</span><span>{vm.spec}</span></p>
-                  </div>
-                ))}
+              <div className="fc-fit-list">
+                <span><CheckCircle2 size={17} /> {t('홈랩·엣지·내부 서비스', 'Homelab, edge, and internal services')}</span>
+                <span><CheckCircle2 size={17} /> {t('온프레미스·폐쇄망 호스트', 'On-premises and air-gapped hosts')}</span>
+                <span><CheckCircle2 size={17} /> {t('컨테이너 이상의 격리가 필요한 작업', 'Workloads needing stronger isolation than containers')}</span>
               </div>
-            </article>
+            </div>
           </div>
         </section>
 
-        <section className="fc-final-cta" aria-labelledby="fc-final-title">
-          <h2 id="fc-final-title">현재 구현을 직접 확인하세요</h2>
-          <p>REST API와 웹 대시보드 코드를 로컬에서 실행하고, 다음 단계에 함께 기여할 수 있습니다.</p>
-          <div>
-            <a href={repositoryUrl} target="_blank" rel="noreferrer">GitHub에서 코드 보기 <span aria-hidden="true">→</span></a>
-            <code>git clone https://github.com/SteelCrab/firecrab.git</code>
+        <section className="fc-product" id="product" aria-labelledby="fc-product-title">
+          <div className="fc-section-heading">
+            <div>
+              <p className="fc-section-index">02 / PRODUCT TOUR</p>
+              <h2 id="fc-product-title">{t('M2를 이루는', 'Four building blocks')}<br />{t('네 가지 기본 단위.', 'behind every M2.')}</h2>
+            </div>
+            <p>{t('M2, 네트워크, 스토리지와 이미지를 하나의 흐름으로 조합해 전용 실행 환경을 만듭니다.', 'Combine compute, networking, storage, and images in one flow to create a dedicated runtime environment.')}</p>
           </div>
+
+          <div className="fc-product-tour">
+            <div className="fc-tour-tabs" role="tablist" aria-label="대시보드 화면 선택">
+              {productViews.map((view, index) => {
+                return (
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={activeView === index}
+                    aria-controls="fc-tour-panel"
+                    className={activeView === index ? 'is-active' : ''}
+                    onClick={() => setActiveView(index)}
+                    key={view.id}
+                  >
+                    <span><img src={view.icon} alt="" aria-hidden="true" /> {view.label}</span>
+                    <small>0{index + 1}</small>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="fc-tour-panel" id="fc-tour-panel" role="tabpanel">
+              <div className="fc-tour-copy">
+                <img className="fc-tour-product-icon" src={currentView.icon} alt="" aria-hidden="true" />
+                <span>0{activeView + 1} — {currentView.label.toUpperCase()}</span>
+                <h3>{currentView.title[language]}</h3>
+                <p>{currentView.description[language]}</p>
+                <ul>{currentView.details[language].map((detail) => <li key={detail}><Check size={15} /> {detail}</li>)}</ul>
+              </div>
+              <div className="fc-tour-media">
+                <figure className="fc-screen-frame">
+                  <img key={currentView.image} src={currentView.image} alt={currentView.alt[language]} />
+                </figure>
+              </div>
+              {currentView.secondary ? (
+                <article className="fc-tour-secondary">
+                  <div className="fc-tour-secondary-copy">
+                    <img src={currentView.secondary.icon} alt="" aria-hidden="true" />
+                    <span>{currentView.secondary.label}</span>
+                    <h4>{currentView.secondary.title[language]}</h4>
+                    <p>{currentView.secondary.description[language]}</p>
+                    <a href={currentView.secondary.image} target="_blank" rel="noreferrer">
+                      {t('원본 이미지 보기', 'Open original image')} <span aria-hidden="true">↗</span>
+                    </a>
+                  </div>
+                  <figure>
+                    <figcaption>{t('모바일에서는 이미지를 좌우로 밀어 자세히 볼 수 있습니다.', 'Swipe the image horizontally on mobile to inspect details.')}</figcaption>
+                    <img
+                      src={currentView.secondary.image}
+                      alt={currentView.secondary.alt[language]}
+                      style={{ objectPosition: currentView.secondary.imagePosition }}
+                    />
+                  </figure>
+                </article>
+              ) : null}
+            </div>
+          </div>
+        </section>
+
+        <section className="fc-workflow" id="workflow" aria-labelledby="fc-workflow-title">
+          <div className="fc-section-heading">
+            <div>
+              <p className="fc-section-index">03 / FIRST RUN</p>
+              <h2 id="fc-workflow-title">{t('첫 M2까지 세 단계.', 'Your first M2 in three steps.')}</h2>
+            </div>
+            <p>{t('설치 후', 'After installation, start at')} <code>127.0.0.1:3000</code>{t('에서 시작합니다.', '.')}</p>
+          </div>
+          <ol className="fc-workflow-list">
+            {workflow.map((step) => (
+              <li key={step.number}>
+                <span>{step.number}</span>
+                <h3>{step.title[language]}</h3>
+                <p>{step.description[language]}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="fc-install" id="install" aria-labelledby="fc-install-title">
+          <div className="fc-install-copy">
+            <p className="fc-section-index">04 / INSTALL</p>
+            <h2 id="fc-install-title">{t('서버는 이미 있으니까.', 'You already have the server.')}<br /><span>{t('이제 FireCrab만.', 'Now add FireCrab.')}</span></h2>
+            <p>Linux + systemd, <code>/dev/kvm</code>{t(', 네트워크와 sudo 권한이 있는 일반 사용자 계정이 필요합니다.', ', network access, and a regular user account with sudo privileges are required.')}</p>
+            <div className="fc-install-links">
+              <a href={language === 'ko' ? `${repositoryUrl}/blob/main/docs/20-guides/install.md` : `${repositoryUrl}#install-on-a-linux-host`} target="_blank" rel="noreferrer">{t('전체 설치 가이드', 'Full install guide')} <ArrowRight size={16} /></a>
+              <a href={`${repositoryUrl}/blob/main/${language === 'ko' ? 'README.ko.md' : 'README.md'}`} target="_blank" rel="noreferrer">{language === 'ko' ? 'README.ko' : 'README'}</a>
+            </div>
+          </div>
+
+          <div className="fc-install-terminal">
+            <div className="fc-terminal-header"><span>TERMINAL</span><button type="button" onClick={copyInstallCommand}>{copied ? <Check size={15} /> : <Clipboard size={15} />}{copied ? t('복사됨', 'Copied') : t('복사', 'Copy')}</button></div>
+            <pre><code><span>$</span> git clone https://github.com/SteelCrab/firecrab.git{`\n`}<span>$</span> cd firecrab{`\n`}<span>$</span> ./install.sh</code></pre>
+            <div className="fc-terminal-status"><i /> {t('설치가 끝나면', 'When installation finishes:')} http://127.0.0.1:3000</div>
+          </div>
+        </section>
+
+        <section className="fc-final-cta">
+          <div>
+            <img src="/firecrab-icon.png" alt="" aria-hidden="true" />
+            <p>YOUR SERVER. YOUR MICROVMS.</p>
+          </div>
+          <h2>{t('작은 서버 한 대에서', 'Isolated workloads,')}<br />{t('제대로 격리된 워크로드를.', 'on one small server.')}</h2>
+          <a href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={19} /> {t('GitHub에서 FireCrab 보기', 'View FireCrab on GitHub')} <ArrowRight size={18} /></a>
         </section>
       </main>
 
       <footer className="fc-footer">
-        <div className="fc-footer-grid">
-          <div className="fc-footer-brand">
-            <div><img src="/firecrab-icon.png" alt="" aria-hidden="true" /><strong>FireCrab</strong></div>
-            <p>Firecracker 운영 도구를 향해 확장 중인 오픈소스 프로젝트.</p>
-          </div>
-          <nav aria-label="제품 링크"><strong>제품</strong><a href="#features">기능</a><a href="#stack">호환성</a><a href="/docs">문서</a><a href="/blog">블로그</a><a href={repositoryUrl} target="_blank" rel="noreferrer">GitHub</a></nav>
-          <nav aria-label="리소스 링크"><strong>리소스</strong><a href={`${repositoryUrl}/blob/main/docs/api.md`} target="_blank" rel="noreferrer">API 문서</a><a href={`${repositoryUrl}/issues`} target="_blank" rel="noreferrer">커뮤니티</a></nav>
-        </div>
-        <div className="fc-footer-bottom">© 2026 FireCrab.</div>
+        <a className="fc-wordmark" href="#top"><img src="/firecrab-icon.png" alt="" aria-hidden="true" /><span>FireCrab</span></a>
+        <p>A lightweight microVM platform for your own server.</p>
+        <nav aria-label={t('푸터 메뉴', 'Footer navigation')}><a href={language === 'ko' ? '/docs' : '/en/docs'}>Docs</a><a href={language === 'ko' ? '/blog' : '/en/blog'}>Blog</a><a href={repositoryUrl} target="_blank" rel="noreferrer">GitHub</a></nav>
+        <span>Apache 2.0 · © 2026 FireCrab</span>
       </footer>
-
-      {selectedTemplate ? (
-        <dialog
-          className="fc-template-dialog"
-          ref={modalRef}
-          aria-labelledby="fc-modal-title"
-          onCancel={(event) => { event.preventDefault(); closeTemplate(); }}
-          onKeyDown={(event) => {
-            if (event.key !== 'Escape') return;
-            event.preventDefault();
-            closeTemplate();
-          }}
-          onMouseDown={(event: MouseEvent<HTMLDialogElement>) => {
-            if (event.target === event.currentTarget) closeTemplate();
-          }}
-        >
-          <div className="fc-dialog-content">
-            <header>
-              <span style={{ background: selectedTemplate.iconBackground, color: selectedTemplate.brandColor }}><BrandIcon icon={selectedTemplate.icon} /></span>
-              <div><small style={{ color: selectedTemplate.categoryColor }}>{selectedTemplate.category}</small><h2 id="fc-modal-title">{selectedTemplate.name} 템플릿</h2></div>
-              <button ref={closeButtonRef} type="button" aria-label="템플릿 상세 닫기" onClick={closeTemplate}><X size={19} /></button>
-            </header>
-            <p className="fc-dialog-description">{selectedTemplate.description}</p>
-
-            <section aria-labelledby="fc-modal-features"><h3 id="fc-modal-features">예시 구성 (로드맵)</h3><ul>{selectedTemplate.features.map((feature) => <li key={feature}><i style={{ background: selectedTemplate.brandColor }} /><span>{feature}</span></li>)}</ul></section>
-
-            <section aria-labelledby="fc-modal-version"><h3 id="fc-modal-version">버전</h3><div className="fc-option-list">{selectedTemplate.versions.map((version, index) => <button type="button" className={versionIndex === index ? 'is-active' : ''} style={versionIndex === index ? { borderColor: selectedTemplate.brandColor, background: selectedTemplate.iconBackground, color: '#2a241d' } : undefined} aria-pressed={versionIndex === index} onClick={() => setVersionIndex(index)} key={version}>{version}</button>)}</div></section>
-
-            <section aria-labelledby="fc-modal-spec"><h3 id="fc-modal-spec">스펙</h3><div className="fc-spec-list">{selectedTemplate.specs.map((spec, index) => <button type="button" className={specIndex === index ? 'is-active' : ''} style={specIndex === index ? { borderColor: selectedTemplate.brandColor, background: selectedTemplate.iconBackground, color: '#2a241d' } : undefined} aria-pressed={specIndex === index} onClick={() => setSpecIndex(index)} key={spec.label}><strong>{spec.label}</strong><small>{spec.vcpu} vCPU · {spec.memory}</small></button>)}</div></section>
-
-            <section aria-labelledby="fc-modal-api"><h3 id="fc-modal-api">VM 구성 레코드 생성</h3><div className="fc-dialog-command"><code>{selectedCommand}</code><button type="button" onClick={copyCommand}>{copyLabel === '복사됨 ✓' ? <Check size={13} /> : <Copy size={13} />}{copyLabel}</button></div></section>
-            <span className="fc-sr-only" role="status" aria-live="polite">{copyStatus}</span>
-
-            <button className="fc-dialog-close" type="button" onClick={closeTemplate}>닫기</button>
-          </div>
-        </dialog>
-      ) : null}
     </div>
   );
 }
