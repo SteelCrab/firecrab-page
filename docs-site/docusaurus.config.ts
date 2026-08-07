@@ -111,7 +111,7 @@ const config: Config = {
         {
           type: 'html',
           position: 'left',
-          value: `<a class="navbar__item navbar__link" href="/#product">${t('제품', 'Product')}</a>`,
+          value: `<a class="navbar__item navbar__link" href="/#product">${t('서비스', 'Services')}</a>`,
         },
         {
           type: 'html',
@@ -158,7 +158,7 @@ const config: Config = {
           ],
         },
         {
-          title: t('제품', 'Product'),
+          title: t('서비스', 'Services'),
           items: [
             {
               html: `<a class="footer__link-item" href="${landingUrl}">${t(
@@ -181,8 +181,8 @@ const config: Config = {
         {
           title: t('언어', 'Language'),
           items: [
-            {html: '<a class="footer__link-item" href="/docs">한국어</a>'},
-            {html: '<a class="footer__link-item" href="/en/docs">English</a>'},
+            {html: '<a class="footer__link-item" data-firecrab-locale="ko" href="/docs">한국어</a>'},
+            {html: '<a class="footer__link-item" data-firecrab-locale="en" href="/en/docs">English</a>'},
           ],
         },
       ],

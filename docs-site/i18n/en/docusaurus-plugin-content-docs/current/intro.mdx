@@ -1,0 +1,57 @@
+---
+slug: /
+sidebar_position: 1
+title: Introducing FireCrab
+description: An open-source platform for creating and managing Firecracker microVMs from the web
+---
+
+# Introducing FireCrab
+
+FireCrab is an open-source project for creating and managing [Firecracker](https://firecracker-microvm.github.io/)-based
+microVMs from a web dashboard. It aims to be lighter than conventional VM platforms and practical
+to operate on a single server, on premises, or in an air-gapped environment.
+
+:::info[Current status]
+
+FireCrab is in early development. It currently supports **creating and reading VM configuration
+records through a local REST API**. Integration with actual microVM execution is in progress.
+Items that are not implemented yet are marked as `Roadmap` in this documentation.
+
+:::
+
+## What it solves
+
+Conventional virtualization platforms are often much heavier than what is needed to run a single
+microVM. FireCrab focuses exclusively on Firecracker and pursues three goals:
+
+- **Lightweight operations** — Manage Firecracker without an entire hypervisor stack
+- **Web-based management** — Inspect resource settings, status, consoles, and logs in a browser
+- **Self-hosting** — Operate inside a private network without depending on an external service
+
+## Components
+
+| Component | Role | Status |
+| --- | --- | --- |
+| Web Dashboard | UI for creating and inspecting microVMs | In progress |
+| REST API | Manages VM configuration records | Partially implemented |
+| Host Agent | Controls Firecracker processes on the host | Roadmap |
+| Image Template | RootFS and kernel image templates | Roadmap |
+
+## Roadmap
+
+**MVP scope**
+
+- Template management, snapshots, and monitoring
+- Users and permissions, Host Agent, and deployment history
+
+**Later expansion**
+
+- Multi-host operation, scheduling, and a template marketplace
+- Terraform provider, air-gapped packaging, and a more advanced operations dashboard
+
+## Next steps
+
+The source code and issue tracker are available on GitHub.
+
+- Repository: [SteelCrab/firecrab](https://github.com/SteelCrab/firecrab)
+- Documentation site: [SteelCrab/firecrab-page](https://github.com/SteelCrab/firecrab-page)

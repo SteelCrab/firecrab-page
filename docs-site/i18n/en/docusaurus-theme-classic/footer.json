@@ -3,9 +3,9 @@
     "message": "Docs",
     "description": "The title of the footer links column with title=문서 in the footer"
   },
-  "link.title.제품": {
-    "message": "Product",
-    "description": "The title of the footer links column with title=제품 in the footer"
+  "link.title.서비스": {
+    "message": "Services",
+    "description": "The title of the footer links column with title=서비스 in the footer"
   },
   "link.title.커뮤니티": {
     "message": "Community",

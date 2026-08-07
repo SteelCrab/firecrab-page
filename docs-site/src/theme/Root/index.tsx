@@ -1,6 +1,50 @@
 import {useEffect, type ReactNode} from 'react';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+
+type Language = 'ko' | 'en';
+
+const languageStorageKey = 'firecrab-language';
+
+function getPreferredLanguage(): Language {
+  const savedLanguage = window.localStorage.getItem(languageStorageKey);
+  if (savedLanguage === 'ko' || savedLanguage === 'en') return savedLanguage;
+
+  const browserLanguage = window.navigator.languages?.[0] ?? window.navigator.language;
+  return browserLanguage.toLowerCase().startsWith('ko') ? 'ko' : 'en';
+}
+
+function localizedPath(path: string, language: Language): string {
+  const pathWithoutEnglishLocale = path.replace(/^\/en(?=\/|$)/, '') || '/';
+  return language === 'en' ? `/en${pathWithoutEnglishLocale}` : pathWithoutEnglishLocale;
+}
 
 export default function Root({children}: {children: ReactNode}) {
+  const {i18n} = useDocusaurusContext();
+
+  useEffect(() => {
+    const preferredLanguage = getPreferredLanguage();
+    if (preferredLanguage === i18n.currentLocale) return;
+
+    const nextPath = localizedPath(window.location.pathname, preferredLanguage);
+    window.location.replace(`${nextPath}${window.location.search}${window.location.hash}`);
+  }, [i18n.currentLocale]);
+
+  useEffect(() => {
+    const rememberLanguage = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      const localeLink = target.closest<HTMLElement>('[data-firecrab-locale]');
+      const locale = localeLink?.dataset.firecrabLocale;
+      if (locale === 'ko' || locale === 'en') {
+        window.localStorage.setItem(languageStorageKey, locale);
+      }
+    };
+
+    document.addEventListener('click', rememberLanguage);
+    return () => document.removeEventListener('click', rememberLanguage);
+  }, []);
+
   useEffect(() => {
     const keepTitle = () => {
       if (document.title !== 'FireCrab') document.title = 'FireCrab';

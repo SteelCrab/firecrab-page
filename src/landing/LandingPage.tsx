@@ -14,6 +14,15 @@ import './LandingPage.css';
 const repositoryUrl = 'https://github.com/SteelCrab/firecrab';
 const installCommand = 'git clone https://github.com/SteelCrab/firecrab.git\ncd firecrab\n./install.sh';
 type Language = 'ko' | 'en';
+const languageStorageKey = 'firecrab-language';
+
+const getInitialLanguage = (): Language => {
+  const savedLanguage = window.localStorage.getItem(languageStorageKey);
+  if (savedLanguage === 'ko' || savedLanguage === 'en') return savedLanguage;
+
+  const browserLanguage = window.navigator.languages?.[0] ?? window.navigator.language;
+  return browserLanguage.toLowerCase().startsWith('ko') ? 'ko' : 'en';
+};
 
 const productViews = [
   {
@@ -115,10 +124,7 @@ const workflow = [
 ];
 
 export default function LandingPage() {
-  const [language, setLanguage] = useState<Language>(() => {
-    const browserLanguage = window.navigator.languages?.[0] ?? window.navigator.language;
-    return browserLanguage.toLowerCase().startsWith('ko') ? 'ko' : 'en';
-  });
+  const [language, setLanguage] = useState<Language>(getInitialLanguage);
   const [activeView, setActiveView] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -137,6 +143,7 @@ export default function LandingPage() {
   }, [language]);
 
   const changeLanguage = (nextLanguage: Language) => {
+    window.localStorage.setItem(languageStorageKey, nextLanguage);
     setLanguage(nextLanguage);
   };
 
@@ -161,9 +168,8 @@ export default function LandingPage() {
           </a>
 
           <nav className="fc-desktop-nav" aria-label="주요 메뉴">
-            <a href="#product">{t('제품', 'Product')}</a>
+            <a href="#product">{t('서비스', 'Services')}</a>
             <a href="#workflow">{t('사용 흐름', 'Workflow')}</a>
-            <a href="#install">{t('설치', 'Install')}</a>
             <a href={language === 'ko' ? '/docs' : '/en/docs'}>{t('문서', 'Docs')}</a>
             <a href={language === 'ko' ? '/blog' : '/en/blog'}>{t('블로그', 'Blog')}</a>
           </nav>
@@ -199,7 +205,7 @@ export default function LandingPage() {
             <button type="button" className={language === 'en' ? 'is-active' : ''} aria-pressed={language === 'en'} onClick={() => changeLanguage('en')}>English</button>
           </div>
           {[
-            [t('제품', 'Product'), '#product'],
+            [t('서비스', 'Services'), '#product'],
             [t('사용 흐름', 'Workflow'), '#workflow'],
             [t('설치', 'Install'), '#install'],
             [t('문서', 'Docs'), language === 'ko' ? '/docs' : '/en/docs'],
@@ -215,7 +221,13 @@ export default function LandingPage() {
         <section className="fc-hero" id="top" aria-labelledby="fc-hero-title">
           <div className="fc-hero-copy">
             <p className="fc-kicker"><span /> PRIVATE MICROVM CLOUD</p>
-            <h1 id="fc-hero-title">{t('내 서버에 두는', 'A smaller VM platform')}<br /><em>{t('가장 작은 VM 플랫폼.', 'for your own server.')}</em></h1>
+            <h1 id="fc-hero-title">
+              {t('컨테이너의 다음 시대는', 'The next era after containers')}<br />
+              <em>{t('MicroVM이다.', 'belongs to MicroVMs.')}</em>
+            </h1>
+            <p className="fc-hero-slogan">
+              {t('개발부터 배포, 운영까지—FireCrab M2. :)', 'From development to deployment and operations—FireCrab M2. :)')}
+            </p>
             <p className="fc-hero-lead">
               {t(
                 'FireCrab은 내가 관리하는 Linux 호스트에서 Firecracker microVM을 실행하는 오픈소스 플랫폼입니다. 강한 격리는 필요하지만 거대한 클라우드 컨트롤 플레인은 필요 없는 환경을 위해 만들었습니다.',
@@ -248,7 +260,7 @@ export default function LandingPage() {
         </section>
 
         <section className="fc-positioning">
-          <p className="fc-section-index">01 / PRODUCT POSITION</p>
+          <p className="fc-section-index">{t('01 / 서비스 소개', '01 / SERVICE POSITION')}</p>
           <div className="fc-positioning-grid">
             <h2>{t('컨테이너보다 강하게 격리하고,', 'Stronger isolation than containers,')}<br /><span>{t('클라우드보다 작게 운영합니다.', 'smaller operations than a cloud.')}</span></h2>
             <div>
@@ -270,7 +282,7 @@ export default function LandingPage() {
         <section className="fc-product" id="product" aria-labelledby="fc-product-title">
           <div className="fc-section-heading">
             <div>
-              <p className="fc-section-index">02 / PRODUCT TOUR</p>
+              <p className="fc-section-index">{t('02 / 서비스 둘러보기', '02 / SERVICE TOUR')}</p>
               <h2 id="fc-product-title">{t('M2를 이루는', 'Four building blocks')}<br />{t('네 가지 기본 단위.', 'behind every M2.')}</h2>
             </div>
             <p>{t('M2, 네트워크, 스토리지와 이미지를 하나의 흐름으로 조합해 전용 실행 환경을 만듭니다.', 'Combine compute, networking, storage, and images in one flow to create a dedicated runtime environment.')}</p>
@@ -340,7 +352,6 @@ export default function LandingPage() {
               <p className="fc-section-index">03 / FIRST RUN</p>
               <h2 id="fc-workflow-title">{t('첫 M2까지 세 단계.', 'Your first M2 in three steps.')}</h2>
             </div>
-            <p>{t('설치 후', 'After installation, start at')} <code>127.0.0.1:3000</code>{t('에서 시작합니다.', '.')}</p>
           </div>
           <ol className="fc-workflow-list">
             {workflow.map((step) => (
@@ -367,7 +378,6 @@ export default function LandingPage() {
           <div className="fc-install-terminal">
             <div className="fc-terminal-header"><span>TERMINAL</span><button type="button" onClick={copyInstallCommand}>{copied ? <Check size={15} /> : <Clipboard size={15} />}{copied ? t('복사됨', 'Copied') : t('복사', 'Copy')}</button></div>
             <pre><code><span>$</span> git clone https://github.com/SteelCrab/firecrab.git{`\n`}<span>$</span> cd firecrab{`\n`}<span>$</span> ./install.sh</code></pre>
-            <div className="fc-terminal-status"><i /> {t('설치가 끝나면', 'When installation finishes:')} http://127.0.0.1:3000</div>
           </div>
         </section>
 

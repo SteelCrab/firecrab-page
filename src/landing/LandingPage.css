@@ -127,7 +127,8 @@
   line-height: 1.18;
 }
 .fc-hero h1 em { color: var(--accent); font-style: normal; }
-.fc-hero-lead { max-width: 560px; margin: 25px 0 31px; color: var(--copy); font-size: 1.01rem; line-height: 1.78; }
+.fc-hero-slogan { margin: 21px 0 0; color: #342d27; font-family: "Noto Serif KR", "AppleMyungjo", serif; font-size: clamp(1rem, 1.7vw, 1.24rem); font-weight: 600; line-height: 1.6; }
+.fc-hero-lead { max-width: 560px; margin: 17px 0 31px; color: var(--copy); font-size: 1.01rem; line-height: 1.78; }
 .fc-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 13px; }
 .fc-primary-button, .fc-text-button {
   display: inline-flex;
@@ -274,8 +275,6 @@
 .fc-install-terminal pre { min-height: 180px; padding: 31px 26px; margin: 0; overflow-x: auto; }
 .fc-install-terminal code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: clamp(.7rem, 1.1vw, .85rem); line-height: 2.15; }
 .fc-install-terminal code span { color: #f17651; }
-.fc-terminal-status { display: flex; align-items: center; gap: 9px; padding: 12px 15px; border-top: 1px solid #40362e; color: #a99f96; font-size: .6rem; }
-.fc-terminal-status i { width: 7px; height: 7px; border-radius: 50%; background: #67b77f; }
 
 .fc-final-cta { display: grid; justify-items: center; padding: 105px 28px; text-align: center; background: var(--soft); }
 .fc-final-cta > div { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }

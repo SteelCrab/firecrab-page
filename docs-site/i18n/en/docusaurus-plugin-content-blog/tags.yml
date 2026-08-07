@@ -1,0 +1,39 @@
+release:
+  label: Release
+  permalink: /release
+  description: FireCrab release announcements
+
+firecracker:
+  label: Firecracker
+  permalink: /firecracker
+  description: Posts about Firecracker and microVMs
+
+devlog:
+  label: Development log
+  permalink: /devlog
+  description: Implementation notes and design decisions
+
+storage:
+  label: Storage
+  permalink: /storage
+  description: Posts about MicroStorage, disks, and pools
+
+guide:
+  label: Guide
+  permalink: /guide
+  description: Feature and operations guides
+
+microstorage:
+  label: MicroStorage
+  permalink: /microstorage
+  description: Posts about MicroStorage and storage pools
+
+network:
+  label: Network
+  permalink: /network
+  description: Posts about MicroNetwork and virtual networking
+
+micronetwork:
+  label: MicroNetwork
+  permalink: /micronetwork
+  description: Posts about MicroNetwork and VPC-style isolation
