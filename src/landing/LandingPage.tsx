@@ -123,6 +123,15 @@ const workflow = [
   },
 ];
 
+const architectureFlow = [
+  { number: '01', title: { ko: 'Linux Host', en: 'Linux Host' }, description: { ko: 'KVM과 FireCrab 준비', en: 'Prepare KVM and FireCrab' } },
+  { number: '02', title: { ko: 'M2Image', en: 'M2Image' }, description: { ko: 'MicroBoot으로 이미지 준비', en: 'Build an image with MicroBoot' } },
+  { number: '03', title: { ko: 'MicroNetwork', en: 'MicroNetwork' }, description: { ko: 'subnet과 NAT 정책 정의', en: 'Define subnet and NAT policy' } },
+  { number: '04', title: { ko: 'MicroStorage', en: 'MicroStorage' }, description: { ko: 'M2 디스크 위치 선택', en: 'Choose M2 disk placement' } },
+  { number: '05', title: { ko: 'M2 생성', en: 'Create M2' }, description: { ko: '이미지·네트워크·스토리지 조합', en: 'Combine image, network, and storage' } },
+  { number: '06', title: { ko: '실행 · 연결', en: 'Run and connect' }, description: { ko: '코드 배포와 NAT egress', en: 'Deploy code and use NAT egress' } },
+];
+
 export default function LandingPage() {
   const [language, setLanguage] = useState<Language>(getInitialLanguage);
   const [activeView, setActiveView] = useState(0);
@@ -346,10 +355,32 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section className="fc-architecture" aria-labelledby="fc-architecture-title">
+          <div className="fc-architecture-heading">
+            <div>
+              <p className="fc-section-index">03 / ARCHITECTURE</p>
+              <h2 id="fc-architecture-title">{t('MicroNetwork 아키텍처', 'MicroNetwork architecture')}</h2>
+            </div>
+            <p>{t('호스트를 준비한 뒤 이미지, 네트워크, 스토리지를 조합해 M2를 만들고 외부와 연결합니다.', 'Prepare the host, combine image, network, and storage into an M2, then connect it to the outside.')}</p>
+          </div>
+          <figure className="fc-architecture-image">
+            <img src="/micronetworks-architecture.png" alt={t('코드, Linux 호스트, 인터넷, NAT와 두 개의 격리 subnet 안에서 실행되는 M2와 MicroStorage의 MicroNetwork 아키텍처', 'MicroNetwork architecture showing code, a Linux host, internet, NAT, and M2s with MicroStorage in two isolated subnets')} />
+          </figure>
+          <ol className="fc-architecture-flow" aria-label={t('MicroVM 생성과 연결 순서', 'MicroVM creation and connection order')}>
+            {architectureFlow.map((step) => (
+              <li key={step.number}>
+                <span>{step.number}</span>
+                <strong>{step.title[language]}</strong>
+                <p>{step.description[language]}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
         <section className="fc-workflow" id="workflow" aria-labelledby="fc-workflow-title">
           <div className="fc-section-heading">
             <div>
-              <p className="fc-section-index">03 / FIRST RUN</p>
+              <p className="fc-section-index">04 / FIRST RUN</p>
               <h2 id="fc-workflow-title">{t('첫 M2까지 세 단계.', 'Your first M2 in three steps.')}</h2>
             </div>
           </div>
@@ -366,7 +397,7 @@ export default function LandingPage() {
 
         <section className="fc-install" id="install" aria-labelledby="fc-install-title">
           <div className="fc-install-copy">
-            <p className="fc-section-index">04 / INSTALL</p>
+            <p className="fc-section-index">05 / INSTALL</p>
             <h2 id="fc-install-title">{t('서버는 이미 있으니까.', 'You already have the server.')}<br /><span>{t('이제 FireCrab만.', 'Now add FireCrab.')}</span></h2>
             <p>Linux + systemd, <code>/dev/kvm</code>{t(', 네트워크와 sudo 권한이 있는 일반 사용자 계정이 필요합니다.', ', network access, and a regular user account with sudo privileges are required.')}</p>
             <div className="fc-install-links">
