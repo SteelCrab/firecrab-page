@@ -3,10 +3,10 @@ slug: vm-resource-metrics
 title: "New feature: VM resource metrics"
 authors: [steelcrab]
 tags: [release, firecracker, guide]
-image: /img/firecrab-icon.png
+image: /img/m2-icon.png
 ---
 
-![FireCrab](/img/firecrab-icon.png)
+![M2](/img/m2-icon.png)
 
 FireCrab dashboards can now show **CPU and memory usage** for running M2 (microVM) instances.
 Live usage appears next to the allocated amounts, and short graphs show up in the detail view and

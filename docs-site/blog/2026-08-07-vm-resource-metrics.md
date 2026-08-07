@@ -3,10 +3,10 @@ slug: vm-resource-metrics
 title: "새 기능 출시: VM 리소스 관측"
 authors: [steelcrab]
 tags: [release, firecracker, guide]
-image: /img/firecrab-icon.png
+image: /img/m2-icon.png
 ---
 
-![FireCrab](/img/firecrab-icon.png)
+![M2](/img/m2-icon.png)
 
 Firecrab 대시보드에서 실행 중인 M2(microVM)의 **CPU · 메모리 사용량**을 볼 수 있게 되었습니다. 할당량 옆에 실시간 사용량이 표시되고, 상세 화면과 터미널 Specs에는 짧은 그래프도 함께 나타납니다.
 
