@@ -3,7 +3,11 @@ slug: contributing
 title: "Contributions welcome — firecrab CONTRIBUTING guide"
 authors: [steelcrab]
 tags: [guide, devlog]
+# Link share (OG/Twitter) poster — icon instead of default og.png
+image: /img/firecrab-icon.png
 ---
+
+![FireCrab](/img/firecrab-icon.png)
 
 Here is how to contribute to **firecrab**, a single-host microVM platform on Firecracker.
 Doc typos, install failures, and small bug reports all count.

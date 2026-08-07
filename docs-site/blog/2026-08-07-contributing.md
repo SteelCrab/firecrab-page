@@ -3,7 +3,11 @@ slug: contributing
 title: "기여를 환영합니다 — firecrab CONTRIBUTING 안내"
 authors: [steelcrab]
 tags: [guide, devlog]
+# 링크 공유(OG/Twitter) 포스터 — 기본 og.png 대신 아이콘
+image: /img/firecrab-icon.png
 ---
+
+![FireCrab](/img/firecrab-icon.png)
 
 Firecracker 기반 단일 호스트 microVM 플랫폼 **firecrab**에 기여하는 방법을 정리했습니다.
 문서 오타부터 설치 실패 제보까지, 작은 참여도 환영합니다.
