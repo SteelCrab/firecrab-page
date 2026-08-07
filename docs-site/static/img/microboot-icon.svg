@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title desc">
+  <title id="title">MicroBoot</title>
+  <desc id="desc">A simple black line drawing of a cube on a white background.</desc>
+  <rect width="320" height="320" fill="#fff"/>
+  <g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8">
+    <path d="M56 96 160 36l104 60-104 60z"/>
+    <path d="M56 96v120l104 60 104-60V96"/>
+    <path d="M160 156v120"/>
+  </g>
+</svg>
