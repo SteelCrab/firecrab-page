@@ -301,6 +301,12 @@
 @media (max-width: 1020px) {
   .fc-desktop-nav { display: none; }
   .fc-nav-actions { margin-left: auto; }
+  .fc-menu-button { display: block; margin-left: 0; }
+  .fc-mobile-nav { padding: 7px 16px 17px; border-top: 1px solid var(--line); background: #fff; }
+  .fc-mobile-nav:not([hidden]) { display: grid; }
+  .fc-mobile-nav a { padding: 10px 5px; border-bottom: 1px solid #eeeae6; font-size: .78rem; font-weight: 650; }
+  .fc-mobile-nav a[href="#install"], .fc-mobile-nav a[target="_blank"] { display: none; }
+  .fc-mobile-language { display: none; }
   .fc-hero { grid-template-columns: 1fr; }
   .fc-hero-copy { max-width: 750px; }
   .fc-hero-visual { width: min(820px, 100%); }
@@ -315,10 +321,8 @@
 @media (max-width: 740px) {
   .fc-nav-shell { width: min(100% - 32px, 1180px); min-height: 60px; }
   .fc-nav-actions { display: none; }
-  .fc-menu-button { display: block; }
-  .fc-mobile-nav { padding: 7px 16px 17px; border-top: 1px solid var(--line); background: #fff; }
-  .fc-mobile-nav:not([hidden]) { display: grid; }
-  .fc-mobile-nav a { padding: 10px 5px; border-bottom: 1px solid #eeeae6; font-size: .78rem; font-weight: 650; }
+  .fc-mobile-nav a[href="#install"], .fc-mobile-nav a[target="_blank"] { display: block; }
+  .fc-mobile-language { display: flex; }
   .fc-hero { width: min(100% - 32px, 1180px); grid-template-columns: minmax(0, 1fr); gap: 48px; padding: 60px 0 67px; }
   .fc-hero h1 { font-size: clamp(2.1rem, 10.5vw, 3.15rem); }
   .fc-hero-lead { font-size: .92rem; }
