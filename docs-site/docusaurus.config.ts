@@ -10,7 +10,9 @@ import type * as Preset from '@docusaurus/preset-classic';
 const currentLocale = process.env.DOCUSAURUS_CURRENT_LOCALE ?? 'ko';
 const t = <T,>(ko: T, en: T): T => (currentLocale === 'en' ? en : ko);
 
-const landingUrl = '/';
+// 랜딩은 Docusaurus 밖(Vite). 상대 경로 `/` 는 broken-link 검사에 걸려
+// 사이트 절대 URL을 쓴다. 같은 오리진 배포에서는 전체 페이지 이동으로 동작한다.
+const landingUrl = 'https://firecrab.dev/';
 const docsUrl = currentLocale === 'en' ? '/en/docs' : '/docs';
 const blogUrl = currentLocale === 'en' ? '/en/blog' : '/blog';
 const repositoryUrl = 'https://github.com/SteelCrab/firecrab';
@@ -115,32 +117,21 @@ const config: Config = {
       logo: {
         alt: 'FireCrab',
         src: 'img/firecrab-icon.png',
-        // 기본값은 baseUrl(=/)인데 그건 랜딩이라 Docusaurus 라우트가 없다. 브랜드는 문서 홈으로.
-        href: docsUrl,
+        // 브랜드 클릭 = 메인(랜딩). 배포 시 같은 오리진 전체 로드.
+        href: landingUrl,
       },
-      // 랜딩 헤더(.fc-nav-links)와 같은 항목·순서를 유지한다. 랜딩 섹션 앵커는 baseUrl
-      // 밖이라 원시 HTML로 넣는다.
+      // 랜딩 헤더와 동일: 메인 · 문서 · 블로그 | GitHub
+      // 원시 <a> 로 넣어 랜딩(/) 이동 시 전체 페이지 로드가 일어나게 한다.
       items: [
         {
           type: 'html',
           position: 'left',
-          value: `<a class="navbar__item navbar__link" href="/#product">${t('서비스', 'Services')}</a>`,
+          value: `<a class="navbar__item navbar__link" href="${landingUrl}">${t('메인', 'Main')}</a>`,
         },
         {
           type: 'html',
           position: 'left',
-          value: `<a class="navbar__item navbar__link" href="/#workflow">${t('사용 흐름', 'Workflow')}</a>`,
-        },
-        {
-          type: 'html',
-          position: 'left',
-          value: `<a class="navbar__item navbar__link" href="/#install">${t('설치', 'Install')}</a>`,
-        },
-        {
-          type: 'docSidebar',
-          sidebarId: 'docsSidebar',
-          position: 'left',
-          label: t('문서', 'Docs'),
+          value: `<a class="navbar__item navbar__link" href="${docsUrl}">${t('문서', 'Docs')}</a>`,
         },
         {
           type: 'html',
@@ -151,12 +142,6 @@ const config: Config = {
           href: repositoryUrl,
           label: 'GitHub',
           position: 'right',
-        },
-        {
-          href: repositoryUrl,
-          label: t('현재 구현 보기', 'View source'),
-          position: 'right',
-          className: 'fc-navbar-cta',
         },
       ],
     },

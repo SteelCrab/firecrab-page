@@ -319,6 +319,7 @@
   .fc-mobile-nav { padding: 7px 16px 17px; border-top: 1px solid var(--line); background: #fff; }
   .fc-mobile-nav:not([hidden]) { display: grid; }
   .fc-mobile-nav a { padding: 10px 5px; border-bottom: 1px solid #eeeae6; font-size: .78rem; font-weight: 650; }
+  /* 태블릿: 상단 액션(언어·GitHub·설치)이 보이므로 모바일 메뉴 중복 항목은 숨긴다. */
   .fc-mobile-nav a[href="#install"], .fc-mobile-nav a[target="_blank"] { display: none; }
   .fc-mobile-language { display: none; }
   .fc-hero { grid-template-columns: 1fr; }

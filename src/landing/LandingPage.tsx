@@ -177,8 +177,7 @@ export default function LandingPage() {
           </a>
 
           <nav className="fc-desktop-nav" aria-label="주요 메뉴">
-            <a href="#product">{t('서비스', 'Services')}</a>
-            <a href="#workflow">{t('사용 흐름', 'Workflow')}</a>
+            <a href="#top">{t('메인', 'Main')}</a>
             <a href={language === 'ko' ? '/docs' : '/en/docs'}>{t('문서', 'Docs')}</a>
             <a href={language === 'ko' ? '/blog' : '/en/blog'}>{t('블로그', 'Blog')}</a>
           </nav>
@@ -214,15 +213,14 @@ export default function LandingPage() {
             <button type="button" className={language === 'en' ? 'is-active' : ''} aria-pressed={language === 'en'} onClick={() => changeLanguage('en')}>English</button>
           </div>
           {[
-            [t('서비스', 'Services'), '#product'],
-            [t('사용 흐름', 'Workflow'), '#workflow'],
-            [t('설치', 'Install'), '#install'],
+            [t('메인', 'Main'), '#top'],
             [t('문서', 'Docs'), language === 'ko' ? '/docs' : '/en/docs'],
             [t('블로그', 'Blog'), language === 'ko' ? '/blog' : '/en/blog'],
           ].map(([label, href]) => (
             <a href={href} key={label} onClick={() => setMobileMenuOpen(false)}>{label}</a>
           ))}
           <a href={repositoryUrl} target="_blank" rel="noreferrer" onClick={() => setMobileMenuOpen(false)}>GitHub ↗</a>
+          <a href="#install" onClick={() => setMobileMenuOpen(false)}>{t('설치하기', 'Install')}</a>
         </nav>
       </header>
 
