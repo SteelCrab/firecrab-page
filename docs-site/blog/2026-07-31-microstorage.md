@@ -5,6 +5,8 @@ authors: [steelcrab]
 tags: [release, firecracker, guide, storage, microstorage]
 # 링크 공유(OG/Twitter) 포스터 = 글 메인 이미지
 image: /img/microstorage-og.png
+# 같은 날 글 정렬용 (표시는 UTC 날짜만 사용)
+date: 2026-07-31T04:00
 ---
 
 ![MicroStorage](/img/microstorage-icon.png)

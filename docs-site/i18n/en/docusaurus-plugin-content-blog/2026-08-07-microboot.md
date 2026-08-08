@@ -3,6 +3,8 @@ slug: microboot
 title: "New feature: MicroBoot"
 authors: [steelcrab]
 tags: [release, firecracker, guide]
+# Same-day sort key (display uses UTC date only)
+date: 2026-08-07T03:06
 ---
 
 ![MicroBoot](/img/microboot-icon.svg)

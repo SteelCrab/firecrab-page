@@ -3,6 +3,8 @@ slug: microboot
 title: "새 기능 출시: MicroBoot"
 authors: [steelcrab]
 tags: [release, firecracker, guide]
+# 같은 날 글 정렬용 (표시는 UTC 날짜만 사용)
+date: 2026-08-07T03:06
 ---
 
 ![MicroBoot](/img/microboot-icon.svg)

@@ -4,6 +4,8 @@ title: "New feature: MicroNetwork"
 authors: [steelcrab]
 tags: [release, firecracker, guide, micronetwork]
 image: /img/micronetwork-og.png
+# Same-day sort key (display uses UTC date only)
+date: 2026-07-31T18:00
 ---
 
 ![MicroNetwork](/img/micronetwork-icon.png)

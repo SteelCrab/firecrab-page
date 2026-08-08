@@ -5,6 +5,8 @@ authors: [steelcrab]
 tags: [guide, devlog]
 # Link share (OG/Twitter) poster — icon instead of default og.png
 image: /img/firecrab-icon.png
+# Same-day sort key (display uses UTC date only)
+date: 2026-08-07T09:11
 ---
 
 ![FireCrab](/img/firecrab-icon.png)

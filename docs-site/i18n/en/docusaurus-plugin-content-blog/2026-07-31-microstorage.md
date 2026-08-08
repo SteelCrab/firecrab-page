@@ -4,6 +4,8 @@ title: "New feature: MicroStorage"
 authors: [steelcrab]
 tags: [release, firecracker, guide, storage, microstorage]
 image: /img/microstorage-og.png
+# Same-day sort key (display uses UTC date only)
+date: 2026-07-31T04:00
 ---
 
 ![MicroStorage](/img/microstorage-icon.png)

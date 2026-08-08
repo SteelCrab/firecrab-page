@@ -66,6 +66,19 @@ const config: Config = {
           showReadingTime: true,
           blogTitle: 'FireCrab 블로그',
           blogDescription: 'FireCrab 개발 기록과 릴리스 소식',
+          // 기본값 5면 최신 글만 남고 7월 글이 사이드바에서 빠진다.
+          blogSidebarCount: 'ALL',
+          // 최신 작성일 우선. 같은 시각이면 파일 경로로 안정 정렬.
+          sortPosts: 'descending',
+          processBlogPosts: async ({blogPosts}) =>
+            [...blogPosts].sort((a, b) => {
+              const byDate =
+                b.metadata.date.getTime() - a.metadata.date.getTime();
+              if (byDate !== 0) {
+                return byDate;
+              }
+              return b.metadata.source.localeCompare(a.metadata.source);
+            }),
           editUrl,
           feedOptions: {
             type: ['rss', 'atom'],

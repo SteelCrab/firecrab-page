@@ -5,6 +5,8 @@ authors: [steelcrab]
 tags: [guide, devlog]
 # 링크 공유(OG/Twitter) 포스터 — 기본 og.png 대신 아이콘
 image: /img/firecrab-icon.png
+# 같은 날 글 정렬용 (표시는 UTC 날짜만 사용)
+date: 2026-08-07T09:11
 ---
 
 ![FireCrab](/img/firecrab-icon.png)
