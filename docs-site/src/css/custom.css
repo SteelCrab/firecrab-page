@@ -13,6 +13,9 @@
   --fc-code-border: #d8d2ca;
   --fc-code-rail: #f0ece6;
   --fc-code-label: #74685d;
+  --fc-code-background: #fbfaf8;
+  --fc-code-number: #766b61;
+  --fc-code-number-line: #ddd7d0;
   --fc-code-shadow: 0 12px 30px -24px rgba(46, 34, 24, 0.58);
   --fc-code-scroll-track: #ebe6df;
   --fc-code-scroll-thumb: #aaa096;
@@ -54,6 +57,9 @@
   --fc-code-border: #3d3833;
   --fc-code-rail: #25221f;
   --fc-code-label: #b7aca2;
+  --fc-code-background: #191715;
+  --fc-code-number: #a69b91;
+  --fc-code-number-line: #3b3530;
   --fc-code-shadow: 0 16px 34px -24px rgba(0, 0, 0, 0.9);
   --fc-code-scroll-track: #25211e;
   --fc-code-scroll-thumb: #655c54;
@@ -236,9 +242,33 @@
 }
 
 .theme-code-block pre {
+  background: var(--fc-code-background) !important;
   border-radius: 0 !important;
+  font-size: 0.94rem;
+  font-variant-ligatures: none;
+  font-weight: 500;
+  line-height: 1.65;
   scrollbar-color: var(--fc-code-scroll-thumb) var(--fc-code-scroll-track);
   scrollbar-width: thin;
+}
+
+/* 줄번호는 코드와 분리해 긴 스크립트를 빠르게 훑을 수 있게 한다. */
+.theme-code-block [class*='codeLineNumber'] {
+  min-width: 3.25rem;
+  border-right: 1px solid var(--fc-code-number-line);
+  background: var(--fc-code-background) !important;
+  color: var(--fc-code-number);
+  padding-right: 0.85rem;
+  user-select: none;
+}
+
+.theme-code-block [class*='codeLineNumber']::before {
+  opacity: 1;
+}
+
+.theme-code-block [class*='codeLineContent'] {
+  padding-right: var(--ifm-pre-padding);
+  padding-left: 1rem;
 }
 
 .theme-code-block pre::-webkit-scrollbar {

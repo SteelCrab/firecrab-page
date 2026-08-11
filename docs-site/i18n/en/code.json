@@ -226,6 +226,14 @@
     "message": "Toggle word wrap",
     "description": "The title attribute for toggle word wrapping button of code block lines"
   },
+  "theme.CodeBlock.expandButtonAriaLabel": {
+    "message": "Expand code",
+    "description": "The label for the button that expands a collapsed code block"
+  },
+  "theme.CodeBlock.collapseButtonAriaLabel": {
+    "message": "Collapse code",
+    "description": "The label for the button that collapses an expanded code block"
+  },
   "theme.docs.breadcrumbs.home": {
     "message": "Home page",
     "description": "The ARIA label for the home page in the breadcrumbs"

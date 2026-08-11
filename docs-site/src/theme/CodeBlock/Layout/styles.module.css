@@ -1,0 +1,80 @@
+.codeBlockContent {
+  position: relative;
+  direction: ltr;
+  border-radius: inherit;
+}
+
+.codeBlockTitle {
+  border-bottom: 1px solid var(--ifm-color-emphasis-300);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  padding: 0.75rem var(--ifm-pre-padding);
+  font-size: var(--ifm-code-font-size);
+  font-weight: 500;
+}
+
+.codeBlockBody {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transition: grid-template-rows 180ms ease, opacity 140ms ease;
+}
+
+.codeBlockBodyCollapsed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+.codeBlockBodyInner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.collapseButton {
+  position: absolute;
+  z-index: 1;
+  top: calc(-2.25rem + 0.35rem);
+  right: 5.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid transparent;
+  border-radius: var(--ifm-global-radius);
+  background: transparent;
+  color: var(--fc-code-label);
+  opacity: 0.65;
+  transition: background-color 150ms ease, border-color 150ms ease,
+    color 150ms ease, opacity 150ms ease;
+}
+
+.collapseButton:hover,
+.collapseButton:focus-visible {
+  border-color: var(--fc-code-border);
+  background: var(--ifm-background-surface-color);
+  color: var(--fc-accent);
+  opacity: 1;
+}
+
+.collapseIcon {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  transition: transform 160ms ease;
+}
+
+.collapseIconCollapsed {
+  transform: rotate(-90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .codeBlockBody,
+  .collapseIcon {
+    transition: none;
+  }
+}
