@@ -21,34 +21,7 @@ description: FireCrab 대시보드에서 Nginx, Python API, PostgreSQL로 3티�
 
 ## 완성할 구조
 
-```mermaid
-flowchart LR
-    User["브라우저 / curl"]
-    Host["FireCrab 호스트<br/>TCP :8080"]
-
-    subgraph Infra["FireCrab 호스트 경계 (개념상 MicroInfra)"]
-        Image["M2Image<br/>ubuntu-26.04"]
-        Shells["Shell 저장소<br/>10-db-init · 20-api-init<br/>30-nginx-init · 40-web-content"]
-
-        subgraph Network["MicroNetwork: three-tier (10.77.0.0/24)"]
-            Nginx["nginx MicroVM<br/>TCP :80"]
-            Backend["backend MicroVM<br/>HTTP :8080"]
-            DB["db MicroVM<br/>PostgreSQL :5432"]
-        end
-
-        Host -->|"DNAT 8080 → 80/TCP"| Nginx
-        Nginx -->|"HTTP :8080"| Backend
-        Backend -->|"TCP :5432"| DB
-        Image -.-> Nginx
-        Image -.-> Backend
-        Image -.-> DB
-        Shells -.-> Nginx
-        Shells -.-> Backend
-        Shells -.-> DB
-    end
-
-    User -->|"HTTP :8080"| Host
-```
+![FireCrab MicroInfra 안에서 Nginx, Backend, DB가 연결된 3티어 아키텍처](/img/firecrab-architecture-3tier.png)
 
 여기서 **MicroInfra**는 제품 안에서 생성하는 리소스 이름이 아니라 FireCrab이 설치된 호스트의 경계를 뜻합니다.
 실제로 대시보드에서 만드는 리소스는 M2Image, MicroNetwork, Shell, MicroVM입니다.

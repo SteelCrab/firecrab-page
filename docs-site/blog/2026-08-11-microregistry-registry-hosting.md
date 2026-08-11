@@ -3,11 +3,11 @@ slug: microregistry-registry-hosting
 title: "새 기능: MicroRegistry로 이미지 설치하기"
 authors: [steelcrab]
 tags: [release, firecracker, guide]
-image: /microregistry-icon.png
+image: /img/microregistry-icon.png
 date: 2026-08-11T12:00
 ---
 
-![MicroRegistry](pathname:///microregistry-icon.png)
+![MicroRegistry](/img/microregistry-icon.png)
 
 Firecrab에 **MicroRegistry**가 추가되었습니다.
 
