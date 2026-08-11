@@ -1,0 +1,651 @@
+---
+slug: /tutorials/three-tier-architecture
+sidebar_position: 2
+sidebar_label: Three-tier architecture
+title: Build a three-tier architecture
+description: Build a three-tier Nginx, Python API, and PostgreSQL service from the FireCrab dashboard
+---
+
+# Build a three-tier architecture
+
+This tutorial creates three Ubuntu MicroVMs from the FireCrab dashboard and connects them as a working
+**Nginx → Python API → PostgreSQL** service. At the end, you will open the web page through port `8080`
+on the host and verify that a request crosses all three tiers.
+
+:::warning[Tutorial configuration]
+
+This guide uses a fixed database account and password so that the example can be copied and run as written.
+Before exposing it to the internet or adapting it for production, add proper secret management, TLS, backups,
+and authentication.
+
+:::
+
+## What you will build
+
+```mermaid
+flowchart LR
+    User["Browser / curl"]
+    Host["FireCrab host<br/>TCP :8080"]
+
+    subgraph Infra["FireCrab host boundary (conceptual MicroInfra)"]
+        Image["M2Image<br/>ubuntu-26.04"]
+        Shells["Shell repository<br/>10-db-init · 20-api-init<br/>30-nginx-init · 40-web-content"]
+
+        subgraph Network["MicroNetwork: three-tier (10.77.0.0/24)"]
+            Nginx["nginx MicroVM<br/>TCP :80"]
+            Backend["backend MicroVM<br/>HTTP :8080"]
+            DB["db MicroVM<br/>PostgreSQL :5432"]
+        end
+
+        Host -->|"DNAT 8080 → 80/TCP"| Nginx
+        Nginx -->|"HTTP :8080"| Backend
+        Backend -->|"TCP :5432"| DB
+        Image -.-> Nginx
+        Image -.-> Backend
+        Image -.-> DB
+        Shells -.-> Nginx
+        Shells -.-> Backend
+        Shells -.-> DB
+    end
+
+    User -->|"HTTP :8080"| Host
+```
+
+In this diagram, **MicroInfra** describes the boundary of the host running FireCrab; it is not a resource that
+you create in the product. The dashboard resources used here are M2Image, MicroNetwork, Shell, and MicroVM.
+
+| Path | Protocol | Exposure |
+| --- | --- | --- |
+| Host `:8080` → Nginx `:80` | HTTP/TCP | Exposed on the host by port forwarding |
+| Nginx → Backend `:8080` | HTTP/TCP | Internal to `three-tier` |
+| Backend → PostgreSQL `:5432` | PostgreSQL/TCP | Internal to `three-tier` |
+
+Do not add port forwards to the Backend or DB VMs. Because all three VMs use the same MicroNetwork, they can
+communicate directly through their persistent private IPv4 addresses.
+
+## Prerequisites
+
+- FireCrab is installed on a Linux host and its dashboard is available.
+- Initial internet access is available for the M2Image and Ubuntu packages.
+- TCP port `8080` is unused on the host.
+- `curl` is available on the host for the final checks.
+
+Check the installation and host port first.
+
+```sh
+systemctl status firecrab-net-helper firecrab-api
+curl -fsS http://127.0.0.1:3000/api/host
+ss -lnt | grep ':8080 ' || true
+```
+
+If the last command prints nothing, `8080/TCP` is normally available. If another process or FireCrab VM already
+uses it, choose a free host port and update the URLs later in the tutorial.
+
+The tutorial uses these values:
+
+| Item | Value |
+| --- | --- |
+| M2Image | `ubuntu-26.04` |
+| MicroNetwork name | `three-tier` |
+| Subnet CIDR | `10.77.0.0/24` |
+| DB account / database | `firecrab_app` / `firecrab_demo` |
+| Demo password | `firecrab_demo_password` |
+| External entry point | Host `8080/TCP` |
+
+If `10.77.0.0/24` overlaps a host, VPN, or container route, use another non-overlapping private `/24` network.
+When changing the CIDR, use the same value for `PG_HBA_RULE` in the DB Shell.
+
+## 1. Install the Ubuntu M2Image
+
+1. Open **Images** in the dashboard navigation.
+2. Find `ubuntu-26.04` under **MicroRegistry** and click **Download**.
+3. When its state changes to **Package ready**, click **Install**.
+4. Confirm that its state is **Installed**.
+
+Download and installation are separate steps. A downloaded package does not appear in the MicroVM creation form
+until it has also been installed.
+
+## 2. Create the MicroNetwork
+
+1. Open **Networks** in the navigation.
+2. Enter these values.
+
+| Field | Value |
+| --- | --- |
+| Name | `three-tier` |
+| Subnet CIDR | `10.77.0.0/24` |
+| Internet | **Enabled (NAT)** |
+
+3. Create the MicroNetwork and confirm that its internet state is **Enabled**.
+
+NAT is needed while each Shell installs Ubuntu packages on first boot. After provisioning, you can block outbound
+internet for the Backend and DB as described in [Block outbound internet](#optional-block-outbound-internet).
+
+## 3. Build the DB tier
+
+### 3-1. Create the `10-db-init` Shell
+
+Open **Shells** in the navigation and create a Shell with these values.
+
+| Field | Value |
+| --- | --- |
+| Name | `10-db-init` |
+| Description | `PostgreSQL for the three-tier tutorial` |
+| Content | Script below |
+
+```sh
+#!/bin/sh
+set -eu
+
+NETWORK_CIDR="10.77.0.0/24"
+DB_NAME="firecrab_demo"
+DB_USER="firecrab_app"
+DB_PASSWORD="firecrab_demo_password"
+export DEBIAN_FRONTEND=noninteractive
+
+if ! dpkg-query -W -f='${Status}' postgresql 2>/dev/null | grep -q 'ok installed'; then
+  apt-get update
+  apt-get install -y postgresql
+fi
+
+PG_VERSION=$(find /etc/postgresql -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -V | tail -n 1)
+PG_CONF="/etc/postgresql/$PG_VERSION/main/postgresql.conf"
+PG_HBA="/etc/postgresql/$PG_VERSION/main/pg_hba.conf"
+
+if grep -Eq '^[#[:space:]]*listen_addresses[[:space:]]*=' "$PG_CONF"; then
+  sed -i "s/^[#[:space:]]*listen_addresses[[:space:]]*=.*/listen_addresses = '*'/" "$PG_CONF"
+else
+  printf "\nlisten_addresses = '*'\n" >>"$PG_CONF"
+fi
+
+PG_HBA_RULE="host $DB_NAME $DB_USER $NETWORK_CIDR scram-sha-256"
+grep -Fqx "$PG_HBA_RULE" "$PG_HBA" || printf '%s\n' "$PG_HBA_RULE" >>"$PG_HBA"
+
+systemctl enable --now postgresql
+
+runuser -u postgres -- psql --set=ON_ERROR_STOP=1 \
+  --set=db_user="$DB_USER" --set=db_password="$DB_PASSWORD" <<'SQL'
+SELECT format('CREATE ROLE %I LOGIN PASSWORD %L', :'db_user', :'db_password')
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'db_user') \gexec
+SELECT format('ALTER ROLE %I WITH LOGIN PASSWORD %L', :'db_user', :'db_password') \gexec
+SQL
+
+if ! runuser -u postgres -- psql -tAc \
+  "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'" | grep -q 1; then
+  runuser -u postgres -- createdb --owner="$DB_USER" "$DB_NAME"
+fi
+
+runuser -u postgres -- psql --set=ON_ERROR_STOP=1 --dbname="$DB_NAME" \
+  --set=db_user="$DB_USER" <<'SQL'
+CREATE TABLE IF NOT EXISTS visits (
+  id BIGSERIAL PRIMARY KEY,
+  visited_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+SELECT format('GRANT SELECT, INSERT ON TABLE visits TO %I', :'db_user') \gexec
+SELECT format('GRANT USAGE, SELECT ON SEQUENCE visits_id_seq TO %I', :'db_user') \gexec
+SQL
+
+systemctl restart postgresql
+systemctl is-active --quiet postgresql
+ss -lnt | grep ':5432 '
+```
+
+The script installs the package only when needed and checks for the role, database, table, and access rule before
+applying them. Restarting the VM and running the Shell again therefore does not create duplicate resources.
+
+### 3-2. Create the DB MicroVM
+
+Create a VM under **MicroVM** with these values.
+
+| Field | Value |
+| --- | --- |
+| Name | `db` |
+| Image | `ubuntu-26.04` |
+| CPU | `1` |
+| RAM | `1024 MiB` |
+| Disk | `4 GiB` |
+| Storage location | `default` |
+| MicroNetwork | `three-tier` |
+| Egress | `Internet access` |
+| Shell | `10-db-init` |
+| Port forwarding | None |
+
+Open the new `db` VM's detail view and record its **IP**. Replace `<DB_IP>` with this address in the next section.
+The IP is allocated when the VM is created and persists across stop and start.
+
+Start the DB VM and wait for these markers in its detail log or terminal.
+
+```text
+FIRECRAB_SHELL_OK 00.sh
+FIRECRAB_SHELL_DONE ok
+```
+
+A VM can reach `running` while its Shell is still installing packages, so wait for the completion marker.
+
+## 4. Build the Backend tier
+
+### 4-1. Create the `20-api-init` Shell
+
+Replace `<DB_IP>` near the start of this script with the actual DB IP recorded in the previous step, then create
+the Shell.
+
+| Field | Value |
+| --- | --- |
+| Name | `20-api-init` |
+| Description | `Python API connected to PostgreSQL` |
+| Content | Script below |
+
+```sh
+#!/bin/sh
+set -eu
+
+DB_HOST="<DB_IP>"
+DB_PORT="5432"
+DB_NAME="firecrab_demo"
+DB_USER="firecrab_app"
+DB_PASSWORD="firecrab_demo_password"
+export DEBIAN_FRONTEND=noninteractive
+
+if ! python3 -c 'import psycopg2' >/dev/null 2>&1; then
+  apt-get update
+  apt-get install -y python3 python3-psycopg2
+fi
+
+if ! id -u three-tier-api >/dev/null 2>&1; then
+  useradd --system --home /nonexistent --shell /usr/sbin/nologin three-tier-api
+fi
+
+install -d -m 0755 /opt/three-tier-api
+
+cat >/opt/three-tier-api/app.py <<'PY'
+import json
+import os
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+import psycopg2
+
+
+def open_database():
+    return psycopg2.connect(
+        host=os.environ["DB_HOST"],
+        port=os.environ.get("DB_PORT", "5432"),
+        dbname=os.environ["DB_NAME"],
+        user=os.environ["DB_USER"],
+        password=os.environ["DB_PASSWORD"],
+        connect_timeout=3,
+    )
+
+
+class Handler(BaseHTTPRequestHandler):
+    def send_json(self, status, payload):
+        body = json.dumps(payload).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self):
+        try:
+            if self.path == "/health":
+                connection = open_database()
+                try:
+                    with connection.cursor() as cursor:
+                        cursor.execute("SELECT current_database()")
+                        database = cursor.fetchone()[0]
+                finally:
+                    connection.close()
+                self.send_json(200, {"status": "ok", "tier": "api", "database": database})
+                return
+
+            if self.path == "/visits":
+                connection = open_database()
+                try:
+                    with connection.cursor() as cursor:
+                        cursor.execute("INSERT INTO visits DEFAULT VALUES RETURNING id")
+                        visit_id = cursor.fetchone()[0]
+                        cursor.execute("SELECT COUNT(*) FROM visits")
+                        total = cursor.fetchone()[0]
+                    connection.commit()
+                finally:
+                    connection.close()
+                self.send_json(200, {"status": "ok", "visitId": visit_id, "totalVisits": total})
+                return
+
+            self.send_json(404, {"status": "not_found"})
+        except Exception as error:
+            self.send_json(503, {"status": "error", "detail": str(error)})
+
+    def log_message(self, message_format, *args):
+        print("api:", message_format % args, flush=True)
+
+
+ThreadingHTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
+PY
+
+cat >/etc/three-tier-api.env <<EOF
+DB_HOST=$DB_HOST
+DB_PORT=$DB_PORT
+DB_NAME=$DB_NAME
+DB_USER=$DB_USER
+DB_PASSWORD=$DB_PASSWORD
+EOF
+chmod 0600 /etc/three-tier-api.env
+
+cat >/etc/systemd/system/three-tier-api.service <<'UNIT'
+[Unit]
+Description=FireCrab three-tier tutorial API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=three-tier-api
+EnvironmentFile=/etc/three-tier-api.env
+ExecStart=/usr/bin/python3 /opt/three-tier-api/app.py
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable --now three-tier-api
+systemctl restart three-tier-api
+
+attempt=0
+until /usr/bin/python3 -c \
+  'import urllib.request; urllib.request.urlopen("http://127.0.0.1:8080/health", timeout=2).read()'; do
+  attempt=$((attempt + 1))
+  if [ "$attempt" -ge 15 ]; then
+    journalctl -u three-tier-api --no-pager -n 30
+    exit 1
+  fi
+  sleep 2
+done
+```
+
+The API cannot connect if `<DB_IP>` is left unchanged. This Shell waits until `/health` completes a real
+PostgreSQL query, so an incorrect address is reported as a Shell failure.
+
+### 4-2. Create the Backend MicroVM
+
+| Field | Value |
+| --- | --- |
+| Name | `backend` |
+| Image | `ubuntu-26.04` |
+| CPU | `1` |
+| RAM | `512 MiB` |
+| Disk | `4 GiB` |
+| Storage location | `default` |
+| MicroNetwork | `three-tier` |
+| Egress | `Internet access` |
+| Shell | `20-api-init` |
+| Port forwarding | None |
+
+After creating it, record the Backend **IP** from the detail view. Use it for `<BACKEND_IP>` in the next step.
+
+Wait for `FIRECRAB_SHELL_DONE ok` on the DB, then start the Backend and wait for its completion marker.
+
+## 5. Build the Web tier
+
+The Web tier registers the Nginx configuration and static page as separate Shells. Both are attached to the same
+`nginx` VM.
+
+### 5-1. Create the `30-nginx-init` Shell
+
+Replace `<BACKEND_IP>` with the address from the Backend detail view.
+
+| Field | Value |
+| --- | --- |
+| Name | `30-nginx-init` |
+| Description | `Nginx reverse proxy for the Python API` |
+| Content | Script below |
+
+```sh
+#!/bin/sh
+set -eu
+
+BACKEND_IP="<BACKEND_IP>"
+export DEBIAN_FRONTEND=noninteractive
+
+if ! command -v nginx >/dev/null 2>&1; then
+  apt-get update
+  apt-get install -y nginx
+fi
+
+install -d -m 0755 /var/www/three-tier
+
+cat >/etc/nginx/sites-available/three-tier <<EOF
+server {
+    listen 80 default_server;
+    server_name _;
+
+    root /var/www/three-tier;
+    index index.html;
+
+    location /api/ {
+        proxy_pass http://$BACKEND_IP:8080/;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    }
+
+    location / {
+        try_files \$uri \$uri/ /index.html;
+    }
+}
+EOF
+
+rm -f /etc/nginx/sites-enabled/default
+ln -sfn /etc/nginx/sites-available/three-tier /etc/nginx/sites-enabled/three-tier
+nginx -t
+systemctl enable nginx
+systemctl restart nginx
+systemctl is-active --quiet nginx
+```
+
+### 5-2. Create the `40-web-content` Shell
+
+| Field | Value |
+| --- | --- |
+| Name | `40-web-content` |
+| Description | `Static page for the three-tier tutorial` |
+| Content | Script below |
+
+```sh
+#!/bin/sh
+set -eu
+
+install -d -m 0755 /var/www/three-tier
+
+cat >/var/www/three-tier/index.html <<'HTML'
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FireCrab three-tier demo</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #fff7ed; color: #431407; }
+    main { width: min(34rem, calc(100% - 3rem)); padding: 2rem; border: 1px solid #fdba74; border-radius: 1rem; background: white; box-shadow: 0 1rem 3rem #9a34121a; }
+    h1 { margin-top: 0; }
+    code { color: #c2410c; }
+    button { border: 0; border-radius: .6rem; padding: .75rem 1rem; background: #ea580c; color: white; cursor: pointer; }
+    #status { min-height: 1.5rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <p>FireCrab tutorial</p>
+    <h1>Nginx → Python API → PostgreSQL</h1>
+    <p id="health">Checking all three tiers…</p>
+    <p id="status"></p>
+    <button id="visit" type="button">Record a database visit</button>
+  </main>
+  <script>
+    const health = document.querySelector('#health');
+    const status = document.querySelector('#status');
+    const button = document.querySelector('#visit');
+
+    async function readJson(path) {
+      const response = await fetch(path, { cache: 'no-store' });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.detail || `HTTP ${response.status}`);
+      return body;
+    }
+
+    async function checkHealth() {
+      try {
+        const body = await readJson('/api/health');
+        health.textContent = `Healthy: ${body.tier} connected to ${body.database}`;
+      } catch (error) {
+        health.textContent = `Health check failed: ${error.message}`;
+      }
+    }
+
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      try {
+        const body = await readJson('/api/visits');
+        status.textContent = `Visit ${body.visitId} stored. Total visits: ${body.totalVisits}`;
+      } catch (error) {
+        status.textContent = `Request failed: ${error.message}`;
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    checkHealth();
+  </script>
+</body>
+</html>
+HTML
+
+chmod 0644 /var/www/three-tier/index.html
+```
+
+### 5-3. Create the Nginx MicroVM
+
+| Field | Value |
+| --- | --- |
+| Name | `nginx` |
+| Image | `ubuntu-26.04` |
+| CPU | `1` |
+| RAM | `512 MiB` |
+| Disk | `4 GiB` |
+| Storage location | `default` |
+| MicroNetwork | `three-tier` |
+| Egress | `Internet access` |
+| Shell | `30-nginx-init`, `40-web-content` |
+| VM Guest Port | `80` |
+| Host Port | `8080` |
+| Protocol | `TCP` |
+
+Click **Add Port Forward Rule** and enter `VM Guest Port 80 → Host Port 8080/TCP`. The form displays the guest
+port first, but requests flow from host port `8080` to guest port `80`.
+
+After the Backend completion marker appears, start the Nginx VM and wait for both Shell success markers and the
+final completion marker.
+
+```text
+FIRECRAB_SHELL_OK 00.sh
+FIRECRAB_SHELL_OK 01.sh
+FIRECRAB_SHELL_DONE ok
+```
+
+## 6. Verify the complete path
+
+Run these commands on the FireCrab host.
+
+```sh
+curl -fsS http://127.0.0.1:8080/api/health
+curl -fsS http://127.0.0.1:8080/api/visits
+curl -I http://127.0.0.1:8080/
+```
+
+The first two commands should return JSON similar to this:
+
+```json
+{"status": "ok", "tier": "api", "database": "firecrab_demo"}
+{"status": "ok", "visitId": 1, "totalVisits": 1}
+```
+
+Open `http://127.0.0.1:8080/` in a browser and click **Record a database visit**. When connecting from another
+computer, replace `127.0.0.1` with the FireCrab host IP and allow `8080/TCP` through the host firewall.
+
+This verifies the complete request path:
+
+1. Port forwarding sends host `8080` traffic to Nginx port `80`.
+2. Nginx proxies `/api/` to port `8080` at the Backend private IP.
+3. The Python API writes to PostgreSQL port `5432` at the DB private IP and returns the result.
+
+## Optional: block outbound internet
+
+After initial package installation, the Backend and DB can continue communicating inside the MicroNetwork without
+internet access.
+
+For each VM:
+
+1. Stop the Backend or DB.
+2. Click **Edit** in its detail view.
+3. Change **Egress** to `Isolated (gateway only)` and save.
+4. Start the DB and wait for completion, then start the Backend.
+
+The tutorial Shells skip `apt-get` when the required packages are already installed, so they still work on an
+isolated restart. This tutorial leaves Nginx egress unchanged and focuses the isolation step on the internal tiers.
+
+## Troubleshooting
+
+### `ubuntu-26.04` is missing from the VM creation form
+
+Check whether you downloaded the image without installing it. Its MicroRegistry state must be **Installed**.
+
+### A Shell fails
+
+Inspect the lines immediately before `FIRECRAB_SHELL_FAILED` in the VM detail log or terminal. On first boot,
+confirm that both the MicroNetwork and VM allow internet access. Do not treat `running` as Shell completion; wait
+for `FIRECRAB_SHELL_DONE ok`.
+
+### Nginx returns `502 Bad Gateway`
+
+- Confirm that `BACKEND_IP` in `30-nginx-init` matches the Backend detail view.
+- Confirm that all three VMs use the `three-tier` MicroNetwork.
+- Check the Backend logs for a running `three-tier-api` service and a successful Shell.
+- Confirm that the Backend was not started before the DB Shell finished.
+
+### `/api/health` returns `503`
+
+Compare `DB_HOST` in `20-api-init` with the DB detail view. If you changed the subnet, confirm that
+`NETWORK_CIDR` in `10-db-init` uses the same CIDR.
+
+### Host port `8080/TCP` is already in use
+
+Only one VM can own a host-port and protocol combination. Remove the existing process or VM rule, or choose a free
+host port such as `8081` and update the verification URLs.
+
+### A new Shell revision is not applied to an existing VM
+
+A VM pins the latest Shell revision at the time it is attached. Publishing a new revision does not move an existing
+VM to that revision automatically.
+
+1. Stop the VM.
+2. Click **Edit** in its detail view.
+3. Clear and reselect the Shell so that the latest revision is pinned, then save.
+4. Restart the VM and check the completion marker.
+
+## Cleanup
+
+Remove the tutorial resources in reverse dependency order.
+
+1. Stop and delete `nginx`, `backend`, and `db`, in that order.
+2. Delete the `10-db-init`, `20-api-init`, `30-nginx-init`, and `40-web-content` Shells.
+3. Delete the `three-tier` MicroNetwork.
+4. Delete the `ubuntu-26.04` M2Image only if no other VM uses it.
+
+A MicroNetwork that still has member VMs and a Shell that is still pinned to a VM cannot be deleted.

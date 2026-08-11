@@ -13,9 +13,9 @@ FireCrab은 [Firecracker](https://firecracker-microvm.github.io/) 기반 MicroVM
 
 :::info[현재 진행 상태]
 
-FireCrab은 개발 초기 단계입니다. 지금은 **VM 구성 레코드를 로컬 REST API로 생성·조회**하는
-수준까지 구현되어 있으며, 실제 microVM 실행 연동은 진행 중입니다.
-문서에 적힌 내용 중 로드맵 항목은 `로드맵` 표시로 구분합니다.
+FireCrab은 개발 초기 단계이지만, 현재 단일 Linux 호스트에서 **M2Image 설치, MicroNetwork·MicroStorage,
+MicroVM 생성·실행·중지, 시리얼 콘솔, Shell 프로비저닝, 포트 포워딩과 게스트 리소스 관측**을 지원합니다.
+멀티 호스트, 고가용성, 사용자 인증·권한은 아직 제공하지 않습니다.
 
 :::
 
@@ -32,26 +32,27 @@ FireCrab은 Firecracker 한 가지에 집중해서 다음을 노립니다.
 
 | 구성 요소 | 역할 | 상태 |
 | --- | --- | --- |
-| Web Dashboard | MicroVM 생성·조회 UI | 구현 중 |
-| REST API | VM 구성 레코드 관리 | 일부 구현 |
-| Host Agent | 호스트에서 Firecracker 프로세스 제어 | 로드맵 |
-| Image Template | RootFS·커널 이미지 템플릿 | 로드맵 |
+| Web Dashboard | MicroVM·이미지·네트워크·스토리지·Shell·콘솔 관리 | 구현·개선 중 |
+| REST API | 리소스와 MicroVM 생명주기 관리 | 구현·개선 중 |
+| Network Helper | bridge, DHCP, NAT, 방화벽과 포트 포워딩 적용 | 구현 |
+| M2Image | MicroRegistry 다운로드와 MicroBoot 빌드로 커널·RootFS 준비 | 구현 |
 
 ## 로드맵
 
 **MVP 범위**
 
-- Template 관리, Snapshot, Monitoring
-- 사용자 / 권한 관리, Host Agent, 배포 이력 관리
+- Snapshot, 사용자 인증·권한, 배포 이력 관리
+- 복구·백업 흐름과 운영 대시보드 고도화
 
 **이후 확장**
 
-- Multi Host, Scheduling, Template Marketplace
-- Terraform Provider, 폐쇄망 패키징, 운영 대시보드 고도화
+- Multi Host, Scheduling, 고가용성
+- Terraform Provider, 폐쇄망 패키징, Template Marketplace
 
 ## 다음 단계
 
 소스 코드와 이슈는 GitHub에서 확인할 수 있습니다.
 
+- 튜토리얼: [3티어 아키텍처 구성하기](./three-tier-architecture.mdx)
 - 저장소: [SteelCrab/firecrab](https://github.com/SteelCrab/firecrab)
 - 이 문서 사이트: [SteelCrab/firecrab-page](https://github.com/SteelCrab/firecrab-page)
