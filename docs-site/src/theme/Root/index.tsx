@@ -4,13 +4,26 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 type Language = 'ko' | 'en';
 
 const languageStorageKey = 'firecrab-language';
+const browserLanguageStorageKey = 'firecrab-browser-language';
 
-function getPreferredLanguage(): Language {
-  const savedLanguage = window.localStorage.getItem(languageStorageKey);
-  if (savedLanguage === 'ko' || savedLanguage === 'en') return savedLanguage;
-
+function getBrowserLanguage(): Language {
   const browserLanguage = window.navigator.languages?.[0] ?? window.navigator.language;
   return browserLanguage.toLowerCase().startsWith('ko') ? 'ko' : 'en';
+}
+
+function getPreferredLanguage(): Language {
+  const browserLanguage = getBrowserLanguage();
+  const savedLanguage = window.localStorage.getItem(languageStorageKey);
+  const browserLanguageAtSave = window.localStorage.getItem(browserLanguageStorageKey);
+
+  if (
+    (savedLanguage === 'ko' || savedLanguage === 'en') &&
+    browserLanguageAtSave === browserLanguage
+  ) {
+    return savedLanguage;
+  }
+
+  return browserLanguage;
 }
 
 function localizedPath(path: string, language: Language): string {
@@ -38,6 +51,7 @@ export default function Root({children}: {children: ReactNode}) {
       const locale = localeLink?.dataset.firecrabLocale;
       if (locale === 'ko' || locale === 'en') {
         window.localStorage.setItem(languageStorageKey, locale);
+        window.localStorage.setItem(browserLanguageStorageKey, getBrowserLanguage());
       }
     };
 

@@ -15,13 +15,26 @@ const repositoryUrl = 'https://github.com/SteelCrab/firecrab';
 const installCommand = 'git clone https://github.com/SteelCrab/firecrab.git\ncd firecrab\n./install.sh';
 type Language = 'ko' | 'en';
 const languageStorageKey = 'firecrab-language';
+const browserLanguageStorageKey = 'firecrab-browser-language';
 
-const getInitialLanguage = (): Language => {
-  const savedLanguage = window.localStorage.getItem(languageStorageKey);
-  if (savedLanguage === 'ko' || savedLanguage === 'en') return savedLanguage;
-
+const getBrowserLanguage = (): Language => {
   const browserLanguage = window.navigator.languages?.[0] ?? window.navigator.language;
   return browserLanguage.toLowerCase().startsWith('ko') ? 'ko' : 'en';
+};
+
+const getInitialLanguage = (): Language => {
+  const browserLanguage = getBrowserLanguage();
+  const savedLanguage = window.localStorage.getItem(languageStorageKey);
+  const browserLanguageAtSave = window.localStorage.getItem(browserLanguageStorageKey);
+
+  if (
+    (savedLanguage === 'ko' || savedLanguage === 'en') &&
+    browserLanguageAtSave === browserLanguage
+  ) {
+    return savedLanguage;
+  }
+
+  return browserLanguage;
 };
 
 const productViews = [
@@ -153,6 +166,7 @@ export default function LandingPage() {
 
   const changeLanguage = (nextLanguage: Language) => {
     window.localStorage.setItem(languageStorageKey, nextLanguage);
+    window.localStorage.setItem(browserLanguageStorageKey, getBrowserLanguage());
     setLanguage(nextLanguage);
   };
 
