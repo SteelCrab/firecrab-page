@@ -10,6 +10,12 @@
   --fc-accent-dark: #9f3217;
   --fc-ink: #1b1712;
   --fc-line: #e5e7eb;
+  --fc-code-border: #d8d2ca;
+  --fc-code-rail: #f0ece6;
+  --fc-code-label: #74685d;
+  --fc-code-shadow: 0 12px 30px -24px rgba(46, 34, 24, 0.58);
+  --fc-code-scroll-track: #ebe6df;
+  --fc-code-scroll-thumb: #aaa096;
   /* 랜딩 .fc-nav-wrap 과 동일한 가로 규격 */
   --fc-shell: min(1180px, calc(100% - 64px));
 
@@ -45,6 +51,12 @@
   --fc-accent-dark: #db5732;
   --fc-ink: #f2ece4;
   --fc-line: rgba(255, 255, 255, 0.1);
+  --fc-code-border: #3d3833;
+  --fc-code-rail: #25221f;
+  --fc-code-label: #b7aca2;
+  --fc-code-shadow: 0 16px 34px -24px rgba(0, 0, 0, 0.9);
+  --fc-code-scroll-track: #25211e;
+  --fc-code-scroll-thumb: #655c54;
 
   --ifm-color-primary: #e2785a;
   --ifm-color-primary-dark: #df6a4a;
@@ -135,6 +147,116 @@
 .main-wrapper {
   width: var(--fc-shell);
   margin: 0 auto;
+}
+
+/* ── 코드 블록: 언어와 복사 동작이 한눈에 보이는 터미널 패널 ── */
+.theme-code-block {
+  position: relative;
+  overflow: hidden;
+  margin: 1.5rem 0 !important;
+  border: 1px solid var(--fc-code-border);
+  border-radius: 12px !important;
+  box-shadow: var(--fc-code-shadow) !important;
+}
+
+/* 코드 본문과 분리된 얇은 정보 레일 */
+.theme-code-block::before {
+  display: block;
+  height: 2.25rem;
+  border-bottom: 1px solid var(--fc-code-border);
+  background: var(--fc-code-rail);
+  content: '';
+}
+
+.theme-code-block::after {
+  position: absolute;
+  top: 0;
+  left: 0.9rem;
+  color: var(--fc-code-label);
+  content: 'CODE';
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  line-height: 2.25rem;
+  pointer-events: none;
+}
+
+.theme-code-block.language-sh::after,
+.theme-code-block.language-bash::after,
+.theme-code-block.language-shell::after {
+  content: 'SHELL';
+}
+
+.theme-code-block.language-python::after,
+.theme-code-block.language-py::after {
+  content: 'PYTHON';
+}
+
+.theme-code-block.language-json::after {
+  content: 'JSON';
+}
+
+.theme-code-block.language-yaml::after,
+.theme-code-block.language-yml::after {
+  content: 'YAML';
+}
+
+.theme-code-block.language-html::after,
+.theme-code-block.language-markup::after {
+  content: 'HTML';
+}
+
+.theme-code-block.language-nginx::after {
+  content: 'NGINX';
+}
+
+.theme-code-block.language-text::after {
+  content: 'OUTPUT';
+}
+
+/* 기본 복사 버튼을 본문 위가 아니라 정보 레일에 배치한다. */
+.theme-code-block [class*='buttonGroup'] {
+  top: calc(-2.25rem + 0.35rem);
+  right: 0.45rem;
+}
+
+.theme-code-block [class*='buttonGroup'] button {
+  border-color: transparent;
+  background: transparent;
+  opacity: 0.65;
+}
+
+.theme-code-block [class*='buttonGroup'] button:hover,
+.theme-code-block [class*='buttonGroup'] button:focus-visible {
+  border-color: var(--fc-code-border);
+  background: var(--ifm-background-surface-color);
+  color: var(--fc-accent);
+  opacity: 1;
+}
+
+.theme-code-block pre {
+  border-radius: 0 !important;
+  scrollbar-color: var(--fc-code-scroll-thumb) var(--fc-code-scroll-track);
+  scrollbar-width: thin;
+}
+
+.theme-code-block pre::-webkit-scrollbar {
+  height: 10px;
+}
+
+.theme-code-block pre::-webkit-scrollbar-track {
+  background: var(--fc-code-scroll-track);
+}
+
+.theme-code-block pre::-webkit-scrollbar-thumb {
+  border: 3px solid var(--fc-code-scroll-track);
+  border-radius: 999px;
+  background: var(--fc-code-scroll-thumb);
+}
+
+.theme-code-block pre::-webkit-scrollbar-thumb:hover {
+  background: var(--fc-accent);
 }
 
 /* ── /blog 목록: 카드 그리드 (랜딩 .fc-stack-card 와 같은 카드 언어) ── */
