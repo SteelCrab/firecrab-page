@@ -12,7 +12,7 @@ import {
 import './LandingPage.css';
 
 const repositoryUrl = 'https://github.com/SteelCrab/firecrab';
-const installCommand = 'git clone https://github.com/SteelCrab/firecrab.git\ncd firecrab\n./install.sh';
+const installCommand = 'curl -fsSL https://github.com/SteelCrab/firecrab/releases/latest/download/install.sh | bash';
 type Language = 'ko' | 'en';
 const languageStorageKey = 'firecrab-language';
 const browserLanguageStorageKey = 'firecrab-browser-language';
@@ -96,13 +96,13 @@ const productViews = [
     label: 'M2Image',
     title: { ko: 'M2를 시작하는 검증된 이미지', en: 'Verified images that boot M2s' },
     description: {
-      ko: 'M2Image는 커널, rootfs, initramfs와 부팅 설정을 담은 Firecracker 전용 템플릿입니다. Alpine, Ubuntu, Rocky 이미지를 준비하고 검증해 재사용합니다.',
-      en: 'M2Image is a Firecracker-ready template containing the kernel, rootfs, initramfs, and boot configuration. Prepare, verify, and reuse Alpine, Ubuntu, and Rocky images.',
+      ko: 'M2Image는 커널, rootfs, initramfs와 부팅 설정을 담은 Firecracker 전용 템플릿입니다. Alpine, Ubuntu, Rocky 이미지를 설치하거나, OCI 레지스트리의 컨테이너 이미지를 nginx:1.27처럼 그대로 가져와(import) 곧바로 M2Image로 씁니다.',
+      en: 'M2Image is a Firecracker-ready template containing the kernel, rootfs, initramfs, and boot configuration. Install Alpine, Ubuntu, and Rocky images, or import a container image straight from an OCI registry — point at a reference like nginx:1.27 and it is ready to use.',
     },
     image: '/dashboard-images.png',
     alt: { ko: 'FireCrab M2Image 목록과 설치 상태', en: 'FireCrab M2Image list and installation state' },
     icon: '/m2image-icon.png',
-    details: { ko: ['패키지 다운로드·검증', '임시 builder VM 부트스트랩', '사용 중인 VM 추적'], en: ['Download and verify packages', 'Bootstrap in a temporary builder VM', 'Track M2s using each image'] },
+    details: { ko: ['패키지 다운로드·검증', 'OCI 이미지 inspect·import', '임시 builder VM 부트스트랩'], en: ['Download and verify packages', 'Inspect and import OCI images', 'Bootstrap in a temporary builder VM'] },
     secondary: {
       label: 'MICROBOOT',
       title: { ko: '배포판을 M2Image로 부트스트랩', en: 'Bootstrap a distribution into an M2Image' },
@@ -127,7 +127,7 @@ const workflow = [
   {
     number: '02',
     title: { ko: '이미지와 자원 선택', en: 'Choose image and resources' },
-    description: { ko: '설치된 이미지, vCPU, RAM, 디스크와 저장 위치를 선택해 VM을 만듭니다.', en: 'Create an M2 with an installed image, vCPU, RAM, disk, and storage location.' },
+    description: { ko: '설치된 이미지(OCI import 포함), vCPU, RAM, 디스크와 저장 위치를 선택해 VM을 만듭니다.', en: 'Create an M2 with an installed image (OCI imports included), vCPU, RAM, disk, and storage location.' },
   },
   {
     number: '03',
@@ -256,7 +256,7 @@ export default function LandingPage() {
               )}
             </p>
             <div className="fc-hero-actions">
-              <a className="fc-primary-button" href="#install">{t('3줄로 설치하기', 'Install in 3 lines')} <ArrowRight size={18} /></a>
+              <a className="fc-primary-button" href="#install">{t('한 줄로 설치하기', 'Install in one line')} <ArrowRight size={18} /></a>
               <a className="fc-text-button" href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={18} /> {t('소스 코드 보기', 'View source')}</a>
             </div>
             <ul className="fc-requirement-list" aria-label="핵심 조건">
@@ -413,14 +413,20 @@ export default function LandingPage() {
             <h2 id="fc-install-title">{t('서버는 이미 있으니까.', 'You already have the server.')}<br /><span>{t('이제 FireCrab만.', 'Now add FireCrab.')}</span></h2>
             <p>Linux + systemd, <code>/dev/kvm</code>{t(', 네트워크와 sudo 권한이 있는 일반 사용자 계정이 필요합니다.', ', network access, and a regular user account with sudo privileges are required.')}</p>
             <div className="fc-install-links">
-              <a href={language === 'ko' ? `${repositoryUrl}/blob/main/docs/20-guides/install.md` : `${repositoryUrl}#install-on-a-linux-host`} target="_blank" rel="noreferrer">{t('전체 설치 가이드', 'Full install guide')} <ArrowRight size={16} /></a>
+              <a href={`${repositoryUrl}/blob/main/public-docs/installation.md`} target="_blank" rel="noreferrer">{t('전체 설치 가이드', 'Full install guide')} <ArrowRight size={16} /></a>
               <a href={`${repositoryUrl}/blob/main/${language === 'ko' ? 'README.ko.md' : 'README.md'}`} target="_blank" rel="noreferrer">{language === 'ko' ? 'README.ko' : 'README'}</a>
             </div>
           </div>
 
           <div className="fc-install-terminal">
-            <div className="fc-terminal-header"><span>TERMINAL</span><button type="button" onClick={copyInstallCommand}>{copied ? <Check size={15} /> : <Clipboard size={15} />}{copied ? t('복사됨', 'Copied') : t('복사', 'Copy')}</button></div>
-            <pre><code><span>$</span> git clone https://github.com/SteelCrab/firecrab.git{`\n`}<span>$</span> cd firecrab{`\n`}<span>$</span> ./install.sh</code></pre>
+            <div className="fc-terminal-header">
+              <div className="fc-terminal-header-left">
+                <span className="fc-terminal-dots" aria-hidden="true"><i /><i /><i /></span>
+                <span className="fc-terminal-label">TERMINAL</span>
+              </div>
+              <button type="button" onClick={copyInstallCommand}>{copied ? <Check size={15} /> : <Clipboard size={15} />}{copied ? t('복사됨', 'Copied') : t('복사', 'Copy')}</button>
+            </div>
+            <pre><code><span>$</span> curl -fsSL https://github.com/SteelCrab/firecrab/releases/latest/download/install.sh | bash</code></pre>
           </div>
         </section>
 

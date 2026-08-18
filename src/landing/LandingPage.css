@@ -282,13 +282,17 @@
 .fc-install-copy code { color: var(--accent); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .fc-install-links { display: flex; flex-wrap: wrap; gap: 22px; }
 .fc-install-links a { display: inline-flex; align-items: center; gap: 7px; color: var(--accent-dark); font-size: .73rem; font-weight: 700; }
-.fc-install-terminal { overflow: hidden; color: #f3eee8; border: 1px solid #2c241d; border-radius: 14px; background: #1c1712; box-shadow: 0 22px 42px -16px rgba(28, 23, 18, .38); }
-.fc-terminal-header { display: flex; min-height: 43px; align-items: center; justify-content: space-between; padding: 0 14px; border-bottom: 1px solid #40362e; }
-.fc-terminal-header > span { color: #a79c92; font-size: .6rem; font-weight: 700; letter-spacing: .12em; }
-.fc-terminal-header button { display: flex; align-items: center; gap: 7px; padding: 6px 9px; border: 1px solid #5f5147; border-radius: 6px; color: #d5cbc2; background: transparent; cursor: pointer; font-size: .63rem; }
+.fc-install-terminal { overflow: hidden; color: var(--ink); border: 1px solid #e7e0d3; border-radius: 14px; background: #fdfcfa; box-shadow: 0 22px 42px -16px rgba(28, 23, 18, .14); }
+.fc-terminal-header { display: flex; min-height: 43px; align-items: center; justify-content: space-between; padding: 0 14px; background: #f7f3ec; border-bottom: 1px solid #e7e0d3; }
+.fc-terminal-header-left { display: flex; align-items: center; gap: 12px; }
+.fc-terminal-dots { display: flex; gap: 6px; }
+.fc-terminal-dots i { display: block; width: 10px; height: 10px; border-radius: 50%; background: #ded5c4; }
+.fc-terminal-header-left > span.fc-terminal-label { color: #a99e8e; font-size: .6rem; font-weight: 700; letter-spacing: .12em; }
+.fc-terminal-header button { display: flex; align-items: center; gap: 7px; padding: 6px 9px; border: 1px solid #ddd3c1; border-radius: 6px; color: var(--copy); background: #fff; cursor: pointer; font-size: .63rem; }
+.fc-terminal-header button:hover { border-color: var(--accent); color: var(--accent-dark); }
 .fc-install-terminal pre { min-height: 180px; padding: 31px 26px; margin: 0; overflow-x: auto; }
-.fc-install-terminal code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: clamp(.7rem, 1.1vw, .85rem); line-height: 2.15; }
-.fc-install-terminal code span { color: #f17651; }
+.fc-install-terminal code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: clamp(.7rem, 1.1vw, .85rem); line-height: 2.15; color: var(--ink); }
+.fc-install-terminal code span { color: var(--accent); }
 
 .fc-final-cta { display: grid; justify-items: center; padding: 105px 28px; text-align: center; background: var(--soft); }
 .fc-final-cta > div { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
