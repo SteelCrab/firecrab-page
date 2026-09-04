@@ -1,19 +1,39 @@
 import { useEffect, useState } from 'react';
 import {
+  ArrowDown,
   ArrowRight,
   Check,
-  CheckCircle2,
-  Clipboard,
+  Copy,
+  ExternalLink,
   Github,
+  HardDrive,
   Languages,
   Menu,
+  Network,
+  ShieldCheck,
+  Star,
+  Terminal,
   X,
+  Zap,
+  Box,
+  Server,
+  BookOpen,
 } from 'lucide-react';
 import './LandingPage.css';
+import {
+  productViews,
+  featureHighlights,
+  comparisonTable,
+  workflow,
+  architectureFlow,
+  type Language,
+} from './landingData';
 
 const repositoryUrl = 'https://github.com/SteelCrab/firecrab';
 const installCommand = 'curl -fsSL https://github.com/SteelCrab/firecrab/releases/latest/download/install.sh | bash';
-type Language = 'ko' | 'en';
+const gitCloneCommand = 'git clone https://github.com/SteelCrab/firecrab.git\ncd firecrab\n./scripts/ci-prepare-install-payload.sh\n./install.sh --bin-dir target/release';
+const optionsCommand = './install.sh --check\n./install.sh --doctor';
+
 const languageStorageKey = 'firecrab-language';
 const browserLanguageStorageKey = 'firecrab-browser-language';
 
@@ -37,130 +57,44 @@ const getInitialLanguage = (): Language => {
   return browserLanguage;
 };
 
-const productViews = [
-  {
-    id: 'm2',
-    label: 'M2',
-    title: { ko: '내 서버에 만드는 전용 M2', en: 'Your own M2, on your server' },
-    description: {
-      ko: 'M2는 FireCrab의 실행 단위인 MicroMachine입니다. M2Image, CPU, 메모리, 디스크, MicroNetwork와 저장 위치를 조합해 독립된 Firecracker microVM을 만듭니다.',
-      en: 'M2 is FireCrab’s MicroMachine runtime unit. Combine an M2Image, CPU, memory, disk, MicroNetwork, and storage location into an isolated Firecracker microVM.',
-    },
-    image: '/dashboard-microvm.png',
-    alt: { ko: 'FireCrab M2 생성 폼과 실행 중인 M2 목록', en: 'FireCrab M2 creation form and running M2 list' },
-    icon: '/m2-icon.png',
-    details: { ko: ['생성·시작·중지·삭제', 'M2별 시작 과정과 상태', '브라우저 시리얼 콘솔'], en: ['Create, start, stop, and delete', 'Startup progress and state per M2', 'Browser serial console'] },
-    secondary: {
-      label: 'TERMINAL',
-      title: { ko: '실행 중인 M2에 바로 연결', en: 'Connect directly to a running M2' },
-      description: {
-        ko: '브라우저 시리얼 콘솔에서 부팅 로그와 로그인 프롬프트를 실시간으로 확인하고 명령을 입력합니다. 콘솔 로그 복사·저장과 M2의 사양, 네트워크, 스토리지 정보도 한 화면에서 볼 수 있습니다.',
-        en: 'Use the browser serial console to watch boot logs and the login prompt in real time, then enter commands. Copy or save console logs and inspect the M2’s specs, network, and storage on the same screen.',
-      },
-      image: '/dashboard-terminal.png',
-      alt: { ko: '실행 중인 M2의 브라우저 시리얼 Terminal', en: 'Browser serial Terminal connected to a running M2' },
-      icon: '/m2-icon.png',
-      imagePosition: 'center 34%',
-    },
-  },
-  {
-    id: 'micronetwork',
-    label: 'MicroNetwork',
-    title: { ko: '직접 설계하는 격리 네트워크', en: 'Isolated networks you define' },
-    description: {
-      ko: 'MicroNetwork는 bridge, gateway, DHCP, NAT와 방화벽 규칙을 하나의 명시적인 네트워크로 관리합니다. 서로 다른 네트워크의 M2는 기본적으로 분리됩니다.',
-      en: 'MicroNetwork manages a bridge, gateway, DHCP, NAT, and firewall rules as one explicit network. M2s on different networks are isolated by default.',
-    },
-    image: '/dashboard-networks.png',
-    alt: { ko: 'FireCrab MicroNetwork 생성과 네트워크 목록', en: 'FireCrab MicroNetwork creation and network list' },
-    icon: '/micronetwork-icon.png',
-    details: { ko: ['사용자 정의 subnet CIDR', '네트워크별 인터넷 정책', '고정 IPv4·MAC·hostname'], en: ['Custom subnet CIDR', 'Internet policy per network', 'Persistent IPv4, MAC, and hostname'] },
-    secondary: null,
-  },
-  {
-    id: 'microstorage',
-    label: 'MicroStorage',
-    title: { ko: '워크로드에 맞춰 고르는 저장 위치', en: 'Storage placement per workload' },
-    description: {
-      ko: 'MicroStorage는 호스트에 마운트된 디렉터리를 M2 스토리지 풀로 등록합니다. 기본 디스크, NVMe, 별도 SSD 등 원하는 위치에 VM rootfs를 분산할 수 있습니다.',
-      en: 'MicroStorage registers host-mounted directories as M2 storage pools. Place VM root filesystems across a default disk, NVMe, or separate SSDs.',
-    },
-    image: '/dashboard-microvm.png',
-    alt: { ko: 'FireCrab M2 생성 화면의 MicroStorage 저장 위치 선택', en: 'Selecting a MicroStorage location while creating an M2' },
-    icon: '/microstorage-icon.png',
-    details: { ko: ['기존 마운트 경로 등록', 'M2별 저장 위치 선택', '중지 후에도 rootfs 유지'], en: ['Register existing mount paths', 'Choose storage per M2', 'Persistent rootfs across restarts'] },
-    secondary: null,
-  },
-  {
-    id: 'm2image',
-    label: 'M2Image',
-    title: { ko: 'M2를 시작하는 검증된 이미지', en: 'Verified images that boot M2s' },
-    description: {
-      ko: 'M2Image는 커널, rootfs, initramfs와 부팅 설정을 담은 Firecracker 전용 템플릿입니다. Alpine, Ubuntu, Rocky 이미지를 설치하거나, OCI 레지스트리의 컨테이너 이미지를 nginx:1.27처럼 그대로 가져와(import) 곧바로 M2Image로 씁니다.',
-      en: 'M2Image is a Firecracker-ready template containing the kernel, rootfs, initramfs, and boot configuration. Install Alpine, Ubuntu, and Rocky images, or import a container image straight from an OCI registry — point at a reference like nginx:1.27 and it is ready to use.',
-    },
-    image: '/dashboard-images.png',
-    alt: { ko: 'FireCrab M2Image 목록과 설치 상태', en: 'FireCrab M2Image list and installation state' },
-    icon: '/m2image-icon.png',
-    details: { ko: ['패키지 다운로드·검증', 'OCI 이미지 inspect·import', '임시 builder VM 부트스트랩'], en: ['Download and verify packages', 'Inspect and import OCI images', 'Bootstrap in a temporary builder VM'] },
-    secondary: {
-      label: 'MICROBOOT',
-      title: { ko: '배포판을 M2Image로 부트스트랩', en: 'Bootstrap a distribution into an M2Image' },
-      description: {
-        ko: 'MicroBoot는 임시 builder VM을 실행해 운영체제를 설치하고 Firecracker용 이미지로 패키징합니다. 준비, 시스템 설치, 패키징, 마무리 단계를 추적하며 builder 콘솔을 실시간으로 확인할 수 있습니다.',
-        en: 'MicroBoot starts a temporary builder VM, installs the operating system, and packages it as a Firecracker-ready image. Follow preparation, installation, packaging, and finalization while watching the builder console live.',
-      },
-      image: '/dashboard-microboot.png',
-      alt: { ko: 'MicroBoot builder VM의 이미지 설치 진행 과정과 실시간 콘솔', en: 'MicroBoot builder VM image installation progress and live console' },
-      icon: '/microboot-icon.svg',
-      imagePosition: 'center 72%',
-    },
-  },
-];
-
-const workflow = [
-  {
-    number: '01',
-    title: { ko: 'MicroNetwork 생성', en: 'Create a MicroNetwork' },
-    description: { ko: '서브넷과 인터넷 정책을 직접 정합니다. 숨겨진 기본 네트워크는 없습니다.', en: 'Define the subnet and internet policy yourself. There is no hidden default network.' },
-  },
-  {
-    number: '02',
-    title: { ko: '이미지와 자원 선택', en: 'Choose image and resources' },
-    description: { ko: '설치된 이미지(OCI import 포함), vCPU, RAM, 디스크와 저장 위치를 선택해 VM을 만듭니다.', en: 'Create an M2 with an installed image (OCI imports included), vCPU, RAM, disk, and storage location.' },
-  },
-  {
-    number: '03',
-    title: { ko: '시작하고 Terminal 연결', en: 'Start and open Terminal' },
-    description: { ko: '게스트가 네트워크 준비를 보고하면 running으로 전환되고 콘솔에 연결할 수 있습니다.', en: 'Once the guest reports network readiness, it becomes running and the console is available.' },
-  },
-];
-
-const architectureFlow = [
-  { number: '01', title: { ko: 'Linux Host', en: 'Linux Host' }, description: { ko: 'KVM과 FireCrab 준비', en: 'Prepare KVM and FireCrab' } },
-  { number: '02', title: { ko: 'M2Image', en: 'M2Image' }, description: { ko: 'MicroBoot으로 이미지 준비', en: 'Build an image with MicroBoot' } },
-  { number: '03', title: { ko: 'MicroNetwork', en: 'MicroNetwork' }, description: { ko: 'subnet과 NAT 정책 정의', en: 'Define subnet and NAT policy' } },
-  { number: '04', title: { ko: 'MicroStorage', en: 'MicroStorage' }, description: { ko: 'M2 디스크 위치 선택', en: 'Choose M2 disk placement' } },
-  { number: '05', title: { ko: 'M2 생성', en: 'Create M2' }, description: { ko: '이미지·네트워크·스토리지 조합', en: 'Combine image, network, and storage' } },
-  { number: '06', title: { ko: '실행 · 연결', en: 'Run and connect' }, description: { ko: '코드 배포와 NAT egress', en: 'Deploy code and use NAT egress' } },
-];
+function FeatureIcon({ name }: { name: string }) {
+  switch (name) {
+    case 'Zap':
+      return <Zap size={18} />;
+    case 'ShieldCheck':
+      return <ShieldCheck size={18} />;
+    case 'Network':
+      return <Network size={18} />;
+    case 'HardDrive':
+      return <HardDrive size={18} />;
+    case 'Box':
+      return <Box size={18} />;
+    case 'Terminal':
+      return <Terminal size={18} />;
+    default:
+      return <Server size={18} />;
+  }
+}
 
 export default function LandingPage() {
   const [language, setLanguage] = useState<Language>(getInitialLanguage);
   const [activeView, setActiveView] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedHero, setCopiedHero] = useState(false);
+  const [copiedInstall, setCopiedInstall] = useState(false);
+  const [installTab, setInstallTab] = useState<'curl' | 'options' | 'git'>('curl');
+
   const currentView = productViews[activeView];
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const t = (ko: string, en: string) => (language === 'ko' ? ko : en);
 
   useEffect(() => {
     document.documentElement.lang = language;
-    document.title = 'FireCrab';
+    document.title = 'FireCrab — Lightweight MicroVM Platform';
     document.querySelector('meta[name="description"]')?.setAttribute(
       'content',
       language === 'ko'
-        ? 'FireCrab은 사용자가 관리하는 Linux 단일 호스트에서 Firecracker microVM, 격리 네트워크, 이미지와 시리얼 콘솔을 운영하는 오픈소스 플랫폼입니다.'
-        : 'FireCrab is an open-source platform for operating Firecracker microVMs, isolated networks, images, and serial consoles on a Linux host you control.',
+        ? 'FireCrab은 단일 Linux 호스트에서 KVM 기반 Firecracker microVM, 격리 네트워크, 이미지와 시리얼 콘솔을 운영하는 오픈소스 경량 가상화 플랫폼입니다.'
+        : 'FireCrab is an open-source lightweight virtualization platform for running Firecracker microVMs, isolated networks, and serial consoles on a single Linux host.',
     );
   }, [language]);
 
@@ -170,43 +104,95 @@ export default function LandingPage() {
     setLanguage(nextLanguage);
   };
 
-  const copyInstallCommand = async () => {
+  const copyHeroCommand = async () => {
     try {
       await navigator.clipboard.writeText(installCommand);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
+      setCopiedHero(true);
+      window.setTimeout(() => setCopiedHero(false), 2000);
     } catch {
-      setCopied(false);
+      setCopiedHero(false);
+    }
+  };
+
+  const copyInstallTabCommand = async (cmd: string) => {
+    try {
+      await navigator.clipboard.writeText(cmd);
+      setCopiedInstall(true);
+      window.setTimeout(() => setCopiedInstall(false), 2000);
+    } catch {
+      setCopiedInstall(false);
     }
   };
 
   return (
     <div className="fc-site">
-      <a className="fc-skip-link" href="#main-content">{t('본문으로 건너뛰기', 'Skip to content')}</a>
+      <a className="fc-skip-link" href="#main-content">
+        {t('본문으로 건너뛰기', 'Skip to content')}
+      </a>
 
+      {/* TOP NAVIGATION */}
       <header className="fc-header">
         <div className="fc-nav-shell">
-          <a className="fc-wordmark" href="#top" aria-label="FireCrab 홈">
-            <img src="/firecrab-icon.png" alt="" aria-hidden="true" /><span>FireCrab</span>
+          <a className="fc-wordmark" href="#top" aria-label="FireCrab">
+            <img src="/firecrab-icon.png" alt="" aria-hidden="true" />
+            <span className="fc-wordmark-title">FireCrab</span>
+            <span className="fc-version-pill">v0.2.0</span>
           </a>
 
-          <nav className="fc-desktop-nav" aria-label="주요 메뉴">
-            <a href="#top">{t('메인', 'Main')}</a>
-            <a href={language === 'ko' ? '/docs' : '/en/docs'}>{t('문서', 'Docs')}</a>
-            <a href={language === 'ko' ? '/blog' : '/en/blog'}>{t('블로그', 'Blog')}</a>
+          <nav className="fc-desktop-nav" aria-label="메인 메뉴">
+            <a href="#features">{t('특징', 'Features')}</a>
+            <a href="#compare">{t('비교', 'Compare')}</a>
+            <a href="#components">{t('컴포넌트', 'Components')}</a>
+            <a href="#architecture">{t('아키텍처', 'Architecture')}</a>
+            <a href="#install">{t('설치하기', 'Install')}</a>
+            <a href={language === 'ko' ? '/docs' : '/en/docs'} className="fc-nav-link-ext">
+              {t('문서', 'Docs')}
+              <ExternalLink size={12} className="fc-ext-icon" />
+            </a>
+            <a href={language === 'ko' ? '/blog' : '/en/blog'} className="fc-nav-link-ext">
+              {t('블로그', 'Blog')}
+              <ExternalLink size={12} className="fc-ext-icon" />
+            </a>
           </nav>
 
           <div className="fc-nav-actions">
+            {/* Language switch */}
             <div className="fc-language-switch" aria-label={t('언어 선택', 'Language selector')}>
-              <Languages size={15} aria-hidden="true" />
-              <button type="button" className={language === 'ko' ? 'is-active' : ''} aria-pressed={language === 'ko'} onClick={() => changeLanguage('ko')}>한국어</button>
+              <Languages size={13} aria-hidden="true" />
+              <button
+                type="button"
+                className={language === 'ko' ? 'is-active' : ''}
+                aria-pressed={language === 'ko'}
+                onClick={() => changeLanguage('ko')}
+              >
+                KO
+              </button>
               <i aria-hidden="true" />
-              <button type="button" className={language === 'en' ? 'is-active' : ''} aria-pressed={language === 'en'} onClick={() => changeLanguage('en')}>English</button>
+              <button
+                type="button"
+                className={language === 'en' ? 'is-active' : ''}
+                aria-pressed={language === 'en'}
+                onClick={() => changeLanguage('en')}
+              >
+                EN
+              </button>
             </div>
-            <a className="fc-github-link" href={repositoryUrl} target="_blank" rel="noreferrer">
-              <Github size={17} /> GitHub
+
+            {/* GitHub Star Pill */}
+            <a
+              className="fc-github-pill"
+              href={repositoryUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Github size={15} />
+              <span>Star</span>
             </a>
-            <a className="fc-nav-cta" href="#install">{t('설치하기', 'Install')}</a>
+
+            {/* Primary Orange CTA */}
+            <a className="fc-btn-primary" href="#install">
+              {t('설치하기', 'Install')}
+            </a>
           </div>
 
           <button
@@ -217,234 +203,809 @@ export default function LandingPage() {
             aria-controls="fc-mobile-nav"
             onClick={() => setMobileMenuOpen((open) => !open)}
           >
-            {mobileMenuOpen ? <X size={21} /> : <Menu size={21} />}
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
 
-        <nav className="fc-mobile-nav" id="fc-mobile-nav" hidden={!mobileMenuOpen} aria-label="모바일 메뉴">
+        {/* Mobile Navigation Drawer */}
+        <nav
+          className={`fc-mobile-nav ${mobileMenuOpen ? 'is-open' : ''}`}
+          id="fc-mobile-nav"
+          hidden={!mobileMenuOpen}
+          aria-label="모바일 메뉴"
+        >
           <div className="fc-mobile-language">
-            <button type="button" className={language === 'ko' ? 'is-active' : ''} aria-pressed={language === 'ko'} onClick={() => changeLanguage('ko')}>한국어</button>
-            <button type="button" className={language === 'en' ? 'is-active' : ''} aria-pressed={language === 'en'} onClick={() => changeLanguage('en')}>English</button>
+            <button
+              type="button"
+              className={language === 'ko' ? 'is-active' : ''}
+              onClick={() => changeLanguage('ko')}
+            >
+              한국어
+            </button>
+            <button
+              type="button"
+              className={language === 'en' ? 'is-active' : ''}
+              onClick={() => changeLanguage('en')}
+            >
+              English
+            </button>
           </div>
           {[
-            [t('메인', 'Main'), '#top'],
-            [t('문서', 'Docs'), language === 'ko' ? '/docs' : '/en/docs'],
-            [t('블로그', 'Blog'), language === 'ko' ? '/blog' : '/en/blog'],
+            [t('특징', 'Features'), '#features'],
+            [t('비교', 'Compare'), '#compare'],
+            [t('컴포넌트', 'Components'), '#components'],
+            [t('아키텍처', 'Architecture'), '#architecture'],
+            [t('설치하기', 'Install'), '#install'],
+            [t('문서 (Docs)', 'Docs'), language === 'ko' ? '/docs' : '/en/docs'],
+            [t('블로그 (Blog)', 'Blog'), language === 'ko' ? '/blog' : '/en/blog'],
           ].map(([label, href]) => (
-            <a href={href} key={label} onClick={() => setMobileMenuOpen(false)}>{label}</a>
+            <a href={href} key={label} onClick={() => setMobileMenuOpen(false)}>
+              {label}
+            </a>
           ))}
-          <a href={repositoryUrl} target="_blank" rel="noreferrer" onClick={() => setMobileMenuOpen(false)}>GitHub ↗</a>
-          <a href="#install" onClick={() => setMobileMenuOpen(false)}>{t('설치하기', 'Install')}</a>
+          <a
+            href={repositoryUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="fc-mobile-gh-link"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <Github size={15} /> GitHub ↗
+          </a>
         </nav>
       </header>
 
       <main id="main-content">
-        <section className="fc-hero" id="top" aria-labelledby="fc-hero-title">
-          <div className="fc-hero-copy">
-            <p className="fc-kicker"><span /> PRIVATE MICROVM CLOUD</p>
-            <h1 id="fc-hero-title">
-              {t('컨테이너의 다음 시대는', 'The next era after containers')}<br />
-              <em>{t('MicroVM이다.', 'belongs to MicroVMs.')}</em>
+        {/* HERO SECTION */}
+        <section className="fc-hero-band" id="top" aria-labelledby="fc-hero-title">
+          <div className="fc-hero-content">
+            <div className="fc-hero-announcement">
+              <span className="fc-badge-pill">Apache 2.0 Open Source</span>
+              <a
+                href={`${repositoryUrl}/releases`}
+                target="_blank"
+                rel="noreferrer"
+                className="fc-announcement-link"
+              >
+                {t('FireCrab v0.2.0 릴리즈 보기', 'FireCrab v0.2.0 is now released on GitHub')} ↗
+              </a>
+            </div>
+
+            <h1 id="fc-hero-title" className="fc-display-mega">
+              {t('내 Linux 서버를 위한', 'The lightweight MicroVM platform')}
+              <br />
+              <span className="fc-hero-highlight">
+                {t('초경량 MicroVM 플랫폼.', 'for your own Linux host.')}
+              </span>
             </h1>
-            <p className="fc-hero-slogan">
-              {t('개발부터 배포, 운영까지—FireCrab M2. :)', 'From development to deployment and operations—FireCrab M2. :)')}
-            </p>
+
             <p className="fc-hero-lead">
               {t(
-                'FireCrab은 내가 관리하는 Linux 호스트에서 Firecracker microVM을 실행하는 오픈소스 플랫폼입니다. 강한 격리는 필요하지만 거대한 클라우드 컨트롤 플레인은 필요 없는 환경을 위해 만들었습니다.',
-                'FireCrab is an open-source platform for running Firecracker microVMs on a Linux host you control. It is built for environments that need strong isolation without a large cloud control plane.',
+                '복잡한 클라우드 제어 계층 없이, 단 한 대의 사설 Linux 호스트에서 KVM 기반 하드웨어 격리, 사용자 정의 네트워크, 초고속 MicroVM을 웹 대시보드와 REST API로 운영하세요.',
+                'Run hardware-isolated microVMs with dedicated guest kernels, declarative networks, and container imports on a single Linux server you control. 100% self-hosted, minimal, and fast.',
               )}
             </p>
-            <div className="fc-hero-actions">
-              <a className="fc-primary-button" href="#install">{t('한 줄로 설치하기', 'Install in one line')} <ArrowRight size={18} /></a>
-              <a className="fc-text-button" href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={18} /> {t('소스 코드 보기', 'View source')}</a>
+
+            {/* Quick Install Code Card */}
+            <div className="fc-hero-install-card">
+              <div className="fc-install-code-group">
+                <span className="fc-prompt-sign">$</span>
+                <code>{installCommand}</code>
+              </div>
+              <button
+                type="button"
+                className={`fc-btn-copy ${copiedHero ? 'is-copied' : ''}`}
+                onClick={copyHeroCommand}
+                aria-label={t('명령어 복사', 'Copy command')}
+              >
+                {copiedHero ? <Check size={13} /> : <Copy size={13} />}
+                <span>{copiedHero ? t('복사됨', 'Copied') : t('복사', 'Copy')}</span>
+              </button>
             </div>
-            <ul className="fc-requirement-list" aria-label="핵심 조건">
-              <li><Check size={14} /> Linux + KVM</li>
-              <li><Check size={14} /> Single host</li>
-              <li><Check size={14} /> Apache 2.0</li>
-            </ul>
+
+            {/* CTAs */}
+            <div className="fc-hero-cta-group">
+              <a className="fc-button-download" href="#install">
+                <span>{t('설치 가이드 보기', 'Get Started')}</span>
+                <ArrowRight size={15} />
+              </a>
+              <a
+                className="fc-button-tertiary-text"
+                href={repositoryUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Github size={16} />
+                <span>GitHub (SteelCrab/firecrab)</span>
+                <span className="fc-hero-arrow">↗</span>
+              </a>
+              <a
+                className="fc-button-tertiary-text"
+                href={language === 'ko' ? '/docs' : '/en/docs'}
+              >
+                <BookOpen size={16} />
+                <span>{t('공식 문서 읽기', 'Documentation')}</span>
+                <span className="fc-hero-arrow">↗</span>
+              </a>
+            </div>
+
+            {/* Editorial specs row */}
+            <div className="fc-hero-specs-row">
+              <div className="fc-spec-item">
+                <span className="fc-spec-val">&lt; 5ms</span>
+                <span className="fc-spec-lbl">{t('부팅 시간', 'Boot time')}</span>
+              </div>
+              <div className="fc-spec-divider" />
+              <div className="fc-spec-item">
+                <span className="fc-spec-val">KVM</span>
+                <span className="fc-spec-lbl">{t('하드웨어 가상화', 'Hardware isolation')}</span>
+              </div>
+              <div className="fc-spec-divider" />
+              <div className="fc-spec-item">
+                <span className="fc-spec-val">&lt; 5MB</span>
+                <span className="fc-spec-lbl">{t('메모리 오버헤드', 'Memory footprint')}</span>
+              </div>
+              <div className="fc-spec-divider" />
+              <div className="fc-spec-item">
+                <span className="fc-spec-val">Single Host</span>
+                <span className="fc-spec-lbl">{t('완전한 자체 소유', '100% Self-hosted')}</span>
+              </div>
+            </div>
           </div>
 
-          <figure className="fc-hero-visual">
-            <div className="fc-hero-media">
-              <img src="/dashboard-firecrab-m2.gif" alt={t('FireCrab 대시보드에서 M2와 네트워크, 이미지를 관리하는 데모', 'Demo of managing M2s, networks, and images in the FireCrab dashboard')} />
+          {/* IDE MOCKUP CARD with Signature Timeline Pastels */}
+          <div className="fc-ide-mockup-wrapper">
+            <div className="fc-ide-mockup-card">
+              {/* Window Bar */}
+              <div className="fc-ide-header">
+                <div className="fc-ide-dots">
+                  <span className="fc-dot" />
+                  <span className="fc-dot" />
+                  <span className="fc-dot" />
+                </div>
+                <div className="fc-ide-title">
+                  firecrab-dashboard — m2-overview (127.0.0.1:5523)
+                </div>
+
+              </div>
+
+
+
+              {/* Mockup screen */}
+              <div className="fc-ide-screen">
+                <img
+                  src="/dashboard-firecrab-m2.gif"
+                  alt={t(
+                    'FireCrab 대시보드 실시간 실행 데모',
+                    'Real-time demo of managing M2s in FireCrab dashboard',
+                  )}
+                />
+              </div>
+
+
             </div>
-          </figure>
+          </div>
         </section>
 
-        <section className="fc-proof-strip" aria-label="기술 구성">
-          <div><strong>Rust API</strong><span>{t('수명주기와 상태 관리', 'Lifecycle and state management')}</span></div>
-          <div><strong>Firecracker</strong><span>{t('VM마다 하나의 프로세스', 'One process per VM')}</span></div>
-          <div><strong>React Dashboard</strong><span>{t('한국어·영어 지원', 'Korean and English')}</span></div>
-          <div><strong>Self-hosted</strong><span>{t('데이터와 호스트를 직접 소유', 'You own the host and data')}</span></div>
+        {/* PROOF BAND */}
+        <section className="fc-proof-section" aria-label="기술 구성">
+          <div className="fc-proof-container">
+            <div className="fc-proof-col">
+              <span className="fc-badge-pill">ENGINE</span>
+              <h4>Rust Daemon</h4>
+              <p>{t('비동기 고성능 수명주기 및 리소스 관리 데몬', 'High-performance async lifecycle & resource management daemon')}</p>
+            </div>
+            <div className="fc-proof-col">
+              <span className="fc-badge-pill">VIRTUALIZATION</span>
+              <h4>Firecracker</h4>
+              <p>{t('MicroVM마다 독립된 프로세스로 실행되는 가상화', 'Ultra-lightweight virtualization running one process per VM')}</p>
+            </div>
+            <div className="fc-proof-col">
+              <span className="fc-badge-pill">INTERFACE</span>
+              <h4>Web Dashboard</h4>
+              <p>{t('브라우저 xterm 시리얼 콘솔 및 실시간 모니터링', 'Browser xterm serial console & live system telemetry')}</p>
+            </div>
+            <div className="fc-proof-col">
+              <span className="fc-badge-pill">SOVEREIGNTY</span>
+              <h4>100% Self-Hosted</h4>
+              <p>{t('외부 클라우드 의존성 없이 단일 호스트에서 완벽 통제', 'Zero cloud lock-in, runs entirely on your own hardware')}</p>
+            </div>
+          </div>
         </section>
 
-        <section className="fc-positioning">
-          <p className="fc-section-index">{t('01 / 서비스 소개', '01 / SERVICE POSITION')}</p>
-          <div className="fc-positioning-grid">
-            <h2>{t('컨테이너보다 강하게 격리하고,', 'Stronger isolation than containers,')}<br /><span>{t('클라우드보다 작게 운영합니다.', 'smaller operations than a cloud.')}</span></h2>
-            <div>
-              <p>
-                {t(
-                  'FireCrab은 호스팅 서비스도, 멀티 호스트 스케줄러도 아닙니다. 사설 단일 서버에서 서로 격리된 워크로드를 명확한 네트워크·스토리지 정책과 함께 운영하는 도구입니다.',
-                  'FireCrab is not a hosted service or a multi-host scheduler. It runs isolated workloads on a private single server with explicit network and storage policies.',
-                )}
+        {/* 01 / FEATURES (WHY FIRECRAB) */}
+        <section className="fc-section" id="features" aria-labelledby="fc-features-title">
+          <div className="fc-section-header">
+            <span className="fc-caption-uppercase">01 / WHY FIRECRAB</span>
+            <h2 id="fc-features-title" className="fc-display-lg">
+              {t('컨테이너의 가벼움과,', 'The speed of containers,')}
+              <br />
+              {t('가상머신의 완전한 격리를 하나로.', 'the security of virtual machines.')}
+            </h2>
+            <p className="fc-section-lead">
+              {t(
+                'FireCrab은 단일 사설 호스트에서 필요한 핵심 기능만을 선별하여 가장 가볍고 안전한 격리 인프라를 제공합니다.',
+                'FireCrab delivers the most essential micro-virtualization capabilities on a single host with zero bloat.',
+              )}
+            </p>
+          </div>
+
+          <div className="fc-feature-grid">
+            {featureHighlights.map((feature) => (
+              <div className="fc-feature-card" key={feature.id}>
+                <div className="fc-card-top-row">
+                  <div className="fc-feature-icon-box">
+                    <FeatureIcon name={feature.iconName} />
+                  </div>
+                  <span className="fc-badge-pill">{feature.badge}</span>
+                </div>
+                <h3 className="fc-title-md">{feature.title[language]}</h3>
+                <p className="fc-body-md">{feature.description[language]}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 02 / COMPARISON MATRIX */}
+        <section className="fc-section" id="compare" aria-labelledby="fc-compare-title">
+          <div className="fc-section-header">
+            <span className="fc-caption-uppercase">02 / COMPARISON</span>
+            <h2 id="fc-compare-title" className="fc-display-lg">
+              {t('도커 vs 기존 가상머신 vs', 'Docker vs Traditional VMs vs')}
+              <br />
+              <span className="fc-ink-emphasis">FireCrab MicroVM</span>
+            </h2>
+            <p className="fc-section-lead">
+              {t(
+                '호스트 커널을 공유하는 취약한 컨테이너, 혹은 기가바이트 단위의 무거운 레거시 가상화 대신 FireCrab을 선택해야 하는 기술적 이유입니다.',
+                'Why developers choose FireCrab over shared-kernel container risks and heavy legacy virtualization.',
+              )}
+            </p>
+          </div>
+
+          <div className="fc-comparison-card">
+            <table className="fc-compare-table">
+              <thead>
+                <tr>
+                  <th>{t('비교 항목', 'Attribute')}</th>
+                  <th>Docker / Podman</th>
+                  <th>Traditional VMs (QEMU/ESXi)</th>
+                  <th className="fc-col-firecrab">FireCrab (Firecracker)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparisonTable.map((row, idx) => (
+                  <tr key={idx} className={row.highlight ? 'is-key-row' : ''}>
+                    <td className="fc-dim-col">
+                      <strong>{row.dimension[language]}</strong>
+                    </td>
+                    <td>{row.docker[language]}</td>
+                    <td>{row.traditionalVm[language]}</td>
+                    <td className="fc-col-firecrab">
+                      <div className="fc-cell-highlight">
+                        <Check size={14} className="fc-check-icon" />
+                        <span>{row.firecrab[language]}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* GitHub README.md Official Mission Callout */}
+            <div className="fc-compare-quote-band">
+              <p className="fc-compare-quote-text">
+                “{t(
+                  '컨테이너보다 강한 격리가 필요하지만 완전한 클라우드 컨트롤 플레인까지는 필요 없는 사설 단일 호스트 환경을 위한 도구입니다. 호스팅 서비스도, 멀티 호스트 스케줄러도 아닙니다.',
+                  'Built for a private, single-host microVM environment: stronger isolation than containers, without a full cloud control plane. Not a hosted service and not a multi-host scheduler.',
+                )}”
               </p>
-              <div className="fc-fit-list">
-                <span><CheckCircle2 size={17} /> {t('홈랩·엣지·내부 서비스', 'Homelab, edge, and internal services')}</span>
-                <span><CheckCircle2 size={17} /> {t('온프레미스·폐쇄망 호스트', 'On-premises and air-gapped hosts')}</span>
-                <span><CheckCircle2 size={17} /> {t('컨테이너 이상의 격리가 필요한 작업', 'Workloads needing stronger isolation than containers')}</span>
+              <div className="fc-compare-quote-meta">
+                <span className="fc-quote-author">SteelCrab/firecrab</span>
+                <span className="fc-quote-badge">GitHub README</span>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="fc-product" id="product" aria-labelledby="fc-product-title">
-          <div className="fc-section-heading">
-            <div>
-              <p className="fc-section-index">{t('02 / 서비스 둘러보기', '02 / SERVICE TOUR')}</p>
-              <h2 id="fc-product-title">{t('M2를 이루는', 'Four building blocks')}<br />{t('네 가지 기본 단위.', 'behind every M2.')}</h2>
-            </div>
-            <p>{t('M2, 네트워크, 스토리지와 이미지를 하나의 흐름으로 조합해 전용 실행 환경을 만듭니다.', 'Combine compute, networking, storage, and images in one flow to create a dedicated runtime environment.')}</p>
+        {/* 03 / CORE COMPONENTS (4-PILLAR TOUR) */}
+        <section className="fc-section" id="components" aria-labelledby="fc-components-title">
+          <div className="fc-section-header">
+            <span className="fc-caption-uppercase">03 / CORE COMPONENTS</span>
+            <h2 id="fc-components-title" className="fc-display-lg">
+              {t('M2를 이루는', 'Four building blocks')}
+              <br />
+              {t('4가지 핵심 아키텍처 단위.', 'behind every FireCrab M2.')}
+            </h2>
+            <p className="fc-section-lead">
+              {t(
+                '컴퓨팅, 네트워크, 스토리지, 이미지를 직관적으로 결합해 완전한 실행 환경을 구성합니다.',
+                'Assemble compute, networking, storage, and images into isolated MicroMachines with ease.',
+              )}
+            </p>
           </div>
 
-          <div className="fc-product-tour">
-            <div className="fc-tour-tabs" role="tablist" aria-label="대시보드 화면 선택">
-              {productViews.map((view, index) => {
-                return (
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={activeView === index}
-                    aria-controls="fc-tour-panel"
-                    className={activeView === index ? 'is-active' : ''}
-                    onClick={() => setActiveView(index)}
-                    key={view.id}
-                  >
-                    <span><img src={view.icon} alt="" aria-hidden="true" /> {view.label}</span>
-                    <small>0{index + 1}</small>
-                  </button>
-                );
-              })}
+          <div className="fc-tour-wrapper">
+            {/* Tour hairline tabs */}
+            <div className="fc-tour-tablist" role="tablist">
+              {productViews.map((view, index) => (
+                <button
+                  type="button"
+                  role="tab"
+                  key={view.id}
+                  aria-selected={activeView === index}
+                  aria-controls="fc-tour-panel"
+                  className={`fc-tour-tab ${activeView === index ? 'is-active' : ''}`}
+                  onClick={() => setActiveView(index)}
+                >
+                  <div className="fc-tab-label-group">
+                    <img src={view.icon} alt="" aria-hidden="true" />
+                    <span>{view.label}</span>
+                  </div>
+                  <span className="fc-tab-num">0{index + 1}</span>
+                </button>
+              ))}
             </div>
 
-            <div className="fc-tour-panel" id="fc-tour-panel" role="tabpanel">
-              <div className="fc-tour-copy">
-                <img className="fc-tour-product-icon" src={currentView.icon} alt="" aria-hidden="true" />
-                <span>0{activeView + 1} — {currentView.label.toUpperCase()}</span>
-                <h3>{currentView.title[language]}</h3>
-                <p>{currentView.description[language]}</p>
-                <ul>{currentView.details[language].map((detail) => <li key={detail}><Check size={15} /> {detail}</li>)}</ul>
+            {/* Active Tour Panel */}
+            <div className="fc-tour-panel-card" id="fc-tour-panel" role="tabpanel">
+              <div className="fc-tour-split">
+                <div className="fc-tour-text-side">
+                  <div className="fc-tour-meta">
+                    <span className="fc-badge-pill">{currentView.badge[language]}</span>
+                    <span className="fc-tour-index">0{activeView + 1} / 04</span>
+                  </div>
+                  <h3 className="fc-display-md">{currentView.title[language]}</h3>
+                  <p className="fc-body-md">{currentView.description[language]}</p>
+
+                  <div className="fc-tour-specs">
+                    <span className="fc-caption-uppercase">{t('핵심 역량', 'Capabilities')}</span>
+                    <ul>
+                      {currentView.details[language].map((detail, dIdx) => (
+                        <li key={dIdx}>
+                          <Check size={14} className="fc-check-icon" />
+                          <span>{detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="fc-tour-preview-side">
+                  <div className="fc-screenshot-frame">
+                    <div className="fc-screenshot-bar">
+                      <div className="fc-screenshot-dots">
+                        <span /><span /><span />
+                      </div>
+                      <code>{currentView.label}</code>
+                    </div>
+                    <img
+                      key={currentView.image}
+                      src={currentView.image}
+                      alt={currentView.alt[language]}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="fc-tour-media">
-                <figure className="fc-screen-frame">
-                  <img key={currentView.image} src={currentView.image} alt={currentView.alt[language]} />
-                </figure>
-              </div>
+
+              {/* Secondary view (Terminal or MicroBoot) */}
               {currentView.secondary ? (
-                <article className="fc-tour-secondary">
-                  <div className="fc-tour-secondary-copy">
-                    <img src={currentView.secondary.icon} alt="" aria-hidden="true" />
-                    <span>{currentView.secondary.label}</span>
-                    <h4>{currentView.secondary.title[language]}</h4>
-                    <p>{currentView.secondary.description[language]}</p>
-                    <a href={currentView.secondary.image} target="_blank" rel="noreferrer">
-                      {t('원본 이미지 보기', 'Open original image')} <span aria-hidden="true">↗</span>
+                <div className="fc-tour-secondary-pane">
+                  <div className="fc-secondary-top">
+                    <div className="fc-secondary-title-box">
+                      <img src={currentView.secondary.icon} alt="" aria-hidden="true" />
+                      <div>
+                        <span className="fc-badge-pill">{currentView.secondary.label}</span>
+                        <h4 className="fc-title-md">{currentView.secondary.title[language]}</h4>
+                      </div>
+                    </div>
+                    <a
+                      href={currentView.secondary.image}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="fc-open-img-link"
+                    >
+                      {t('고해상도 원본 보기', 'Open High-Res')} ↗
                     </a>
                   </div>
-                  <figure>
-                    <figcaption>{t('모바일에서는 이미지를 좌우로 밀어 자세히 볼 수 있습니다.', 'Swipe the image horizontally on mobile to inspect details.')}</figcaption>
+                  <p className="fc-body-sm">{currentView.secondary.description[language]}</p>
+                  <div className="fc-secondary-media-frame">
                     <img
                       src={currentView.secondary.image}
                       alt={currentView.secondary.alt[language]}
                       style={{ objectPosition: currentView.secondary.imagePosition }}
                     />
-                  </figure>
-                </article>
+                  </div>
+                </div>
               ) : null}
             </div>
           </div>
         </section>
 
-        <section className="fc-architecture" aria-labelledby="fc-architecture-title">
-          <div className="fc-architecture-heading">
-            <div>
-              <p className="fc-section-index">03 / ARCHITECTURE</p>
-              <h2 id="fc-architecture-title">{t('MicroNetwork 아키텍처', 'MicroNetwork architecture')}</h2>
-            </div>
-            <p>{t('호스트를 준비한 뒤 이미지, 네트워크, 스토리지를 조합해 M2를 만들고 외부와 연결합니다.', 'Prepare the host, combine image, network, and storage into an M2, then connect it to the outside.')}</p>
+        {/* 04 / ARCHITECTURE */}
+        <section className="fc-section" id="architecture" aria-labelledby="fc-arch-title">
+          <div className="fc-section-header">
+            <span className="fc-caption-uppercase">04 / ARCHITECTURE</span>
+            <h2 id="fc-arch-title" className="fc-display-lg">
+              {t('단일 호스트에서 완성되는', 'Engineered for simplicity,')}
+              <br />
+              {t('MicroNetwork 시스템 아키텍처.', 'architected for isolation.')}
+            </h2>
+            <p className="fc-section-lead">
+              {t(
+                '호스트 Linux 커널과 KVM을 기반으로, 완전히 분리된 Subnet과 NAT Egress 환경 속에서 M2가 안전하게 실행됩니다.',
+                'From bare metal Linux and KVM to isolated subnets and NAT egress, explore how FireCrab coordinates MicroVMs.',
+              )}
+            </p>
           </div>
-          <figure className="fc-architecture-image">
-            <img src="/micronetworks-architecture.png" alt={t('코드, Linux 호스트, 인터넷, NAT와 두 개의 격리 subnet 안에서 실행되는 M2와 MicroStorage의 MicroNetwork 아키텍처', 'MicroNetwork architecture showing code, a Linux host, internet, NAT, and M2s with MicroStorage in two isolated subnets')} />
-          </figure>
-          <ol className="fc-architecture-flow" aria-label={t('MicroVM 생성과 연결 순서', 'MicroVM creation and connection order')}>
-            {architectureFlow.map((step) => (
-              <li key={step.number}>
-                <span>{step.number}</span>
-                <strong>{step.title[language]}</strong>
-                <p>{step.description[language]}</p>
-              </li>
-            ))}
-          </ol>
+
+          <div className="fc-arch-card">
+            <div className="fc-arch-diagram-wrap">
+              <img
+                src="/micronetworks-architecture.png"
+                alt={t(
+                  'FireCrab MicroNetwork 아키텍처 다이어그램',
+                  'FireCrab MicroNetwork Architecture Diagram',
+                )}
+              />
+            </div>
+            {/* Architecture Connected Flowchart (01 -> 02 -> 03 -> 04 -> 05 -> 06) */}
+            <div className="fc-arch-flowchart" aria-label={t('아키텍처 실행 흐름도', 'Architecture Flowchart')}>
+              {architectureFlow.map((step, index) => (
+                <div className="fc-flow-step-item" key={step.number}>
+                  <div className="fc-flow-node">
+                    <div className="fc-flow-node-badge">
+                      <span className="fc-flow-num">{step.number}</span>
+                    </div>
+                    <strong className="fc-flow-title">{step.title[language]}</strong>
+                    <p className="fc-flow-desc">{step.description[language]}</p>
+                  </div>
+                  {index < architectureFlow.length - 1 && (
+                    <div className="fc-flow-arrow-wrap" aria-hidden="true">
+                      <ArrowRight size={15} className="fc-flow-arrow-right" />
+                      <ArrowDown size={15} className="fc-flow-arrow-down" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
-        <section className="fc-workflow" id="workflow" aria-labelledby="fc-workflow-title">
-          <div className="fc-section-heading">
-            <div>
-              <p className="fc-section-index">04 / FIRST RUN</p>
-              <h2 id="fc-workflow-title">{t('첫 M2까지 세 단계.', 'Your first M2 in three steps.')}</h2>
-            </div>
-          </div>
-          <ol className="fc-workflow-list">
-            {workflow.map((step) => (
-              <li key={step.number}>
-                <span>{step.number}</span>
-                <h3>{step.title[language]}</h3>
-                <p>{step.description[language]}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section className="fc-install" id="install" aria-labelledby="fc-install-title">
-          <div className="fc-install-copy">
-            <p className="fc-section-index">05 / INSTALL</p>
-            <h2 id="fc-install-title">{t('서버는 이미 있으니까.', 'You already have the server.')}<br /><span>{t('이제 FireCrab만.', 'Now add FireCrab.')}</span></h2>
-            <p>Linux + systemd, <code>/dev/kvm</code>{t(', 네트워크와 sudo 권한이 있는 일반 사용자 계정이 필요합니다.', ', network access, and a regular user account with sudo privileges are required.')}</p>
-            <div className="fc-install-links">
-              <a href={`${repositoryUrl}/blob/main/public-docs/installation.md`} target="_blank" rel="noreferrer">{t('전체 설치 가이드', 'Full install guide')} <ArrowRight size={16} /></a>
-              <a href={`${repositoryUrl}/blob/main/${language === 'ko' ? 'README.ko.md' : 'README.md'}`} target="_blank" rel="noreferrer">{language === 'ko' ? 'README.ko' : 'README'}</a>
-            </div>
+        {/* 05 / GETTING STARTED WORKFLOW */}
+        <section className="fc-section" aria-labelledby="fc-flow-title">
+          <div className="fc-section-header">
+            <span className="fc-caption-uppercase">05 / GETTING STARTED</span>
+            <h2 id="fc-flow-title" className="fc-display-lg">
+              {t('첫 MicroVM 가동까지', 'Your first MicroVM')}
+              <br />
+              {t('단 3단계.', 'in three simple steps.')}
+            </h2>
           </div>
 
-          <div className="fc-install-terminal">
-            <div className="fc-terminal-header">
-              <div className="fc-terminal-header-left">
-                <span className="fc-terminal-dots" aria-hidden="true"><i /><i /><i /></span>
-                <span className="fc-terminal-label">TERMINAL</span>
+          <div className="fc-workflow-grid">
+            {workflow.map((item) => (
+              <div className="fc-workflow-card" key={item.number}>
+                <div className="fc-workflow-top">
+                  <span className="fc-workflow-badge">{item.number}</span>
+                  <div className="fc-workflow-divider" />
+                </div>
+                <h3 className="fc-title-md">{item.title[language]}</h3>
+                <p className="fc-body-md">{item.description[language]}</p>
               </div>
-              <button type="button" onClick={copyInstallCommand}>{copied ? <Check size={15} /> : <Clipboard size={15} />}{copied ? t('복사됨', 'Copied') : t('복사', 'Copy')}</button>
-            </div>
-            <pre><code><span>$</span> curl -fsSL https://github.com/SteelCrab/firecrab/releases/latest/download/install.sh | bash</code></pre>
+            ))}
           </div>
         </section>
 
-        <section className="fc-final-cta">
-          <div>
-            <img src="/firecrab-icon.png" alt="" aria-hidden="true" />
-            <p>YOUR SERVER. YOUR MICROVMS.</p>
+        {/* 06 / INSTALLATION */}
+        <section className="fc-section" id="install" aria-labelledby="fc-install-title">
+          <div className="fc-install-layout">
+            <div className="fc-install-guide">
+              <span className="fc-caption-uppercase">06 / INSTALLATION</span>
+              <h2 id="fc-install-title" className="fc-display-lg">
+                {t('서버는 이미 있으니까.', 'You already have the server.')}
+                <br />
+                <span className="fc-ink-emphasis">
+                  {t('이제 FireCrab만.', 'Now add FireCrab.')}
+                </span>
+              </h2>
+              <p className="fc-body-md">
+                {t(
+                  'Linux + systemd, /dev/kvm, 네트워크와 sudo 권한이 있는 일반 사용자 계정이 필요합니다. 설치 스크립트 전체를 sudo로 실행하지 마세요. 필요한 단계에서만 권한을 요청합니다.',
+                  'Linux + systemd, /dev/kvm, network access, and a regular user with sudo privileges are required. Do NOT run the installer with sudo; it asks for privilege only when needed.',
+                )}
+              </p>
+
+              {/* Prerequisites Card */}
+              <div className="fc-prereq-card">
+                <span className="fc-caption-uppercase">{t('사전 요구사항 (Prerequisites)', 'Prerequisites')}</span>
+                <ul>
+                  <li>
+                    <Check size={14} className="fc-check-icon" />
+                    <span>Linux OS + systemd (Debian, Ubuntu, Fedora, Arch, openSUSE, Alpine 등)</span>
+                  </li>
+                  <li>
+                    <Check size={14} className="fc-check-icon" />
+                    <span><code>/dev/kvm</code> {t('하드웨어 가상화 접근 권한', 'Hardware virtualization access')}</span>
+                  </li>
+                  <li>
+                    <Check size={14} className="fc-check-icon" />
+                    <span>{t('sudo 권한이 있는 일반 사용자 (sudo 접두사 없이 실행)', 'Regular user with sudo access (do NOT prefix with sudo)')}</span>
+                  </li>
+                  <li>
+                    <Check size={14} className="fc-check-icon" />
+                    <span>{t('패키지 관리자: apt-get, dnf, zypper, pacman, apk', 'Package manager: apt-get, dnf, zypper, pacman, apk')}</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Quickstart steps based on main README */}
+              <div className="fc-quickstart-note">
+                <span className="fc-caption-uppercase">{t('설치 후 빠른 시작 (Quick Start)', 'After Installation (Quick Start)')}</span>
+                <p className="fc-body-sm">
+                  <code>http://127.0.0.1:5523/</code> {t('접속 후:', '— open in your browser, then:')}
+                </p>
+                <ol className="fc-qs-steps">
+                  <li><strong>1. {t('MicroNetwork 생성', 'Create a MicroNetwork')}</strong> — {t('숨겨진 기본 서브넷 없이 명시적으로 관리', 'No hidden default subnet')}</li>
+                  <li><strong>2. {t('M2 생성', 'Create an M2')}</strong> — {t('설치된 이미지(또는 OCI)와 리소스 선택', 'Choose installed image or OCI and specs')}</li>
+                  <li><strong>3. {t('시작 및 Terminal 연결', 'Start & open Terminal')}</strong> — {t('running 전환 후 브라우저 콘솔에서 즉시 명령 실행', 'Wait for running and open browser serial console')}</li>
+                </ol>
+              </div>
+
+              <div className="fc-install-actions">
+                <a
+                  href={`${repositoryUrl}/blob/main/public-docs/installation.md`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="fc-link-action"
+                >
+                  <BookOpen size={16} />
+                  <span>{t('전체 설치 가이드 (public-docs/installation.md)', 'Full Installation Guide')}</span>
+                  <span>↗</span>
+                </a>
+                <a
+                  href={`${repositoryUrl}/blob/main/${language === 'ko' ? 'README.ko.md' : 'README.md'}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="fc-link-action-subtle"
+                >
+                  {language === 'ko' ? 'README.ko.md 보기 ↗' : 'View README.md ↗'}
+                </a>
+              </div>
+            </div>
+
+            {/* Terminal Card */}
+            <div className="fc-terminal-block">
+              <div className="fc-terminal-tabbar">
+                <div className="fc-terminal-tab-group">
+                  <button
+                    type="button"
+                    className={installTab === 'curl' ? 'is-active' : ''}
+                    onClick={() => setInstallTab('curl')}
+                  >
+                    {t('원클릭 설치 (install.sh)', 'One-line Install')}
+                  </button>
+                  <button
+                    type="button"
+                    className={installTab === 'options' ? 'is-active' : ''}
+                    onClick={() => setInstallTab('options')}
+                  >
+                    {t('점검 및 옵션 (--check)', 'Check & Options')}
+                  </button>
+                  <button
+                    type="button"
+                    className={installTab === 'git' ? 'is-active' : ''}
+                    onClick={() => setInstallTab('git')}
+                  >
+                    {t('로컬 소스 빌드', 'Local Build')}
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  className={`fc-term-copy ${copiedInstall ? 'is-copied' : ''}`}
+                  onClick={() => {
+                    const cmd =
+                      installTab === 'curl'
+                        ? installCommand
+                        : installTab === 'options'
+                        ? './install.sh --check'
+                        : gitCloneCommand;
+                    copyInstallTabCommand(cmd);
+                  }}
+                >
+                  {copiedInstall ? <Check size={12} /> : <Copy size={12} />}
+                  <span>{copiedInstall ? t('복사됨', 'Copied') : t('복사', 'Copy')}</span>
+                </button>
+              </div>
+
+              <div className="fc-terminal-viewport">
+                {installTab === 'curl' && (
+                  <pre>
+                    <code>
+                      <span className="fc-code-comment"># {t('일반 사용자 계정으로 실행 (sudo를 붙이지 마세요)', 'Run as regular user (do NOT prefix with sudo)')}</span>
+                      {'\n'}
+                      <span className="fc-code-comment"># {t('필요한 패키지 및 systemd 등록 시에만 sudo 암호를 요청합니다', 'The script calls sudo only when privilege is needed')}</span>
+                      {'\n'}
+                      <span className="fc-code-prompt">$ </span>
+                      <span className="fc-code-cmd">{installCommand}</span>
+                      {'\n\n'}
+                      <span className="fc-code-comment"># {t('설치 완료 후 웹 브라우저에서 대시보드 열기:', 'Open dashboard after services start:')}</span>
+                      {'\n'}
+                      <span className="fc-code-url">http://127.0.0.1:5523/</span>
+                    </code>
+                  </pre>
+                )}
+
+                {installTab === 'options' && (
+                  <pre>
+                    <code>
+                      <span className="fc-code-comment"># {t('사전 요구사항 및 설치 계획 점검 (Read-only)', 'Report prerequisites and planned changes (read-only)')}</span>
+                      {'\n'}
+                      <span className="fc-code-prompt">$ </span>
+                      <span className="fc-code-cmd">./install.sh --check</span>
+                      {'\n\n'}
+                      <span className="fc-code-comment"># {t('KVM, 방화벽, 소켓 및 호스트 설정 진단', 'Diagnose KVM, firewall, socket, and host setup')}</span>
+                      {'\n'}
+                      <span className="fc-code-prompt">$ </span>
+                      <span className="fc-code-cmd">./install.sh --doctor</span>
+                      {'\n\n'}
+                      <span className="fc-code-comment"># {t('libc 자동 감지 대신 수동 지정 (예: musl)', 'Pick a libc instead of autodetecting (e.g. musl)')}</span>
+                      {'\n'}
+                      <span className="fc-code-prompt">$ </span>
+                      <span className="fc-code-cmd">./install.sh --libc musl</span>
+                      {'\n\n'}
+                      <span className="fc-code-comment"># {t('제거 (데이터 보존 / 완전 삭제)', 'Uninstall (retain data / purge all)')}</span>
+                      {'\n'}
+                      <span className="fc-code-prompt">$ </span>
+                      <span className="fc-code-cmd">./install.sh --uninstall</span>
+                      {'\n'}
+                      <span className="fc-code-prompt">$ </span>
+                      <span className="fc-code-cmd">./install.sh --uninstall --purge</span>
+                    </code>
+                  </pre>
+                )}
+
+                {installTab === 'git' && (
+                  <pre>
+                    <code>
+                      <span className="fc-code-comment"># {t('저장소 체크아웃 후 공식 준비 스크립트로 로컬 빌드', 'Clone repository and build payload with repository script')}</span>
+                      {'\n'}
+                      <span className="fc-code-prompt">$ </span>
+                      <span className="fc-code-cmd">git clone https://github.com/SteelCrab/firecrab.git</span>
+                      {'\n'}
+                      <span className="fc-code-prompt">$ </span>
+                      <span className="fc-code-cmd">cd firecrab</span>
+                      {'\n'}
+                      <span className="fc-code-prompt">$ </span>
+                      <span className="fc-code-cmd">./scripts/ci-prepare-install-payload.sh</span>
+                      {'\n'}
+                      <span className="fc-code-prompt">$ </span>
+                      <span className="fc-code-cmd">./install.sh --bin-dir target/release</span>
+                    </code>
+                  </pre>
+                )}
+              </div>
+            </div>
           </div>
-          <h2>{t('작은 서버 한 대에서', 'Isolated workloads,')}<br />{t('제대로 격리된 워크로드를.', 'on one small server.')}</h2>
-          <a href={repositoryUrl} target="_blank" rel="noreferrer"><Github size={19} /> {t('GitHub에서 FireCrab 보기', 'View FireCrab on GitHub')} <ArrowRight size={18} /></a>
+        </section>
+
+        {/* CTA BAND (Pre-Footer) */}
+        <section className="fc-cta-band" aria-labelledby="fc-cta-title">
+          <div className="fc-cta-container">
+            <span className="fc-caption-uppercase">100% FREE & OPEN SOURCE</span>
+            <h2 id="fc-cta-title" className="fc-display-lg">
+              {t('당신의 서버를 위한,', 'Isolated microVM workloads,')}
+              <br />
+              {t('가장 가벼운 MicroVM 인프라.', 'on your own single server.')}
+            </h2>
+            <p className="fc-body-md">
+              {t(
+                'FireCrab은 오픈소스 커뮤니티와 함께 만듭니다. GitHub에서 Star를 눌러 응원해주시고, 자유롭게 기여해 주세요.',
+                'FireCrab is built in the open under Apache 2.0. Star the repository on GitHub and join the discussion.',
+              )}
+            </p>
+
+            <div className="fc-cta-btn-row">
+              <a
+                href={repositoryUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="fc-button-download"
+              >
+                <Github size={16} />
+                <span>{t('GitHub에서 Star 누르기', 'Star on GitHub')}</span>
+                <Star size={13} className="fc-star-icon" />
+              </a>
+              <a
+                href={language === 'ko' ? '/docs' : '/en/docs'}
+                className="fc-btn-secondary"
+              >
+                <BookOpen size={15} />
+                <span>{t('문서 및 튜토리얼', 'Documentation')}</span>
+              </a>
+            </div>
+          </div>
         </section>
       </main>
 
+      {/* FOOTER */}
       <footer className="fc-footer">
-        <a className="fc-wordmark" href="#top"><img src="/firecrab-icon.png" alt="" aria-hidden="true" /><span>FireCrab</span></a>
-        <p>A lightweight microVM platform for your own server.</p>
-        <nav aria-label={t('푸터 메뉴', 'Footer navigation')}><a href={language === 'ko' ? '/docs' : '/en/docs'}>Docs</a><a href={language === 'ko' ? '/blog' : '/en/blog'}>Blog</a><a href={repositoryUrl} target="_blank" rel="noreferrer">GitHub</a></nav>
-        <span>Apache 2.0 · © 2026 FireCrab</span>
+        <div className="fc-footer-inner">
+          <div className="fc-footer-brand-col">
+            <a className="fc-wordmark" href="#top">
+              <img src="/firecrab-icon.png" alt="" aria-hidden="true" />
+              <span className="fc-wordmark-title">FireCrab</span>
+            </a>
+            <p className="fc-body-sm">
+              {t(
+                '단일 Linux 서버를 위한 경량 Firecracker MicroVM 관리 플랫폼',
+                'A lightweight Firecracker microVM platform for your own Linux server.',
+              )}
+            </p>
+            <span className="fc-caption">Apache 2.0 Open Source License</span>
+          </div>
+
+          <div className="fc-footer-nav-grid">
+            <div className="fc-footer-col">
+              <span className="fc-caption-uppercase">{t('프로젝트', 'Project')}</span>
+              <a href="#features">{t('특징', 'Features')}</a>
+              <a href="#compare">{t('기술 비교', 'Compare')}</a>
+              <a href="#components">{t('컴포넌트', 'Components')}</a>
+              <a href="#architecture">{t('아키텍처', 'Architecture')}</a>
+              <a href="#install">{t('설치하기', 'Install')}</a>
+            </div>
+
+            <div className="fc-footer-col">
+              <span className="fc-caption-uppercase">{t('문서', 'Docs')}</span>
+              <a href={language === 'ko' ? '/docs' : '/en/docs'}>{t('소개 및 시작하기', 'Introduction')}</a>
+              <a href={language === 'ko' ? '/docs/three-tier-architecture' : '/en/docs/three-tier-architecture'}>
+                {t('3티어 구성 튜토리얼', '3-Tier Tutorial')}
+              </a>
+              <a href={language === 'ko' ? '/blog' : '/en/blog'}>{t('블로그', 'Blog')}</a>
+              <a href={`${repositoryUrl}/releases`} target="_blank" rel="noreferrer">
+                {t('릴리즈 노트', 'Releases')}
+              </a>
+            </div>
+
+            <div className="fc-footer-col">
+              <span className="fc-caption-uppercase">{t('커뮤니티', 'Community')}</span>
+              <a href={repositoryUrl} target="_blank" rel="noreferrer">
+                GitHub Repository
+              </a>
+              <a href={`${repositoryUrl}/issues`} target="_blank" rel="noreferrer">
+                Issues
+              </a>
+              <a href={`${repositoryUrl}/discussions`} target="_blank" rel="noreferrer">
+                Discussions
+              </a>
+              <a href={`${repositoryUrl}/blob/main/LICENSE`} target="_blank" rel="noreferrer">
+                Apache 2.0 License
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="fc-footer-bottom-row">
+          <span>© 2026 FireCrab Project. Inspired by Cursor design.</span>
+          <div className="fc-footer-langs">
+            <button
+              type="button"
+              className={language === 'ko' ? 'is-active' : ''}
+              onClick={() => changeLanguage('ko')}
+            >
+              한국어
+            </button>
+            <span>·</span>
+            <button
+              type="button"
+              className={language === 'en' ? 'is-active' : ''}
+              onClick={() => changeLanguage('en')}
+            >
+              English
+            </button>
+          </div>
+        </div>
       </footer>
     </div>
   );
