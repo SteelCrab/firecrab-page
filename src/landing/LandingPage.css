@@ -423,10 +423,15 @@
 }
 
 .fc-hero-announcement {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 8px 12px;
   margin-bottom: 24px;
+}
+
+.fc-hero-announcement .fc-badge-pill {
+  white-space: nowrap;
 }
 
 .fc-announcement-link {
@@ -1453,8 +1458,9 @@
 
 .fc-install-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 8px 16px;
 }
 
 .fc-link-action {
@@ -1489,8 +1495,10 @@
 
 .fc-terminal-tabbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--fc-hairline);
   background: var(--fc-canvas-soft);
@@ -1498,14 +1506,9 @@
 
 .fc-terminal-tab-group {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.fc-terminal-tab-group::-webkit-scrollbar {
-  display: none;
 }
 
 .fc-terminal-tab-group button {
@@ -1531,6 +1534,7 @@
 .fc-term-copy {
   display: inline-flex;
   align-items: center;
+  margin-left: auto;
   gap: 5px;
   padding: 5px 10px;
   border: 1px solid var(--fc-hairline);
@@ -1622,7 +1626,9 @@
 
 .fc-cta-btn-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 12px;
 }
 
@@ -1738,15 +1744,59 @@
 }
 
 /* ==========================================================================
-   RESPONSIVE BREAKPOINTS (per DESIGN.md)
+   RESPONSIVE BREAKPOINTS
+   --------------------------------------------------------------------------
+   desktop    >= 1141px  full header, 3-column grids
+   laptop     <= 1140px  header collapses to the menu button (English labels need ~1100px, keep a margin)
+   tablet     <= 1024px  2-column grids, stacked split layouts, 3x2 flow
+   tablet-sm  <=  768px  1-column workflow, stacked comparison cards, 2x2 tab strips
+   phone      <=  640px  16px gutters, single-column layouts
+   phone-sm   <=  520px  header keeps wordmark + Install + menu only
+   tiny       <=  360px  version pill hidden
    ========================================================================== */
+
+@media (min-width: 1141px) {
+  /* 메뉴가 열린 채 화면이 넓어져도 드로어가 남지 않게 한다. */
+  .fc-mobile-nav {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1140px) {
+  .fc-nav-shell {
+    gap: 16px;
+  }
+  .fc-desktop-nav,
+  .fc-nav-actions .fc-github-pill {
+    display: none;
+  }
+  .fc-nav-actions {
+    margin-left: auto;
+  }
+  .fc-menu-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+  /* 드로어는 헤더 아래로 펼쳐지므로 짧은 화면(가로 모드 폰)에서는 스스로 스크롤한다. */
+  .fc-mobile-nav {
+    max-height: calc(100vh - 64px);
+    max-height: calc(100dvh - 64px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-bottom: 1px solid var(--fc-hairline);
+  }
+}
 
 @media (max-width: 1024px) {
   .fc-hero-band {
     padding: 60px 0;
   }
   .fc-display-mega {
-    font-size: 52px;
+    font-size: clamp(2rem, 6.6vw, 3.25rem);
     letter-spacing: -1.4px;
   }
   .fc-proof-container {
@@ -1765,18 +1815,40 @@
   .fc-feature-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  /* 9장 카드를 2열로 놓으면 마지막 한 장이 혼자 남으므로 가로로 채운다. */
+  .fc-feature-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
   .fc-tour-split {
     grid-template-columns: 1fr;
   }
+  /* 투어 탭은 라벨이 길어(M2Image & MicroRegistry) 4열로는 좁다. */
+  .fc-tour-tablist {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .fc-tour-tab:nth-child(2) {
+    border-right: 0;
+  }
+  .fc-tour-tab:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--fc-hairline);
+  }
+  /* 6단계 흐름도는 한 줄에 두면 가로 스크롤이 생기므로 3x2로 접는다. */
   .fc-arch-flowchart {
-    gap: 6px;
-    padding: 20px 14px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 16px;
+    overflow: visible;
   }
   .fc-flow-step-item {
-    min-width: 120px;
+    min-width: 0;
+  }
+  .fc-flow-step-item:nth-child(3n) .fc-flow-arrow-wrap {
+    display: none;
   }
   .fc-flow-node {
-    padding: 12px 10px;
+    padding: 12px;
+    min-height: 0;
   }
   .fc-install-layout {
     grid-template-columns: 1fr;
@@ -1788,23 +1860,8 @@
 }
 
 @media (max-width: 768px) {
-  .fc-desktop-nav {
-    display: none;
-  }
-  .fc-menu-button {
-    display: block;
-  }
   .fc-workflow-grid {
     grid-template-columns: 1fr;
-  }
-  .fc-tour-tablist {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .fc-tour-tab:nth-child(2) {
-    border-right: 0;
-  }
-  .fc-tour-tab:nth-child(-n + 2) {
-    border-bottom: 1px solid var(--fc-hairline);
   }
   .fc-arch-tablist {
     grid-template-columns: repeat(2, 1fr);
@@ -1815,17 +1872,81 @@
   .fc-arch-tab:nth-child(-n + 2) {
     border-bottom: 1px solid var(--fc-hairline);
   }
-  /* 도식은 1200px 기준으로 그려져 좁은 화면에서는 글자가 읽히지 않으므로 가로 스크롤을 허용한다. */
   .fc-arch-diagram-wrap {
-    justify-content: flex-start;
     padding: 16px;
-    overflow-x: auto;
-  }
-  .fc-arch-diagram-wrap img {
-    min-width: 720px;
   }
   .fc-arch-caption {
     padding: 16px;
+  }
+
+  /* 비교표: 4열 표는 폰에서 513px 이상이 필요하고 핵심인 FireCrab 열이 맨 오른쪽이라
+     잘려 보인다. 행마다 카드로 쌓고 FireCrab 항목을 제목 바로 아래에 둔다. */
+  .fc-comparison-card {
+    overflow-x: visible;
+  }
+  .fc-compare-table,
+  .fc-compare-table tbody {
+    display: block;
+    width: 100%;
+  }
+  .fc-compare-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .fc-compare-table tr {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--fc-hairline);
+  }
+  .fc-compare-table tr:last-child {
+    border-bottom: 0;
+  }
+  .fc-compare-table td,
+  .fc-compare-table tr:last-child td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+  .fc-compare-table td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    color: var(--fc-muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+  .fc-compare-table td.fc-dim-col {
+    order: 0;
+  }
+  .fc-compare-table td.fc-dim-col::before {
+    display: none;
+  }
+  .fc-compare-table td.fc-dim-col strong {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .fc-compare-table td.fc-col-firecrab {
+    order: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--fc-hairline);
+    border-radius: 8px;
+  }
+  .fc-compare-table td.fc-col-firecrab::before {
+    color: var(--fc-primary);
+  }
+  .fc-compare-table td:nth-child(2) {
+    order: 2;
+  }
+  .fc-compare-table td:nth-child(3) {
+    order: 3;
   }
 }
 
@@ -1837,16 +1958,32 @@
   .fc-footer-bottom-row {
     width: min(100% - 32px, 1200px);
   }
+  .fc-mobile-nav {
+    padding: 16px 16px 24px;
+  }
   .fc-hero-band {
     padding: 48px 0;
+    gap: 36px;
   }
   .fc-display-mega {
-    font-size: 32px;
     letter-spacing: -0.8px;
   }
   .fc-display-lg {
     font-size: 26px;
     letter-spacing: -0.5px;
+  }
+  .fc-hero-lead {
+    font-size: 16px;
+  }
+  .fc-hero-install-card {
+    gap: 10px;
+    padding: 8px 10px;
+  }
+  .fc-section {
+    padding: 56px 0;
+  }
+  .fc-section-header {
+    margin-bottom: 28px;
   }
   .fc-feature-grid {
     grid-template-columns: 1fr;
@@ -1870,7 +2007,20 @@
   .fc-proof-col:last-child {
     border-bottom: 0;
   }
+  .fc-compare-quote-band {
+    padding: 16px;
+  }
+  /* 1200px 기준 도식은 폰에서 글자가 읽히지 않으므로 최소 폭을 두고 가로 스크롤을 허용한다. */
+  .fc-arch-diagram-wrap {
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .fc-arch-diagram-wrap img {
+    min-width: 640px;
+  }
   .fc-arch-flowchart {
+    display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 0;
@@ -1879,11 +2029,12 @@
   .fc-flow-step-item {
     flex-direction: column;
     width: 100%;
-    min-width: 0;
+  }
+  .fc-flow-step-item:nth-child(3n) .fc-flow-arrow-wrap {
+    display: flex;
   }
   .fc-flow-node {
     width: 100%;
-    min-height: auto;
     padding: 14px 16px;
   }
   .fc-flow-arrow-wrap {
@@ -1898,6 +2049,37 @@
   .fc-tour-panel-card {
     padding: 24px 16px;
   }
+  .fc-tour-secondary-pane {
+    padding: 16px;
+  }
+  .fc-secondary-top {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .fc-secondary-media-frame img {
+    height: 220px;
+  }
+  .fc-terminal-viewport {
+    padding: 16px 14px;
+  }
+  .fc-terminal-viewport pre {
+    font-size: 12px;
+  }
+  .fc-cta-band {
+    padding: 64px 0;
+  }
+  .fc-cta-btn-row {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .fc-cta-btn-row > a {
+    justify-content: center;
+  }
+  .fc-footer {
+    padding: 48px 0 24px;
+  }
   .fc-footer-nav-grid {
     grid-template-columns: 1fr 1fr;
     gap: 24px;
@@ -1907,7 +2089,61 @@
     gap: 12px;
     align-items: flex-start;
   }
-  .fc-nav-actions .fc-github-pill {
+}
+
+@media (max-width: 520px) {
+  .fc-nav-shell {
+    gap: 12px;
+  }
+  /* 좁은 헤더에서는 Install CTA를 남기고 언어 전환은 메뉴 드로어(상단)에서 고른다. */
+  .fc-nav-actions .fc-language-switch {
     display: none;
+  }
+  .fc-tour-tablist {
+    grid-template-columns: 1fr;
+  }
+  .fc-tour-tab,
+  .fc-tour-tab:nth-child(2),
+  .fc-tour-tab:nth-child(-n + 2) {
+    border-right: 0;
+    border-bottom: 1px solid var(--fc-hairline);
+  }
+  .fc-tour-tab:last-child {
+    border-bottom: 0;
+  }
+  .fc-footer-nav-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 360px) {
+  .fc-version-pill {
+    display: none;
+  }
+  .fc-hero-announcement {
+    flex-wrap: wrap;
+  }
+}
+
+/* 터치 기기에서는 작은 텍스트 버튼의 탭 영역을 키운다. */
+@media (pointer: coarse) {
+  .fc-language-switch button {
+    padding: 8px;
+  }
+  .fc-terminal-tab-group button {
+    padding: 9px 12px;
+  }
+  .fc-btn-copy,
+  .fc-term-copy {
+    padding: 9px 12px;
+  }
+  .fc-footer-langs button {
+    padding: 10px 6px;
+  }
+  .fc-footer-col a {
+    padding: 4px 0;
+  }
+  .fc-open-img-link {
+    padding: 6px 0;
   }
 }

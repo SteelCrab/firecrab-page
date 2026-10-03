@@ -41,6 +41,16 @@ import {
 
 const architectureDocUrl = `${repositoryUrl}/blob/main/public-docs/architecture.md`;
 
+/** 비교표 열 제목. 좁은 화면에서는 표가 카드로 쌓이므로 셀의 data-label로도 쓴다. */
+const compareColumns = {
+  docker: 'Docker / Podman',
+  traditionalVm: 'Traditional VMs (QEMU/ESXi)',
+  firecrab: 'FireCrab (Firecracker)',
+};
+
+/** 헤더가 햄버거 메뉴로 접히는 경계. LandingPage.css 의 1140px 브레이크포인트와 같아야 한다. */
+const desktopNavQuery = '(min-width: 1141px)';
+
 const languageStorageKey = 'firecrab-language';
 const browserLanguageStorageKey = 'firecrab-browser-language';
 
@@ -143,6 +153,15 @@ export default function LandingPage() {
     );
   }, [language]);
 
+  useEffect(() => {
+    const query = window.matchMedia(desktopNavQuery);
+    const closeOnDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) setMobileMenuOpen(false);
+    };
+    query.addEventListener('change', closeOnDesktop);
+    return () => query.removeEventListener('change', closeOnDesktop);
+  }, []);
+
   const changeLanguage = (nextLanguage: Language) => {
     window.localStorage.setItem(languageStorageKey, nextLanguage);
     window.localStorage.setItem(browserLanguageStorageKey, getBrowserLanguage());
@@ -184,7 +203,7 @@ export default function LandingPage() {
             <span className="fc-version-pill">{releaseVersion}</span>
           </a>
 
-          <nav className="fc-desktop-nav" aria-label="메인 메뉴">
+          <nav className="fc-desktop-nav" aria-label={t('메인 메뉴', 'Main menu')}>
             <a href="#features">{t('특징', 'Features')}</a>
             <a href="#compare">{t('비교', 'Compare')}</a>
             <a href="#components">{t('컴포넌트', 'Components')}</a>
@@ -257,7 +276,7 @@ export default function LandingPage() {
           className={`fc-mobile-nav ${mobileMenuOpen ? 'is-open' : ''}`}
           id="fc-mobile-nav"
           hidden={!mobileMenuOpen}
-          aria-label="모바일 메뉴"
+          aria-label={t('모바일 메뉴', 'Mobile menu')}
         >
           <div className="fc-mobile-language">
             <button
@@ -513,9 +532,9 @@ export default function LandingPage() {
               <thead>
                 <tr>
                   <th>{t('비교 항목', 'Attribute')}</th>
-                  <th>Docker / Podman</th>
-                  <th>Traditional VMs (QEMU/ESXi)</th>
-                  <th className="fc-col-firecrab">FireCrab (Firecracker)</th>
+                  <th>{compareColumns.docker}</th>
+                  <th>{compareColumns.traditionalVm}</th>
+                  <th className="fc-col-firecrab">{compareColumns.firecrab}</th>
                 </tr>
               </thead>
               <tbody>
@@ -524,9 +543,9 @@ export default function LandingPage() {
                     <td className="fc-dim-col">
                       <strong>{row.dimension[language]}</strong>
                     </td>
-                    <td>{row.docker[language]}</td>
-                    <td>{row.traditionalVm[language]}</td>
-                    <td className="fc-col-firecrab">
+                    <td data-label={compareColumns.docker}>{row.docker[language]}</td>
+                    <td data-label={compareColumns.traditionalVm}>{row.traditionalVm[language]}</td>
+                    <td className="fc-col-firecrab" data-label={compareColumns.firecrab}>
                       <div className="fc-cell-highlight">
                         <Check size={14} className="fc-check-icon" />
                         <span>{row.firecrab[language]}</span>
@@ -974,8 +993,8 @@ export default function LandingPage() {
             </a>
             <p className="fc-body-sm">
               {t(
-                '단일 Linux 서버를 위한 경량 Firecracker MicroVM 관리 플랫폼',
-                'A lightweight Firecracker microVM platform for your own Linux server.',
+                '내 서버 한 대를 위한 경량 Firecracker MicroVM 관리 플랫폼',
+                'A lightweight Firecracker microVM platform for your own server.',
               )}
             </p>
             <span className="fc-caption">Apache 2.0 Open Source License</span>
