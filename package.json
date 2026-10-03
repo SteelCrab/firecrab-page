@@ -7,9 +7,10 @@
     "dev": "node scripts/dev.mjs",
     "dev:landing": "vite --host 127.0.0.1 --port 5173 --strictPort",
     "dev:docs": "npm --prefix docs-site start",
-    "build": "tsc -b && vite build && npm run build:docs && node scripts/merge-docs-build.mjs",
+    "build": "npm run check:i18n && tsc -b && vite build && npm run build:docs && node scripts/merge-docs-build.mjs",
     "build:docs": "npm --prefix docs-site ci && npm --prefix docs-site run build",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "check:i18n": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

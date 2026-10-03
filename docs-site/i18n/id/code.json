@@ -1,0 +1,20 @@
+{
+  "blog.share.copied": {
+    "message": "Tersalin"
+  },
+  "blog.share.copy": {
+    "message": "Salin tautan"
+  },
+  "blog.share.copyTitle": {
+    "message": "Salin tautan artikel ini"
+  },
+  "theme.blog.post.plurals": {
+    "message": "{count} pos"
+  },
+  "theme.blog.post.readingTime.plurals": {
+    "message": "{readingTime} menit membaca"
+  },
+  "theme.docs.DocCard.categoryDescription.plurals": {
+    "message": "{count} butir"
+  }
+}

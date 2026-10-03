@@ -3,36 +3,8 @@
    Inspired by DESIGN.md
    ========================================================================== */
 
+/* 디자인 토큰(--fc-*)은 ../shared/site-header.css 에 있다. 헤더가 문서·블로그와 같은 값을 쓰기 때문이다. */
 .fc-site {
-  /* Colors */
-  --fc-primary: #f54e00;
-  --fc-primary-active: #d04200;
-  --fc-ink: #26251e;
-  --fc-body: #5a5852;
-  --fc-body-strong: #26251e;
-  --fc-muted: #807d72;
-  --fc-muted-soft: #a09c92;
-  --fc-hairline: #e6e5e0;
-  --fc-hairline-soft: #efeee8;
-  --fc-hairline-strong: #cfcdc4;
-  --fc-canvas: #f7f7f4;
-  --fc-canvas-soft: #fafaf7;
-  --fc-surface-card: #ffffff;
-  --fc-surface-strong: #e6e5e0;
-  --fc-on-primary: #ffffff;
-
-  /* Timeline pastels (signature AI / lifecycle) */
-  --fc-timeline-thinking: #dfa88f;
-  --fc-timeline-grep: #9fc9a2;
-  --fc-timeline-read: #9fbbe0;
-  --fc-timeline-edit: #c0a8dd;
-  --fc-timeline-done: #c08532;
-
-  /* Typography families */
-  --fc-font-display: "Space Grotesk", Inter, "Pretendard Variable", sans-serif;
-  --fc-font-sans: Inter, "Pretendard Variable", system-ui, -apple-system, sans-serif;
-  --fc-font-mono: "JetBrains Mono", "Fira Code", monospace;
-
   min-width: 320px;
   min-height: 100vh;
   overflow-x: clip;
@@ -42,6 +14,24 @@
   line-height: 1.5;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
+}
+
+/* word-break: keep-all 은 한국어(띄어쓰기 단위 줄바꿈)용이다. 공백 없이 이어 쓰는 일본어·중국어에
+   그대로 쓰면 문장이 줄바꿈되지 않아 카드와 그리드를 밀어내므로 기본 규칙으로 되돌린다. */
+.fc-site:lang(ja),
+.fc-site:lang(zh) {
+  word-break: normal;
+  line-break: strict;
+}
+
+/* 긴 토큰(경로, 명령어)이 그리드 열의 최소 폭을 키워 화면 밖으로 밀어내지 않게 한다. */
+.fc-site p,
+.fc-site li,
+.fc-site h1,
+.fc-site h2,
+.fc-site h3,
+.fc-site h4 {
+  overflow-wrap: anywhere;
 }
 
 .fc-site *,
@@ -182,227 +172,12 @@
 }
 
 /* ==========================================================================
-   TOP NAVIGATION (height: 64px, hairline bottom, no shadows)
+   TOP NAVIGATION — 스타일은 ../shared/site-header.css (문서·블로그와 공용).
+   랜딩 전용 쌓임 순서만 여기에 둔다.
    ========================================================================== */
 
 .fc-header {
-  position: sticky;
   z-index: 60;
-  top: 0;
-  height: 64px;
-  border-bottom: 1px solid var(--fc-hairline);
-  background: rgba(247, 247, 244, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.fc-nav-shell {
-  display: flex;
-  width: min(1200px, calc(100% - 48px));
-  height: 64px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  margin: 0 auto;
-}
-
-.fc-wordmark {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-}
-
-.fc-wordmark img {
-  width: 26px;
-  height: 26px;
-  object-fit: contain;
-}
-
-.fc-wordmark-title {
-  font-family: var(--fc-font-display);
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.3px;
-  color: var(--fc-ink);
-}
-
-.fc-version-pill {
-  display: inline-flex;
-  padding: 2px 6px;
-  border-radius: 9999px;
-  border: 1px solid var(--fc-hairline);
-  background: var(--fc-canvas-soft);
-  color: var(--fc-muted);
-  font-family: var(--fc-font-mono);
-  font-size: 11px;
-}
-
-.fc-desktop-nav {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.fc-desktop-nav a {
-  color: var(--fc-ink);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
-  transition: color 150ms ease;
-}
-
-.fc-desktop-nav a:hover {
-  color: var(--fc-primary);
-}
-
-.fc-nav-link-ext {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.fc-ext-icon {
-  color: var(--fc-muted-soft);
-}
-
-.fc-nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* Language switch */
-.fc-language-switch {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border: 1px solid var(--fc-hairline);
-  border-radius: 8px;
-  background: var(--fc-surface-card);
-  color: var(--fc-muted);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.fc-language-switch button {
-  padding: 2px 4px;
-  border: 0;
-  background: transparent;
-  color: var(--fc-muted);
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.fc-language-switch button.is-active {
-  color: var(--fc-ink);
-  font-weight: 600;
-}
-
-.fc-language-switch i {
-  width: 1px;
-  height: 10px;
-  background: var(--fc-hairline);
-}
-
-/* GitHub Star Pill */
-.fc-github-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  border: 1px solid var(--fc-hairline);
-  border-radius: 8px;
-  background: var(--fc-surface-card);
-  color: var(--fc-ink);
-  font-size: 13px;
-  font-weight: 500;
-  transition: border-color 150ms ease;
-}
-
-.fc-github-pill:hover {
-  border-color: var(--fc-hairline-strong);
-}
-
-/* button-primary (Cursor Orange #f54e00, 40px, 8px radius) */
-.fc-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
-  padding: 10px 18px;
-  border-radius: 8px;
-  background: var(--fc-primary);
-  color: var(--fc-on-primary);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.0;
-  transition: background-color 150ms ease;
-}
-
-.fc-btn-primary:hover {
-  background: var(--fc-primary-active);
-}
-
-/* Mobile Nav Toggle */
-.fc-menu-button {
-  display: none;
-  padding: 8px;
-  border: 1px solid var(--fc-hairline);
-  border-radius: 8px;
-  background: var(--fc-surface-card);
-  color: var(--fc-ink);
-  cursor: pointer;
-}
-
-.fc-mobile-nav {
-  display: none;
-  flex-direction: column;
-  padding: 16px 24px 24px;
-  border-top: 1px solid var(--fc-hairline);
-  background: var(--fc-canvas);
-}
-
-.fc-mobile-nav.is-open {
-  display: flex;
-}
-
-.fc-mobile-language {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.fc-mobile-language button {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid var(--fc-hairline);
-  border-radius: 6px;
-  background: var(--fc-surface-card);
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.fc-mobile-language button.is-active {
-  border-color: var(--fc-ink);
-  font-weight: 600;
-  color: var(--fc-ink);
-}
-
-.fc-mobile-nav a {
-  padding: 10px 0;
-  border-bottom: 1px solid var(--fc-hairline-soft);
-  color: var(--fc-ink);
-  font-size: 15px;
-}
-
-.fc-mobile-gh-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  color: var(--fc-primary) !important;
 }
 
 /* ==========================================================================
@@ -530,7 +305,6 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 16px;
-  margin-bottom: 36px;
 }
 
 /* button-download: background #26251e, text #f7f7f4, 44px height, 8px radius */
@@ -573,40 +347,6 @@
 .fc-hero-arrow {
   font-size: 13px;
   color: var(--fc-muted);
-}
-
-/* Editorial specs row */
-.fc-hero-specs-row {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  padding-top: 24px;
-  border-top: 1px solid var(--fc-hairline);
-  max-width: 680px;
-}
-
-.fc-spec-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.fc-spec-val {
-  font-family: var(--fc-font-mono);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--fc-ink);
-}
-
-.fc-spec-lbl {
-  font-size: 12px;
-  color: var(--fc-muted);
-}
-
-.fc-spec-divider {
-  width: 1px;
-  height: 24px;
-  background: var(--fc-hairline);
 }
 
 /* ==========================================================================
@@ -1128,7 +868,7 @@
 }
 
 /* ==========================================================================
-   04 / ARCHITECTURE
+   04 / ARCHITECTURE (README: intro animation, "at a glance", "runs anywhere")
    ========================================================================== */
 
 .fc-arch-card {
@@ -1138,46 +878,41 @@
   overflow: hidden;
 }
 
-.fc-arch-tablist {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  border-bottom: 1px solid var(--fc-hairline);
+.fc-arch-intro {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 24px;
   background: var(--fc-canvas-soft);
 }
 
-.fc-arch-tab {
-  padding: 14px 18px;
-  border: 0;
-  border-right: 1px solid var(--fc-hairline);
-  background: transparent;
-  color: var(--fc-ink);
-  font-family: var(--fc-font-display);
-  font-size: 14px;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  transition: background 150ms ease;
+.fc-arch-intro img {
+  display: block;
+  width: 100%;
+  max-width: 880px;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--fc-hairline);
+  border-radius: 8px;
+  background: #ffffff;
 }
 
-.fc-arch-tab:last-child {
-  border-right: 0;
+.fc-arch-block {
+  padding: 28px;
+  border-top: 1px solid var(--fc-hairline);
 }
 
-.fc-arch-tab:hover {
-  background: var(--fc-canvas);
-}
-
-.fc-arch-tab.is-active {
-  background: var(--fc-surface-card);
-  box-shadow: inset 0 -2px 0 var(--fc-primary);
+.fc-arch-block > .fc-title-md {
+  margin-bottom: 16px;
 }
 
 .fc-arch-diagram-wrap {
-  padding: 32px;
   display: flex;
   justify-content: center;
+  padding: 16px;
+  border: 1px solid var(--fc-hairline);
+  border-radius: 8px;
   background: #ffffff;
-  border-bottom: 1px solid var(--fc-hairline);
 }
 
 .fc-arch-diagram-wrap img {
@@ -1186,23 +921,11 @@
   height: auto;
 }
 
-.fc-arch-caption {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 20px 28px;
-}
-
-.fc-arch-caption .fc-body-sm {
-  max-width: 860px;
-  margin: 0;
-}
-
 .fc-arch-steps {
   display: grid;
   gap: 8px;
   max-width: 860px;
-  margin: 0;
+  margin: 20px 0 0;
   padding-left: 22px;
   font-size: 14px;
   line-height: 1.55;
@@ -1215,121 +938,19 @@
   font-weight: 600;
 }
 
-.fc-arch-caption-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 20px;
-  font-size: 12px;
-  color: var(--fc-muted);
-}
-
-.fc-arch-flow-head {
-  padding: 20px 20px 0;
-  border-top: 1px solid var(--fc-hairline);
-  background: var(--fc-canvas-soft);
-}
-
-.fc-arch-flow-head + .fc-arch-flowchart {
-  border-top: 0;
-  padding-top: 12px;
+.fc-arch-text {
+  max-width: 860px;
+  margin: 16px 0 0;
 }
 
 .fc-arch-credit {
   margin: 0;
-  padding: 14px 20px 18px;
+  padding: 14px 28px 18px;
   border-top: 1px solid var(--fc-hairline);
   background: var(--fc-canvas-soft);
   font-size: 11.5px;
   line-height: 1.5;
   color: var(--fc-muted);
-}
-
-/* Architecture Connected Flowchart (01 -> 02 -> 03 -> 04 -> 05 -> 06) */
-.fc-arch-flowchart {
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 24px 20px;
-  background: var(--fc-canvas-soft);
-  border-top: 1px solid var(--fc-hairline);
-  overflow-x: auto;
-}
-
-.fc-flow-step-item {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-  flex: 1;
-  min-width: 140px;
-}
-
-.fc-flow-node {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 16px 14px;
-  border: 1px solid var(--fc-hairline);
-  border-radius: 8px;
-  background: var(--fc-surface-card);
-  transition: border-color 150ms ease;
-  min-height: 108px;
-}
-
-.fc-flow-node:hover {
-  border-color: var(--fc-hairline-strong);
-}
-
-.fc-flow-node-badge {
-  margin-bottom: 6px;
-}
-
-.fc-flow-num {
-  font-family: var(--fc-font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--fc-primary);
-  background: var(--fc-canvas);
-  padding: 1px 6px;
-  border-radius: 4px;
-  border: 1px solid var(--fc-hairline);
-}
-
-.fc-flow-title {
-  display: block;
-  font-family: var(--fc-font-sans);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--fc-ink);
-  margin-bottom: 4px;
-  line-height: 1.35;
-}
-
-.fc-flow-desc {
-  margin: 0;
-  font-family: var(--fc-font-sans);
-  font-size: 12px;
-  color: var(--fc-body);
-  line-height: 1.45;
-}
-
-.fc-flow-arrow-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
-  color: var(--fc-primary);
-  opacity: 0.8;
-  flex-shrink: 0;
-}
-
-.fc-flow-arrow-right {
-  display: block;
-}
-
-.fc-flow-arrow-down {
-  display: none;
 }
 
 /* ==========================================================================
@@ -1380,80 +1001,68 @@
 }
 
 /* ==========================================================================
-   06 / INSTALLATION & TERMINAL BLOCK
+   06 / INSTALLATION (README: Installation, Run, Run from source)
    ========================================================================== */
 
 .fc-install-layout {
   display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
-  gap: 40px;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 48px;
   align-items: start;
 }
 
-.fc-prereq-card {
-  padding: 20px;
-  border: 1px solid var(--fc-hairline);
-  border-radius: 8px;
-  background: var(--fc-surface-card);
-  margin: 24px 0;
+.fc-install-guide {
+  position: sticky;
+  top: 96px;
 }
 
-.fc-prereq-card ul {
-  padding: 0;
-  margin: 8px 0 0;
-  list-style: none;
+.fc-install-guide > .fc-body-md {
+  max-width: 460px;
+  margin: 16px 0 0;
+}
+
+.fc-platform-tabs {
   display: grid;
   gap: 8px;
+  margin: 28px 0 24px;
 }
 
-.fc-prereq-card li {
+.fc-platform-tab {
   display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 1px solid var(--fc-hairline);
+  border-radius: 10px;
+  background: var(--fc-surface-card);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+
+.fc-platform-tab:hover {
+  border-color: var(--fc-hairline-strong);
+}
+
+.fc-platform-tab.is-active {
+  border-color: var(--fc-ink);
+  box-shadow: inset 3px 0 0 var(--fc-primary);
+}
+
+.fc-platform-name {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  color: var(--fc-body);
+  font-family: var(--fc-font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--fc-ink);
 }
 
-.fc-prereq-card code {
-  color: var(--fc-primary);
-  font-family: var(--fc-font-mono);
-}
-
-.fc-quickstart-note {
-  border: 1px solid var(--fc-hairline);
-  border-radius: 8px;
-  background: var(--fc-canvas-soft);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.fc-quickstart-note code {
-  color: var(--fc-primary);
+.fc-platform-caption {
   font-family: var(--fc-font-mono);
   font-size: 12px;
-  font-weight: 600;
-}
-
-.fc-qs-steps {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.fc-qs-steps li {
-  font-size: 12.5px;
-  color: var(--fc-body);
-  line-height: 1.4;
-}
-
-.fc-qs-steps strong {
-  color: var(--fc-ink);
-  font-weight: 600;
+  color: var(--fc-muted);
 }
 
 .fc-install-actions {
@@ -1485,57 +1094,140 @@
   color: var(--fc-ink);
 }
 
-/* Terminal block in surface-card #ffffff with 1px hairline */
-.fc-terminal-block {
-  border: 1px solid var(--fc-hairline-strong);
+/* Install / Run / Run from source cards */
+.fc-install-steps {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.fc-phase-card {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--fc-hairline);
   border-radius: 12px;
   background: var(--fc-surface-card);
+}
+
+.fc-phase-card > :last-child {
+  margin-bottom: 0;
+}
+
+.fc-phase-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.fc-phase-head h3 {
+  margin: 0;
+}
+
+.fc-phase-hint {
+  margin-left: auto;
+  color: var(--fc-muted);
+  font-size: 12px;
+}
+
+.fc-phase-details > summary {
+  margin-bottom: 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.fc-phase-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.fc-phase-details > summary::after {
+  margin-left: 12px;
+  color: var(--fc-muted);
+  font-family: var(--fc-font-mono);
+  font-size: 16px;
+  content: '+';
+}
+
+.fc-phase-details[open] > summary {
+  margin-bottom: 16px;
+}
+
+.fc-phase-details[open] > summary::after {
+  content: '−';
+}
+
+.fc-guide-text {
+  margin: 0 0 14px;
+  color: var(--fc-body);
+}
+
+.fc-guide-text a,
+.fc-section-lead a,
+.fc-arch-text a,
+.fc-guide-note a {
+  color: var(--fc-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.fc-guide-note {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--fc-primary);
+  border-radius: 0 8px 8px 0;
+  background: var(--fc-canvas-soft);
+  color: var(--fc-body);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* Inline `code` in README-derived text */
+.fc-guide-text code,
+.fc-guide-note code,
+.fc-arch-text code,
+.fc-section-lead code,
+.fc-install-guide > .fc-body-md code {
+  padding: 1px 5px;
+  border: 1px solid var(--fc-hairline-soft);
+  border-radius: 4px;
+  background: var(--fc-canvas);
+  color: var(--fc-ink);
+  font-family: var(--fc-font-mono);
+  font-size: 0.88em;
+}
+
+/* Command block (shell label + copy button + commands exactly as in the README) */
+.fc-code-block {
+  margin: 0 0 14px;
+  border: 1px solid var(--fc-hairline-strong);
+  border-radius: 10px;
+  background: #ffffff;
   overflow: hidden;
 }
 
-.fc-terminal-tabbar {
+.fc-code-block-bar {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 8px 12px;
+  padding: 6px 10px 6px 14px;
   border-bottom: 1px solid var(--fc-hairline);
   background: var(--fc-canvas-soft);
 }
 
-.fc-terminal-tab-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  min-width: 0;
-}
-
-.fc-terminal-tab-group button {
-  padding: 6px 12px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
+.fc-code-shell {
   color: var(--fc-muted);
-  font-family: var(--fc-font-sans);
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.fc-terminal-tab-group button.is-active {
-  background: var(--fc-surface-card);
-  color: var(--fc-ink);
+  font-family: var(--fc-font-mono);
+  font-size: 11px;
   font-weight: 600;
-  border: 1px solid var(--fc-hairline);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .fc-term-copy {
   display: inline-flex;
   align-items: center;
-  margin-left: auto;
   gap: 5px;
+  margin-left: auto;
   padding: 5px 10px;
   border: 1px solid var(--fc-hairline);
   border-radius: 6px;
@@ -1552,21 +1244,16 @@
   color: #1f8a65;
 }
 
-.fc-terminal-viewport {
-  padding: 24px 20px;
-  min-height: 190px;
-  overflow-x: auto;
-  background: #ffffff;
-}
-
-.fc-terminal-viewport pre {
+.fc-code-block pre {
   margin: 0;
+  padding: 14px 16px;
+  overflow-x: auto;
   font-family: var(--fc-font-mono);
   font-size: 13px;
   line-height: 1.7;
 }
 
-.fc-terminal-viewport code {
+.fc-code-block code {
   color: var(--fc-ink);
 }
 
@@ -1574,26 +1261,8 @@
   color: var(--fc-muted-soft);
 }
 
-.fc-code-prompt {
-  color: var(--fc-primary);
-  font-weight: 600;
-}
-
 .fc-code-cmd {
   color: var(--fc-ink);
-}
-
-.fc-code-url {
-  color: var(--fc-primary);
-  text-decoration: underline;
-}
-
-.fc-code-dim {
-  color: var(--fc-muted);
-}
-
-.fc-code-ok {
-  color: #1f8a65;
 }
 
 /* ==========================================================================
@@ -1717,14 +1386,23 @@
   padding-top: 24px;
   border-top: 1px solid var(--fc-hairline-soft);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 12px 24px;
   font-size: 12px;
   color: var(--fc-muted);
 }
 
 .fc-footer-langs {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+
+.fc-footer-lang-item {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
 }
@@ -1746,50 +1424,13 @@
 /* ==========================================================================
    RESPONSIVE BREAKPOINTS
    --------------------------------------------------------------------------
-   desktop    >= 1141px  full header, 3-column grids
-   laptop     <= 1140px  header collapses to the menu button (English labels need ~1100px, keep a margin)
-   tablet     <= 1024px  2-column grids, stacked split layouts, 3x2 flow
-   tablet-sm  <=  768px  1-column workflow, stacked comparison cards, 2x2 tab strips
+   (헤더의 브레이크포인트 996 / 1140 / 640 / 520 / 360 은 ../shared/site-header.css 에 있다.)
+   tablet     <= 1024px  2-column grids, stacked split layouts
+   tablet-sm  <=  768px  1-column workflow, stacked comparison cards
    phone      <=  640px  16px gutters, single-column layouts
-   phone-sm   <=  520px  header keeps wordmark + Install + menu only
-   tiny       <=  360px  version pill hidden
+   phone-sm   <=  520px  1-column tour tabs
+   tiny       <=  360px  wrapping hero announcement
    ========================================================================== */
-
-@media (min-width: 1141px) {
-  /* 메뉴가 열린 채 화면이 넓어져도 드로어가 남지 않게 한다. */
-  .fc-mobile-nav {
-    display: none !important;
-  }
-}
-
-@media (max-width: 1140px) {
-  .fc-nav-shell {
-    gap: 16px;
-  }
-  .fc-desktop-nav,
-  .fc-nav-actions .fc-github-pill {
-    display: none;
-  }
-  .fc-nav-actions {
-    margin-left: auto;
-  }
-  .fc-menu-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-  }
-  /* 드로어는 헤더 아래로 펼쳐지므로 짧은 화면(가로 모드 폰)에서는 스스로 스크롤한다. */
-  .fc-mobile-nav {
-    max-height: calc(100vh - 64px);
-    max-height: calc(100dvh - 64px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    border-bottom: 1px solid var(--fc-hairline);
-  }
-}
 
 @media (max-width: 1024px) {
   .fc-hero-band {
@@ -1832,26 +1473,17 @@
   .fc-tour-tab:nth-child(-n + 2) {
     border-bottom: 1px solid var(--fc-hairline);
   }
-  /* 6단계 흐름도는 한 줄에 두면 가로 스크롤이 생기므로 3x2로 접는다. */
-  .fc-arch-flowchart {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    padding: 16px;
-    overflow: visible;
-  }
-  .fc-flow-step-item {
-    min-width: 0;
-  }
-  .fc-flow-step-item:nth-child(3n) .fc-flow-arrow-wrap {
-    display: none;
-  }
-  .fc-flow-node {
-    padding: 12px;
-    min-height: 0;
-  }
+  /* 설치: 플랫폼 선택은 가로 3열, 왼쪽 열은 더 이상 따라다니지 않는다. */
   .fc-install-layout {
     grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .fc-install-guide {
+    position: static;
+  }
+  .fc-platform-tabs {
+    grid-template-columns: repeat(3, 1fr);
+    margin: 24px 0 20px;
   }
   .fc-footer-inner {
     grid-template-columns: 1fr;
@@ -1863,20 +1495,14 @@
   .fc-workflow-grid {
     grid-template-columns: 1fr;
   }
-  .fc-arch-tablist {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .fc-arch-tab:nth-child(2) {
-    border-right: 0;
-  }
-  .fc-arch-tab:nth-child(-n + 2) {
-    border-bottom: 1px solid var(--fc-hairline);
-  }
-  .fc-arch-diagram-wrap {
+  .fc-arch-intro {
     padding: 16px;
   }
-  .fc-arch-caption {
-    padding: 16px;
+  .fc-arch-block {
+    padding: 20px;
+  }
+  .fc-arch-credit {
+    padding: 14px 20px 18px;
   }
 
   /* 비교표: 4열 표는 폰에서 513px 이상이 필요하고 핵심인 FireCrab 열이 맨 오른쪽이라
@@ -1951,15 +1577,11 @@
 }
 
 @media (max-width: 640px) {
-  .fc-nav-shell,
   .fc-hero-band,
   .fc-section,
   .fc-footer-inner,
   .fc-footer-bottom-row {
     width: min(100% - 32px, 1200px);
-  }
-  .fc-mobile-nav {
-    padding: 16px 16px 24px;
   }
   .fc-hero-band {
     padding: 48px 0;
@@ -1988,15 +1610,6 @@
   .fc-feature-grid {
     grid-template-columns: 1fr;
   }
-  .fc-hero-specs-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px 24px;
-    align-items: start;
-  }
-  .fc-spec-divider {
-    display: none;
-  }
   .fc-proof-container {
     grid-template-columns: 1fr;
   }
@@ -2013,38 +1626,12 @@
   /* 1200px 기준 도식은 폰에서 글자가 읽히지 않으므로 최소 폭을 두고 가로 스크롤을 허용한다. */
   .fc-arch-diagram-wrap {
     justify-content: flex-start;
+    padding: 8px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
   .fc-arch-diagram-wrap img {
     min-width: 640px;
-  }
-  .fc-arch-flowchart {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    padding: 20px 16px;
-  }
-  .fc-flow-step-item {
-    flex-direction: column;
-    width: 100%;
-  }
-  .fc-flow-step-item:nth-child(3n) .fc-flow-arrow-wrap {
-    display: flex;
-  }
-  .fc-flow-node {
-    width: 100%;
-    padding: 14px 16px;
-  }
-  .fc-flow-arrow-wrap {
-    padding: 8px 0;
-  }
-  .fc-flow-arrow-right {
-    display: none;
-  }
-  .fc-flow-arrow-down {
-    display: block;
   }
   .fc-tour-panel-card {
     padding: 24px 16px;
@@ -2060,10 +1647,25 @@
   .fc-secondary-media-frame img {
     height: 220px;
   }
-  .fc-terminal-viewport {
-    padding: 16px 14px;
+  /* 설치: 캡션은 숨겨 3열 탭이 좁은 화면에서도 한 줄에 들어가게 한다. */
+  .fc-platform-caption,
+  .fc-phase-hint {
+    display: none;
   }
-  .fc-terminal-viewport pre {
+  .fc-platform-tab {
+    align-items: flex-start;
+    padding: 12px;
+  }
+  .fc-platform-name {
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    font-size: 14px;
+  }
+  .fc-phase-card {
+    padding: 18px 16px;
+  }
+  .fc-code-block pre {
+    padding: 12px;
     font-size: 12px;
   }
   .fc-cta-band {
@@ -2092,13 +1694,6 @@
 }
 
 @media (max-width: 520px) {
-  .fc-nav-shell {
-    gap: 12px;
-  }
-  /* 좁은 헤더에서는 Install CTA를 남기고 언어 전환은 메뉴 드로어(상단)에서 고른다. */
-  .fc-nav-actions .fc-language-switch {
-    display: none;
-  }
   .fc-tour-tablist {
     grid-template-columns: 1fr;
   }
@@ -2117,9 +1712,6 @@
 }
 
 @media (max-width: 360px) {
-  .fc-version-pill {
-    display: none;
-  }
   .fc-hero-announcement {
     flex-wrap: wrap;
   }
@@ -2127,12 +1719,6 @@
 
 /* 터치 기기에서는 작은 텍스트 버튼의 탭 영역을 키운다. */
 @media (pointer: coarse) {
-  .fc-language-switch button {
-    padding: 8px;
-  }
-  .fc-terminal-tab-group button {
-    padding: 9px 12px;
-  }
   .fc-btn-copy,
   .fc-term-copy {
     padding: 9px 12px;

@@ -5,7 +5,18 @@ import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const docsBuildDir = fileURLToPath(new URL('./docs-site/build/', import.meta.url));
-const docsPrefixes = ['/docs', '/blog', '/en/docs', '/en/blog', '/assets', '/img', '/en/assets', '/en/img'];
+// 문서·블로그(Docusaurus)는 언어마다 별도 빌드라 접두사(/en, /ja, /zh-Hans, ...)가 붙는다.
+// 언어 목록은 헤더와 같은 src/shared/siteHeader.json 에서 가져온다.
+const siteHeader = JSON.parse(readFileSync(new URL('./src/shared/siteHeader.json', import.meta.url), 'utf8')) as {
+  languages: { docsPrefix: string }[];
+};
+const localePrefixes = siteHeader.languages.map((language) => language.docsPrefix);
+const docsPrefixes = localePrefixes.flatMap((prefix) => [
+  `${prefix}/docs`,
+  `${prefix}/blog`,
+  `${prefix}/assets`,
+  `${prefix}/img`,
+]);
 const contentTypes: Record<string, string> = {
   '.css': 'text/css; charset=utf-8',
   '.gif': 'image/gif',

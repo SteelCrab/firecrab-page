@@ -1,0 +1,11 @@
+{
+  "blog.share.copied": {
+    "message": "Copiado"
+  },
+  "blog.share.copy": {
+    "message": "Copiar enlace"
+  },
+  "blog.share.copyTitle": {
+    "message": "Copiar enlace de esta entrada"
+  }
+}

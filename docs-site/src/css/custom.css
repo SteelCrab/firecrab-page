@@ -4,6 +4,10 @@
  * work well for content-centric websites.
  */
 
+/* 상단 헤더는 랜딩과 같은 스타일 파일을 쓴다. 두 앱이 한 파일을 공유하므로 막대가 어긋날 수 없다.
+   마크업(theme/Navbar/*, components/SiteHeader)은 이 파일의 클래스 규약을 따른다. */
+@import '../../../src/shared/site-header.css';
+
 /* 랜딩(src/landing/LandingPage.css)의 토큰을 그대로 옮겨온다. 값이 바뀌면 양쪽을 함께 고칠 것. */
 :root {
   --fc-accent: #c74724;
@@ -19,8 +23,8 @@
   --fc-code-shadow: 0 12px 30px -24px rgba(46, 34, 24, 0.58);
   --fc-code-scroll-track: #ebe6df;
   --fc-code-scroll-thumb: #aaa096;
-  /* 랜딩 .fc-nav-wrap 과 동일한 가로 규격 */
-  --fc-shell: min(1180px, calc(100% - 64px));
+  /* 상단 헤더(.fc-nav-shell)와 같은 가로 규격 */
+  --fc-shell: min(1200px, calc(100% - 48px));
 
   --ifm-color-primary: #c74724;
   --ifm-color-primary-dark: #b34020;
@@ -36,16 +40,9 @@
     sans-serif;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 
-  /* 랜딩 .fc-header / .fc-nav-links 규격 */
-  /* 랜딩은 min-height 64px 콘텐츠 + 1px 보더. Infima는 보더 포함 높이라 65px. */
-  --ifm-navbar-height: 65px;
-  --ifm-navbar-padding-horizontal: 0;
-  --ifm-navbar-background-color: rgba(255, 255, 255, 0.9);
-  --ifm-navbar-shadow: none;
-  --ifm-navbar-link-color: #4a4038;
-  --ifm-navbar-link-hover-color: var(--fc-accent);
-  /* 랜딩은 링크 사이가 gap 30px 뿐이다. 항목 패딩이 남아 있으면 간격이 두 배가 된다. */
-  --ifm-navbar-item-padding-horizontal: 0;
+  /* 헤더 높이는 shared/site-header.css 의 --fc-header-height(64px, 보더 포함)와 같다.
+     Infima 는 이 값으로 문서 사이드바 sticky 위치와 앵커 스크롤 여백을 잡는다. */
+  --ifm-navbar-height: 64px;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -72,84 +69,9 @@
   --ifm-color-primary-lighter: #e68c72;
   --ifm-color-primary-lightest: #e99983;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
-
-  --ifm-navbar-background-color: rgba(24, 21, 18, 0.9);
-  --ifm-navbar-link-color: #cfc6ba;
 }
 
-/* ── 상단 헤더: 랜딩 .fc-header 와 같은 밴드 ── */
-.navbar {
-  border-bottom: 1px solid var(--fc-line);
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-}
-
-/* 랜딩과 동일하게 [브랜드 | 링크 | 액션] 3그룹으로 벌린다. */
-.navbar__inner {
-  width: var(--fc-shell);
-  margin: 0 auto;
-  gap: 18px;
-}
-
-.navbar__items {
-  flex: 1 1 auto;
-  gap: 30px;
-}
-
-.navbar__items--right {
-  flex: 0 0 auto;
-  gap: 10px;
-}
-
-/* 브랜드 뒤와 링크 그룹 뒤에 auto 여백을 두어 링크가 가운데 오게 한다. */
-.navbar__items > .navbar__brand {
-  margin-right: auto;
-}
-
-.navbar__items > *:last-child {
-  margin-right: auto;
-}
-
-/* ── 브랜드: 랜딩 .fc-brand ── */
-.navbar__brand {
-  flex: 0 0 auto;
-  gap: 10px;
-  margin-right: 0;
-}
-
-.navbar__logo,
-.navbar__logo img {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-}
-
-.navbar__title {
-  color: var(--fc-ink);
-  font-family: var(--ifm-heading-font-family);
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-/* ── 링크: 랜딩 .fc-nav-links a ── */
-.navbar__link {
-  font-size: 0.92rem;
-  font-weight: 600;
-  transition: color 150ms ease;
-}
-
-/* ── 액션: 랜딩 .fc-nav-github ── */
-.navbar__items--right .navbar__link {
-  padding: 9px 12px;
-}
-
-/* 랜딩 헤더에는 외부 링크 아이콘이 없다. */
-.navbar__link svg[class*='iconExternalLink'] {
-  display: none;
-}
-
-/* 본문도 헤더와 같은 가로 규격에 맞춰 브랜드와 좌측 정렬을 맞춘다. */
+/* 본문도 헤더와 같은 가로 규격에 맞춰 로고와 좌측 정렬을 맞춘다. */
 .main-wrapper {
   width: var(--fc-shell);
   margin: 0 auto;
@@ -399,18 +321,8 @@
 }
 
 @media (max-width: 996px) {
-  /* 모바일에서는 햄버거 메뉴만 남으므로 3그룹 배분을 해제하고, 좌우 여백은 테마 기본값에 맡긴다. */
-  .navbar__items > .navbar__brand,
-  .navbar__items > *:last-child {
-    margin-right: 0;
-  }
-
-  .navbar__inner,
+  /* 모바일에서는 햄버거 메뉴만 남으므로 본문은 테마 기본 여백에 맡긴다. */
   .main-wrapper {
     width: 100%;
-  }
-
-  .navbar__inner {
-    padding: 0 16px;
   }
 }

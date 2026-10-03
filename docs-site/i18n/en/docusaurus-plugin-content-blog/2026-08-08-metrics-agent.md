@@ -94,4 +94,4 @@ With Metrics Agent, FireCrab moves from “create and run an M2” to “the gue
 usage.” Dashboard numbers are the result of those reports.
 
 Feedback and improvement PRs are always welcome. See
-[Contributions welcome — firecrab CONTRIBUTING guide](/en/blog/contributing) for how to join in.
+[Contributions welcome — firecrab CONTRIBUTING guide](/blog/contributing) for how to join in.

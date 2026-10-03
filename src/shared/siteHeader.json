@@ -1,0 +1,51 @@
+{
+  "version": "v0.3.0",
+  "repositoryUrl": "https://github.com/SteelCrab/firecrab",
+  "languages": [
+    { "code": "ko", "label": "한국어", "short": "KO", "htmlLang": "ko", "docsPrefix": "" },
+    { "code": "en", "label": "English", "short": "EN", "htmlLang": "en", "docsPrefix": "/en" },
+    { "code": "ja", "label": "日本語", "short": "JA", "htmlLang": "ja", "docsPrefix": "/ja" },
+    { "code": "zh", "label": "中文", "short": "ZH", "htmlLang": "zh-Hans", "docsPrefix": "/zh-Hans" },
+    { "code": "id", "label": "Bahasa Indonesia", "short": "ID", "htmlLang": "id", "docsPrefix": "/id" },
+    { "code": "es", "label": "Español", "short": "ES", "htmlLang": "es", "docsPrefix": "/es" }
+  ],
+  "links": [
+    {
+      "id": "features", "kind": "landing", "hash": "features",
+      "label": { "ko": "특징", "en": "Features", "ja": "特徴", "zh": "特性", "id": "Fitur", "es": "Funciones" }
+    },
+    {
+      "id": "compare", "kind": "landing", "hash": "compare",
+      "label": { "ko": "비교", "en": "Compare", "ja": "比較", "zh": "对比", "id": "Perbandingan", "es": "Comparar" }
+    },
+    {
+      "id": "components", "kind": "landing", "hash": "components",
+      "label": { "ko": "컴포넌트", "en": "Components", "ja": "コンポーネント", "zh": "组件", "id": "Komponen", "es": "Componentes" }
+    },
+    {
+      "id": "architecture", "kind": "landing", "hash": "architecture",
+      "label": { "ko": "아키텍처", "en": "Architecture", "ja": "アーキテクチャ", "zh": "架构", "id": "Arsitektur", "es": "Arquitectura" }
+    },
+    {
+      "id": "install", "kind": "landing", "hash": "install",
+      "label": { "ko": "설치하기", "en": "Install", "ja": "インストール", "zh": "安装", "id": "Instal", "es": "Instalar" }
+    },
+    {
+      "id": "docs", "kind": "docs", "hash": "",
+      "label": { "ko": "문서", "en": "Docs", "ja": "ドキュメント", "zh": "文档", "id": "Dokumentasi", "es": "Docs" }
+    },
+    {
+      "id": "blog", "kind": "blog", "hash": "",
+      "label": { "ko": "블로그", "en": "Blog", "ja": "ブログ", "zh": "博客", "id": "Blog", "es": "Blog" }
+    }
+  ],
+  "labels": {
+    "mainMenu": { "ko": "메인 메뉴", "en": "Main menu", "ja": "メインメニュー", "zh": "主菜单", "id": "Menu utama", "es": "Menú principal" },
+    "mobileMenu": { "ko": "모바일 메뉴", "en": "Mobile menu", "ja": "モバイルメニュー", "zh": "移动端菜单", "id": "Menu seluler", "es": "Menú móvil" },
+    "openMenu": { "ko": "메뉴 열기", "en": "Open menu", "ja": "メニューを開く", "zh": "打开菜单", "id": "Buka menu", "es": "Abrir menú" },
+    "closeMenu": { "ko": "메뉴 닫기", "en": "Close menu", "ja": "メニューを閉じる", "zh": "关闭菜单", "id": "Tutup menu", "es": "Cerrar menú" },
+    "languageSelector": { "ko": "언어 선택", "en": "Language selector", "ja": "言語を選択", "zh": "选择语言", "id": "Pilih bahasa", "es": "Seleccionar idioma" },
+    "star": { "ko": "Star", "en": "Star", "ja": "Star", "zh": "Star", "id": "Star", "es": "Star" },
+    "install": { "ko": "설치하기", "en": "Install", "ja": "インストール", "zh": "安装", "id": "Instal", "es": "Instalar" }
+  }
+}

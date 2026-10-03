@@ -1,9 +1,11 @@
-export type Language = 'ko' | 'en';
+import siteHeader from '../shared/siteHeader.json';
+import type { Language, LocalizedList, LocalizedText } from './i18n';
 
-export const repositoryUrl = 'https://github.com/SteelCrab/firecrab';
-export const releaseVersion = 'v0.3.0';
+export type { Language, LocalizedList, LocalizedText };
+
+export const repositoryUrl = siteHeader.repositoryUrl;
+export const releaseVersion = siteHeader.version;
 export const installCommand = `curl -fsSL ${repositoryUrl}/releases/latest/download/install.sh | bash`;
-export const gitCloneCommand = `git clone ${repositoryUrl}.git\ncd firecrab\n./scripts/ci-prepare-install-payload.sh\n./install.sh --bin-dir target/release`;
 
 export interface ProductView {
   id: string;
@@ -14,7 +16,7 @@ export interface ProductView {
   image: string;
   alt: { ko: string; en: string };
   icon: string;
-  details: { ko: string[]; en: string[] };
+  details: LocalizedList;
   secondary: {
     label: string;
     title: { ko: string; en: string };
@@ -327,58 +329,51 @@ export const workflow = [
   },
 ];
 
-/** MicroVM 시작 흐름 (public-docs/architecture.md "VM start flow"를 6단계로 압축) */
-export const architectureFlow = [
-  { number: '01', title: { ko: '요청', en: 'Request' }, description: { ko: '대시보드 · CLI · REST → API', en: 'Dashboard, CLI, REST → API' } },
-  { number: '02', title: { ko: '디스크 준비', en: 'Disk' }, description: { ko: 'M2Image → VM 전용 rootfs', en: 'M2Image → per-VM rootfs' } },
-  { number: '03', title: { ko: '네트워크 구성', en: 'Network' }, description: { ko: 'net-helper: Bridge · TAP · DHCP', en: 'net-helper: bridge, TAP, DHCP' } },
-  { number: '04', title: { ko: 'Firecracker 기동', en: 'Firecracker' }, description: { ko: 'VM당 프로세스 1개, KVM 부팅', en: 'One process per VM, KVM boot' } },
-  { number: '05', title: { ko: '준비 확인', en: 'Ready' }, description: { ko: '게스트가 NETWORK_READY 신호 전송', en: 'Guest sends NETWORK_READY' } },
-  { number: '06', title: { ko: 'running', en: 'Running' }, description: { ko: 'Terminal · SSH · 사용량 확인', en: 'Terminal, SSH, and usage' } },
-];
+/**
+ * 아키텍처 섹션은 ~/firecrab README 의 "Architecture" 와 같은 구성이다.
+ * Intro GIF 한 장, 그리고 도식 두 장("한눈에", "어디서든 실행"). 도식 SVG 는
+ * ~/firecrab/assets/architecture 에서 public/architecture 로 복사해 쓰며, 한국어판만 따로 있다.
+ */
+export const architectureIntro = {
+  image: '/firecrab-demo.gif',
+  alt: {
+    ko: 'FireCrab 데모: 아키텍처와 지원 플랫폼을 소개하는 애니메이션',
+    en: 'FireCrab demo: an animated introduction to the architecture and supported platforms',
+  },
+};
 
-export interface ArchitectureView {
-  id: string;
-  label: { ko: string; en: string };
-  image: { ko: string; en: string };
-  alt: { ko: string; en: string };
-  /** 한글판 SVG가 없어 영문 라벨 그대로 보여주는 도식 */
-  englishOnly?: boolean;
-  steps?: { ko: string[]; en: string[] };
-  note?: { ko: string; en: string };
-}
-
-/** 도식은 ~/firecrab/assets/architecture 의 SVG를 public/architecture 로 복사해 사용한다. */
-export const architectureViews: ArchitectureView[] = [
-  {
-    id: 'glance',
-    label: { ko: '한눈에 보기', en: 'At a glance' },
+export const architectureBlocks = {
+  glance: {
+    title: { ko: 'FireCrab 한눈에', en: 'FireCrab at a glance' },
     image: {
       ko: '/architecture/firecrab-at-a-glance.ko.svg',
       en: '/architecture/firecrab-at-a-glance.en.svg',
     },
     alt: {
-      ko: 'FireCrab 한눈에 보기: 브라우저와 CLI 요청이 FireCrab을 거쳐 MicroVM마다 Firecracker 프로세스 하나로 실행되는 흐름',
+      ko: 'FireCrab 한눈에: 브라우저와 CLI 요청이 FireCrab을 거쳐 MicroVM마다 Firecracker 프로세스 하나로 실행되는 흐름',
       en: 'FireCrab at a glance: browser and CLI requests flow through FireCrab into one Firecracker process per MicroVM',
     },
-    steps: {
-      ko: [
-        '브라우저나 CLI로 요청합니다. M2Image, MicroNetwork, MicroStorage를 골라 MicroVM을 만듭니다.',
-        'FireCrab이 M2Image를 확인하고 MicroNetwork를 준비한 뒤, MicroStorage에 VM 전용 디스크를 만듭니다.',
-        'MicroVM마다 Firecracker 프로세스를 하나씩 띄웁니다. 각자 자기 커널로 부팅합니다.',
-        '게스트가 네트워크 준비 완료를 알리면 MicroVM이 실행 중(running)이 됩니다.',
-      ],
-      en: [
-        'Ask from the browser or the CLI. Pick an M2Image, a MicroNetwork, and a MicroStorage to create a MicroVM.',
-        'FireCrab verifies the M2Image, prepares the MicroNetwork, and creates the VM’s own disk in the MicroStorage.',
-        'It starts one Firecracker process per MicroVM, so each one boots its own kernel.',
-        'When the guest reports that its network is ready, the MicroVM is running.',
-      ],
-    },
+    steps: [
+      {
+        ko: '브라우저나 CLI로 요청합니다. M2Image, MicroNetwork, MicroStorage를 골라 MicroVM을 만듭니다.',
+        en: 'Ask from the browser or the CLI. Pick an M2Image, a MicroNetwork, and a MicroStorage to create a MicroVM.',
+      },
+      {
+        ko: 'FireCrab이 M2Image를 확인하고 MicroNetwork를 준비한 뒤, MicroStorage에 VM 전용 디스크를 만듭니다.',
+        en: 'FireCrab verifies the M2Image, prepares the MicroNetwork, and creates the VM’s own disk in the MicroStorage.',
+      },
+      {
+        ko: 'MicroVM마다 Firecracker 프로세스를 하나씩 띄웁니다. 각자 자기 커널로 부팅합니다.',
+        en: 'It starts one Firecracker process per MicroVM, so each one boots its own kernel.',
+      },
+      {
+        ko: '게스트가 네트워크 준비 완료를 알리면 MicroVM이 실행 중(running)이 됩니다.',
+        en: 'When the guest reports that its network is ready, the MicroVM is running.',
+      },
+    ] satisfies LocalizedText[],
   },
-  {
-    id: 'platforms',
-    label: { ko: '어디서든 실행', en: 'Runs anywhere' },
+  anywhere: {
+    title: { ko: '어디서든 실행', en: 'Runs anywhere' },
     image: {
       ko: '/architecture/firecrab-runs-anywhere.ko.svg',
       en: '/architecture/firecrab-runs-anywhere.en.svg',
@@ -387,156 +382,19 @@ export const architectureViews: ArchitectureView[] = [
       ko: 'Linux는 직접, macOS와 Windows는 microManager의 관리용 Debian VM을 거쳐 같은 localhost:5523 대시보드로 열리는 구성',
       en: 'Linux runs directly, while macOS and Windows go through a microManager Debian VM to the same localhost:5523 dashboard',
     },
-    note: {
-      ko: 'Linux는 install.sh 한 번이면 됩니다. macOS와 Windows에서는 firecrab service install이 관리용 Debian VM을 만들어 같은 FireCrab을 실행하고, 똑같이 localhost:5523 대시보드로 열립니다. macOS는 Apple silicon M3 이상이 필요하며 Apple M5에서 검증했습니다. Windows는 WSL2에서 아직 microVM을 시작하지 못해 Preview로 표시했습니다.',
-      en: 'On Linux, one install.sh is enough. On macOS and Windows, firecrab service install creates a managed Debian VM that runs the same FireCrab, and you open the same dashboard at localhost:5523. macOS needs Apple silicon M3 or later and is validated on an Apple M5. Windows is marked Preview because microVMs cannot start on WSL2 yet.',
-    },
+    paragraphs: [
+      {
+        ko: 'Linux는 `install.sh` 한 번이면 됩니다. macOS와 Windows에서는 `firecrab service install`이 관리용 Debian VM을 만들어 같은 FireCrab을 실행하고, 결과는 똑같이 `localhost:5523` 대시보드로 열립니다.',
+        en: 'On Linux, one `install.sh` is enough. On macOS and Windows, `firecrab service install` creates a managed Debian VM that runs the same FireCrab, and you open the same dashboard at `localhost:5523`.',
+      },
+      {
+        ko: 'macOS는 Apple silicon M3 이상이 필요하며 Apple M5에서 검증했습니다. Windows는 WSL2에서 아직 microVM을 시작하지 못하므로 Preview로 표시했습니다.',
+        en: 'macOS needs Apple silicon M3 or later and is validated on an Apple M5. Windows is marked Preview because microVMs cannot start on WSL2 yet.',
+      },
+    ] satisfies LocalizedText[],
   },
-  {
-    id: 'system',
-    label: { ko: '시스템 구성', en: 'System' },
-    image: {
-      ko: '/architecture/firecrab-system.en.svg',
-      en: '/architecture/firecrab-system.en.svg',
-    },
-    alt: {
-      ko: 'firecrab-api, net-helper, Firecracker, SQLite와 호스트 네트워크로 이루어진 FireCrab 시스템 구성도',
-      en: 'FireCrab system components: firecrab-api, net-helper, Firecracker, SQLite, and host networking',
-    },
-    englishOnly: true,
-    note: {
-      ko: 'API가 리소스 상태와 VM 프로세스를 소유하고, 권한이 필요한 호스트 네트워킹은 Unix 소켓을 통해 net-helper에 위임합니다. 설치된 API는 빌드된 대시보드도 함께 제공하며, 상태는 SQLite와 파일시스템에 저장됩니다.',
-      en: 'The API owns resource state and VM processes; privileged host networking is delegated to the net-helper over a Unix socket. The installed API also serves the built dashboard, and state lives in SQLite and the filesystem.',
-    },
-  },
-  {
-    id: 'images',
-    label: { ko: '이미지 · 커널 공급', en: 'Image & kernel supply' },
-    image: {
-      ko: '/architecture/image-kernel-supply.en.svg',
-      en: '/architecture/image-kernel-supply.en.svg',
-    },
-    alt: {
-      ko: '카탈로그 설치, OCI 가져오기, MicroBoot 부트스트랩이 M2Image로 모이고 커널이 별도로 연결되는 이미지·커널 공급 흐름',
-      en: 'Image and kernel supply: catalog install, OCI import, and MicroBoot bootstrap converge on M2Image while kernels pair separately',
-    },
-    englishOnly: true,
-    note: {
-      ko: '카탈로그 설치, OCI 가져오기, MicroBoot 부트스트랩(API 전용) 세 경로가 하나의 등록된 템플릿으로 모이고, 커널은 따로 설치해 이미지에 연결합니다. 설치된 M2Image만 MicroVM을 만들 수 있습니다.',
-      en: 'Catalog install, OCI import, and MicroBoot bootstrap (API-only) converge on one registered template, while kernels are installed and paired separately. Only installed M2Images can create MicroVMs.',
-    },
-  },
-];
-
-export type InstallLine =
-  | { kind: 'comment'; text: { ko: string; en: string } }
-  | { kind: 'cmd'; text: string; prompt?: string }
-  | { kind: 'url'; text: string }
-  | { kind: 'blank' };
-
-export interface InstallTab {
-  id: string;
-  label: { ko: string; en: string };
-  lines: InstallLine[];
-  /** 복사 버튼이 복사할 내용. 없으면 표시된 명령을 모두 이어 붙인다. */
-  copy?: string;
-}
-
-const dashboardUrl = 'http://127.0.0.1:5523/';
-const releaseDownloadUrl = `${repositoryUrl}/releases/latest/download`;
-
-export const installTabs: InstallTab[] = [
-  {
-    id: 'linux',
-    label: { ko: 'Linux', en: 'Linux' },
-    lines: [
-      { kind: 'comment', text: { ko: '일반 사용자 계정으로 실행 (sudo를 붙이지 마세요)', en: 'Run as regular user (do NOT prefix with sudo)' } },
-      { kind: 'comment', text: { ko: '필요한 패키지 및 systemd 등록 시에만 sudo 암호를 요청합니다', en: 'The script calls sudo only when privilege is needed' } },
-      { kind: 'cmd', text: installCommand },
-      { kind: 'blank' },
-      { kind: 'comment', text: { ko: '설치 완료 후 웹 브라우저에서 대시보드 열기:', en: 'Open dashboard after services start:' } },
-      { kind: 'url', text: dashboardUrl },
-    ],
-  },
-  {
-    id: 'macos',
-    label: { ko: 'macOS', en: 'macOS' },
-    lines: [
-      { kind: 'comment', text: { ko: 'Apple silicon · macOS 15+ · 중첩 가상화 필요 (M3 이상, 전체 검증은 M5)', en: 'Apple silicon, macOS 15+, nested virtualization (M3 or later; fully validated on M5)' } },
-      { kind: 'comment', text: { ko: '1) 설치기 체크섬을 확인하고 CLI와 helper 설치', en: '1) Verify the installer checksum, then install the CLI and helper' } },
-      { kind: 'cmd', text: `curl -fLO ${releaseDownloadUrl}/install-cli.sh` },
-      { kind: 'cmd', text: `curl -fLO ${releaseDownloadUrl}/SHA256SUMS` },
-      { kind: 'cmd', text: "grep ' install-cli.sh$' SHA256SUMS > install-cli.sh.sha256" },
-      { kind: 'cmd', text: 'shasum -a 256 -c install-cli.sh.sha256 && sh install-cli.sh' },
-      { kind: 'blank' },
-      { kind: 'comment', text: { ko: '2) 호스트 지원 여부를 확인하고 관리용 Debian VM 설치', en: '2) Check host capability, then provision the managed Debian VM' } },
-      { kind: 'cmd', text: 'firecrab service doctor' },
-      { kind: 'cmd', text: 'firecrab service install' },
-      { kind: 'blank' },
-      { kind: 'comment', text: { ko: '설치가 끝나면 대시보드 열기:', en: 'Open dashboard once the service is healthy:' } },
-      { kind: 'url', text: dashboardUrl },
-    ],
-  },
-  {
-    id: 'windows',
-    label: { ko: 'Windows', en: 'Windows' },
-    lines: [
-      { kind: 'comment', text: { ko: 'x86_64 · ARM64 · Microsoft Store WSL2 · 중첩 KVM 필요 (Preview)', en: 'x86_64 or ARM64, Microsoft Store WSL2, nested KVM (Preview)' } },
-      { kind: 'comment', text: { ko: '1) 일반 PowerShell에서 설치기를 내려받고 체크섬 확인', en: '1) In regular PowerShell, download and verify the CLI installer' } },
-      { kind: 'cmd', prompt: 'PS> ', text: `Invoke-WebRequest ${releaseDownloadUrl}/install-cli.ps1 -OutFile install-cli.ps1` },
-      { kind: 'cmd', prompt: 'PS> ', text: `Invoke-WebRequest ${releaseDownloadUrl}/SHA256SUMS -OutFile SHA256SUMS` },
-      { kind: 'cmd', prompt: 'PS> ', text: "$expected = ((Get-Content SHA256SUMS | Where-Object { $_ -match ' install-cli\\.ps1$' }) -split '\\s+')[0]" },
-      { kind: 'cmd', prompt: 'PS> ', text: "if ((Get-FileHash install-cli.ps1 -Algorithm SHA256).Hash -ne $expected) { throw 'installer checksum mismatch' }" },
-      { kind: 'cmd', prompt: 'PS> ', text: '& ./install-cli.ps1' },
-      { kind: 'blank' },
-      { kind: 'comment', text: { ko: '2) 새 PowerShell에서 지원 여부 확인과 설치', en: '2) In a new PowerShell session, check and install' } },
-      { kind: 'cmd', prompt: 'PS> ', text: 'firecrab service doctor' },
-      { kind: 'cmd', prompt: 'PS> ', text: 'firecrab service install' },
-      { kind: 'blank' },
-      { kind: 'comment', text: { ko: 'Preview: 고정된 v0.2.2 게스트는 WSL2에서 아직 MicroVM을 시작하지 못합니다', en: 'Preview: the pinned v0.2.2 guest cannot start MicroVMs on stock WSL2 yet' } },
-      { kind: 'comment', text: { ko: '(API · 이미지 · 네트워크는 동작하고, CLI로 원격 Linux 호스트는 관리할 수 있습니다)', en: '(API, images, and networks work, and the CLI can still manage a remote Linux host)' } },
-    ],
-  },
-  {
-    id: 'options',
-    label: { ko: '점검 · 제거', en: 'Check & Remove' },
-    copy: './install.sh --check',
-    lines: [
-      { kind: 'comment', text: { ko: '사전 요구사항 및 설치 계획 점검 (Read-only)', en: 'Report prerequisites and planned changes (read-only)' } },
-      { kind: 'cmd', text: './install.sh --check' },
-      { kind: 'blank' },
-      { kind: 'comment', text: { ko: 'KVM, 방화벽, 소켓 및 호스트 설정 진단', en: 'Diagnose KVM, firewall, socket, and host setup' } },
-      { kind: 'cmd', text: './install.sh --doctor' },
-      { kind: 'blank' },
-      { kind: 'comment', text: { ko: 'libc 자동 감지 대신 수동 지정 (예: musl)', en: 'Pick a libc instead of autodetecting (e.g. musl)' } },
-      { kind: 'cmd', text: './install.sh --libc musl' },
-      { kind: 'blank' },
-      { kind: 'comment', text: { ko: '설치된 호스트: 점검과 새 릴리즈 확인 (Linux)', en: 'Installed host: run checks and look for a new release (Linux)' } },
-      { kind: 'cmd', text: 'firecrab doctor' },
-      { kind: 'cmd', text: 'firecrab update --check' },
-      { kind: 'blank' },
-      { kind: 'comment', text: { ko: '제거 (데이터 보존 / 완전 삭제)', en: 'Uninstall (retain data / purge all)' } },
-      { kind: 'cmd', text: './install.sh --uninstall' },
-      { kind: 'cmd', text: './install.sh --uninstall --purge' },
-    ],
-  },
-  {
-    id: 'git',
-    label: { ko: '소스 빌드', en: 'From source' },
-    copy: gitCloneCommand,
-    lines: [
-      { kind: 'comment', text: { ko: '저장소 체크아웃 후 공식 준비 스크립트로 로컬 빌드', en: 'Clone repository and build payload with repository script' } },
-      { kind: 'cmd', text: `git clone ${repositoryUrl}.git` },
-      { kind: 'cmd', text: 'cd firecrab' },
-      { kind: 'cmd', text: './scripts/ci-prepare-install-payload.sh' },
-      { kind: 'cmd', text: './install.sh --bin-dir target/release' },
-    ],
-  },
-];
-
-/** 복사 버튼용: 탭에 표시된 명령(프롬프트 제외)을 줄바꿈으로 잇는다. */
-export const installTabCopyText = (tab: InstallTab): string =>
-  tab.copy ??
-  tab.lines
-    .flatMap((line) => (line.kind === 'cmd' ? [line.text] : []))
-    .join('\n');
+  credit: {
+    ko: '로고: Linux·Apple·Debian은 simple-icons(CC0), 기어 아이콘은 Lucide(ISC)에서 가져왔습니다. 모든 로고와 상표는 해당 소유자에게 속합니다.',
+    en: 'Logos: Linux, Apple, and Debian from simple-icons (CC0); the gear icon from Lucide (ISC). All logos and trademarks belong to their respective owners.',
+  } satisfies LocalizedText,
+};

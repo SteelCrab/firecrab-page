@@ -95,5 +95,5 @@ shellcheck install.sh scripts/firecrab-doctor.sh
 3. Describe what changed and why, and link related issues.
 4. Full detail lives in the repo: [CONTRIBUTING.md](https://github.com/SteelCrab/firecrab/blob/main/CONTRIBUTING.md) · [한국어](https://github.com/SteelCrab/firecrab/blob/main/CONTRIBUTING.ko.md).
 
-Architecture, install, and API contracts continue on [Docs](/en/docs) and in the GitHub repository.
+Architecture, install, and API contracts continue on [Docs](/docs) and in the GitHub repository.
 A small PR or a single install-failure log still makes firecrab sturdier. Welcome aboard. 🦀

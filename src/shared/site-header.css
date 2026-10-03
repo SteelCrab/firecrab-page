@@ -1,0 +1,555 @@
+/* ==========================================================================
+   Site header (top navigation) — one stylesheet for every page of firecrab.dev
+
+   Loaded by both apps so the bar can never drift apart:
+     - landing  (Vite)       src/landing/LandingPage.tsx      <header class="fc-header">
+     - docs/blog (Docusaurus) docs-site/src/theme/Navbar/*     <nav class="navbar">
+   Content comes from src/shared/siteHeader.json. Markup contract (class names) is
+   documented in README.md ("Shared site header").
+
+   Breakpoints
+     >= 1141px  full bar
+     997-1140   condensed bar (no Star pill, tighter gaps) so English labels still fit
+     <= 996px   menu button + drawer. 996px is Docusaurus' own mobile threshold
+                (useWindowSize), which is why the landing page collapses at the same width.
+     <= 640px   16px gutters      <= 520px  no language switch in the bar
+     <= 360px   no version pill
+   ========================================================================== */
+
+/* Design tokens. The landing page (.fc-site) and the header on any page share them. */
+.fc-site,
+.fc-header,
+nav.navbar {
+  --fc-primary: #f54e00;
+  --fc-primary-active: #d04200;
+  --fc-ink: #26251e;
+  --fc-body: #5a5852;
+  --fc-body-strong: #26251e;
+  --fc-muted: #807d72;
+  --fc-muted-soft: #a09c92;
+  --fc-hairline: #e6e5e0;
+  --fc-hairline-soft: #efeee8;
+  --fc-hairline-strong: #cfcdc4;
+  --fc-canvas: #f7f7f4;
+  --fc-canvas-soft: #fafaf7;
+  --fc-surface-card: #ffffff;
+  --fc-surface-strong: #e6e5e0;
+  --fc-on-primary: #ffffff;
+
+  /* Timeline pastels (signature AI / lifecycle) */
+  --fc-timeline-thinking: #dfa88f;
+  --fc-timeline-grep: #9fc9a2;
+  --fc-timeline-read: #9fbbe0;
+  --fc-timeline-edit: #c0a8dd;
+  --fc-timeline-done: #c08532;
+
+  /* Typography families */
+  --fc-font-display: "Space Grotesk", Inter, "Pretendard Variable", sans-serif;
+  --fc-font-sans: Inter, "Pretendard Variable", system-ui, -apple-system, sans-serif;
+  --fc-font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  --fc-header-height: 64px;
+}
+
+/* ==========================================================================
+   Bar (height: 64px, hairline bottom, no shadows)
+   The translucent surface is a pseudo-element on purpose: backdrop-filter on the bar
+   itself would turn it into the containing block of position:fixed descendants and
+   squash Docusaurus' mobile sidebar into the 64px bar.
+   ========================================================================== */
+
+.fc-header,
+nav.navbar {
+  position: sticky;
+  top: 0;
+  isolation: isolate;
+  display: block;
+  height: var(--fc-header-height);
+  padding: 0;
+  border-bottom: 1px solid var(--fc-hairline);
+  background: transparent;
+  box-shadow: none;
+  color: var(--fc-body);
+  font-family: var(--fc-font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  word-break: keep-all;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* keep-all 은 한국어용이다. 일본어·중국어 라벨은 기본 줄바꿈 규칙을 쓴다. */
+.fc-header:lang(ja),
+.fc-header:lang(zh),
+nav.navbar:lang(ja),
+nav.navbar:lang(zh) {
+  word-break: normal;
+}
+
+.fc-header::before,
+nav.navbar::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(247, 247, 244, 0.94);
+  /* Prefixed first: Docusaurus' production CSS minifier (lightningcss) drops the unprefixed
+     property when it comes before the prefixed one, which would remove the blur in Chrome. */
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  content: '';
+}
+
+.fc-header *,
+nav.navbar * {
+  box-sizing: border-box;
+}
+
+.fc-header a,
+nav.navbar a {
+  text-decoration: none;
+}
+
+.fc-nav-shell {
+  display: flex;
+  width: min(1200px, calc(100% - 48px));
+  height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   Wordmark
+   ========================================================================== */
+
+.fc-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.fc-wordmark img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.fc-wordmark-title {
+  font-family: var(--fc-font-display);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--fc-ink);
+}
+
+.fc-version-pill {
+  display: inline-flex;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  border: 1px solid var(--fc-hairline);
+  background: var(--fc-canvas-soft);
+  color: var(--fc-muted);
+  font-family: var(--fc-font-mono);
+  font-size: 11px;
+}
+
+/* ==========================================================================
+   Links
+   ========================================================================== */
+
+.fc-desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.fc-desktop-nav a {
+  color: var(--fc-ink);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  transition: color 150ms ease;
+}
+
+.fc-desktop-nav a:hover,
+.fc-desktop-nav a.is-active {
+  color: var(--fc-primary);
+}
+
+/* ==========================================================================
+   Actions: language menu, GitHub star, primary CTA
+   ========================================================================== */
+
+.fc-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fc-language-menu {
+  position: relative;
+}
+
+.fc-language-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--fc-hairline);
+  border-radius: 8px;
+  background: var(--fc-surface-card);
+  color: var(--fc-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.fc-language-trigger:hover,
+.fc-language-trigger[aria-expanded='true'] {
+  border-color: var(--fc-hairline-strong);
+  color: var(--fc-ink);
+}
+
+.fc-language-list {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 80;
+  min-width: 188px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid var(--fc-hairline-strong);
+  border-radius: 10px;
+  background: var(--fc-surface-card);
+  box-shadow: 0 16px 32px -16px rgba(38, 37, 30, 0.28);
+}
+
+.fc-language-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.fc-language-list button,
+.fc-language-list a {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fc-ink);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.fc-language-list button:hover,
+.fc-language-list a:hover {
+  background: var(--fc-canvas-soft);
+  color: var(--fc-ink);
+}
+
+.fc-language-list [aria-current='true'] {
+  background: var(--fc-canvas);
+  font-weight: 600;
+}
+
+.fc-language-code {
+  color: var(--fc-muted);
+  font-family: var(--fc-font-mono);
+  font-size: 11px;
+}
+
+.fc-github-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--fc-hairline);
+  border-radius: 8px;
+  background: var(--fc-surface-card);
+  color: var(--fc-ink);
+  font-size: 13px;
+  font-weight: 500;
+  transition: border-color 150ms ease;
+}
+
+.fc-github-pill:hover {
+  border-color: var(--fc-hairline-strong);
+  color: var(--fc-ink);
+}
+
+/* button-primary (Cursor Orange #f54e00, 40px, 8px radius) */
+.fc-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: var(--fc-primary);
+  color: var(--fc-on-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 150ms ease;
+}
+
+.fc-btn-primary:hover {
+  background: var(--fc-primary-active);
+  color: var(--fc-on-primary);
+}
+
+/* ==========================================================================
+   Menu button + drawer (<= 996px)
+   ========================================================================== */
+
+.fc-menu-button {
+  display: none;
+  padding: 8px;
+  border: 1px solid var(--fc-hairline);
+  border-radius: 8px;
+  background: var(--fc-surface-card);
+  color: var(--fc-ink);
+  cursor: pointer;
+}
+
+/* Landing page drawer: a block that drops below the bar. */
+.fc-mobile-nav {
+  display: none;
+  border-top: 1px solid var(--fc-hairline);
+  background: var(--fc-canvas);
+}
+
+.fc-mobile-nav.is-open {
+  display: block;
+}
+
+/* Drawer content: shared by the landing drawer and Docusaurus' primary menu. */
+.fc-mobile-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 24px 24px;
+  /* Docusaurus wraps the primary menu in Infima's .menu, which sets a heavier weight. */
+  font-weight: 400;
+}
+
+.fc-mobile-language {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.fc-mobile-language button,
+.fc-mobile-language a {
+  padding: 10px 8px;
+  border: 1px solid var(--fc-hairline);
+  border-radius: 6px;
+  background: var(--fc-surface-card);
+  color: var(--fc-ink);
+  font-family: inherit;
+  font-size: 13px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.fc-mobile-language button.is-active,
+.fc-mobile-language a.is-active {
+  border-color: var(--fc-ink);
+  font-weight: 600;
+}
+
+.fc-mobile-menu > a {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--fc-hairline-soft);
+  color: var(--fc-ink);
+  font-size: 15px;
+}
+
+.fc-mobile-menu > a.is-active {
+  color: var(--fc-primary);
+}
+
+.fc-mobile-menu > a.fc-mobile-gh-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--fc-primary);
+}
+
+/* ==========================================================================
+   Docusaurus mobile sidebar → the same drawer under the bar as the landing page.
+   (Docusaurus renders it only at <= 996px; on docs pages it also carries the docs
+   tree as a second panel, reached through the "back to main menu" button.)
+   ========================================================================== */
+
+nav.navbar {
+  --ifm-navbar-sidebar-width: 100%;
+}
+
+nav.navbar .navbar-sidebar {
+  top: var(--fc-header-height);
+  bottom: auto;
+  max-height: calc(100vh - var(--fc-header-height));
+  max-height: calc(100dvh - var(--fc-header-height));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-bottom: 1px solid var(--fc-hairline);
+  background: var(--fc-canvas);
+  box-shadow: none;
+  transform: translate3d(0, -8px, 0);
+}
+
+nav.navbar.navbar-sidebar--show .navbar-sidebar {
+  transform: none;
+}
+
+nav.navbar .navbar-sidebar__backdrop {
+  top: var(--fc-header-height);
+  background-color: rgba(38, 37, 30, 0.18);
+}
+
+nav.navbar .navbar-sidebar__items {
+  height: auto;
+  transition: none;
+}
+
+nav.navbar .navbar-sidebar__item {
+  padding: 0;
+}
+
+/* Only the visible panel may set the drawer height. */
+nav.navbar .navbar-sidebar__items:not(.navbar-sidebar__items--show-secondary) > .navbar-sidebar__item:nth-child(2),
+nav.navbar .navbar-sidebar__items--show-secondary > .navbar-sidebar__item:nth-child(1) {
+  height: 0;
+  overflow: hidden;
+}
+
+nav.navbar .navbar-sidebar__items--show-secondary > .navbar-sidebar__item:nth-child(2) {
+  padding: 0 16px 24px;
+}
+
+nav.navbar .navbar-sidebar__back {
+  top: 0;
+  width: calc(100% + 32px);
+  margin: 0 -16px 8px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--fc-hairline-soft);
+  background: transparent;
+  color: var(--fc-ink);
+  font-family: var(--fc-font-sans);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (min-width: 997px) {
+  .fc-mobile-nav {
+    display: none !important;
+  }
+}
+
+/* Condensed bar: the English labels need ~1100px with everything on, so drop the
+   Star pill and tighten the gaps until the menu button takes over at 996px. */
+@media (min-width: 997px) and (max-width: 1140px) {
+  .fc-nav-shell {
+    gap: 16px;
+  }
+  .fc-desktop-nav {
+    gap: 18px;
+  }
+  .fc-nav-actions .fc-github-pill {
+    display: none;
+  }
+}
+
+@media (max-width: 996px) {
+  .fc-nav-shell {
+    gap: 16px;
+  }
+  .fc-desktop-nav,
+  .fc-nav-actions .fc-github-pill {
+    display: none;
+  }
+  .fc-nav-actions {
+    margin-left: auto;
+  }
+  .fc-menu-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+  /* The landing drawer sits below the bar, so on short screens (landscape phones) it
+     scrolls on its own. */
+  .fc-mobile-nav {
+    max-height: calc(100vh - var(--fc-header-height));
+    max-height: calc(100dvh - var(--fc-header-height));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-bottom: 1px solid var(--fc-hairline);
+  }
+}
+
+@media (max-width: 640px) {
+  .fc-nav-shell {
+    width: min(100% - 32px, 1200px);
+  }
+  .fc-mobile-menu {
+    padding: 16px 16px 24px;
+  }
+}
+
+@media (max-width: 520px) {
+  .fc-nav-shell {
+    gap: 12px;
+  }
+  /* The language switch is the first thing in the drawer, so the bar keeps room for
+     the Install CTA. */
+  .fc-nav-actions .fc-language-menu {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .fc-version-pill {
+    display: none;
+  }
+}
+
+/* Touch devices: bigger hit areas for the small text buttons. */
+@media (pointer: coarse) {
+  .fc-language-trigger {
+    height: 40px;
+  }
+  .fc-language-list button,
+  .fc-language-list a {
+    padding: 11px 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  nav.navbar .navbar-sidebar,
+  nav.navbar .navbar-sidebar__backdrop {
+    transition: none;
+  }
+}
