@@ -13,10 +13,12 @@ to operate on a single server, on premises, or in an air-gapped environment.
 
 :::info[Current status]
 
-FireCrab is in early development, but it already supports **M2Image installation, MicroNetwork and
-MicroStorage, MicroVM create/start/stop, serial consoles, Shell provisioning, port forwarding, and
-guest resource metrics** on one Linux host. Multi-host operation, high availability, and user
-authentication and authorization are not available yet.
+FireCrab is in early development, but as of v0.3.0 it supports **M2Image installation and OCI image
+import, MicroNetwork (IPv4 and IPv6) and MicroStorage, MicroVM create/start/stop, serial consoles and
+key-based SSH, Shell provisioning, port forwarding, guest resource metrics, and the `firecrab` CLI**.
+On Linux it runs directly on the host; on macOS (Apple silicon) and Windows it runs inside a managed
+Debian VM created by microManager. Windows is still a Preview: MicroVMs cannot start on WSL2 yet.
+Multi-host operation, high availability, and user authentication and authorization are not available yet.
 
 :::
 
@@ -33,10 +35,12 @@ microVM. FireCrab focuses exclusively on Firecracker and pursues three goals:
 
 | Component | Role | Status |
 | --- | --- | --- |
-| Web Dashboard | Manages MicroVMs, images, networks, storage, Shells, and consoles | Implemented and improving |
+| Web Dashboard | Manages MicroVMs, images, kernels, networks, storage, Shells, the host, and consoles | Implemented and improving |
 | REST API | Manages resources and the MicroVM lifecycle | Implemented and improving |
+| `firecrab` CLI | A REST API client for Linux, macOS, and Windows, plus host checks and updates | Implemented |
 | Network Helper | Applies bridges, DHCP, NAT, firewall rules, and port forwarding | Implemented |
-| M2Image | Prepares kernels and root filesystems through MicroRegistry or MicroBoot | Implemented |
+| M2Image | Prepares kernels and root filesystems through MicroRegistry install, OCI import, or MicroBoot (API-only) | Implemented |
+| microManager | Creates a managed Debian VM on macOS and Windows that runs the same FireCrab | Implemented on macOS · Preview on Windows |
 
 ## Roadmap
 
@@ -55,5 +59,6 @@ microVM. FireCrab focuses exclusively on Firecracker and pursues three goals:
 The source code and issue tracker are available on GitHub.
 
 - Tutorial: [Build a three-tier architecture](./three-tier-architecture.mdx)
+- Detailed architecture: [public-docs/architecture.md](https://github.com/SteelCrab/firecrab/blob/main/public-docs/architecture.md)
 - Repository: [SteelCrab/firecrab](https://github.com/SteelCrab/firecrab)
 - Documentation site: [SteelCrab/firecrab-page](https://github.com/SteelCrab/firecrab-page)

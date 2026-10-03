@@ -46,7 +46,7 @@ Backend와 DB에는 포트 포워딩을 만들지 않습니다.
 
 ```sh
 systemctl status firecrab-net-helper firecrab-api
-curl -fsS http://127.0.0.1:3000/api/host
+curl -fsS http://127.0.0.1:5523/api/host
 ss -lnt | grep ':8080 ' || true
 ```
 

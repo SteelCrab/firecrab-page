@@ -32,7 +32,7 @@ The dashboard's **Images** screen lets you inspect an OCI reference and import i
 First, check whether the image can run on this host. This request reads metadata only — it doesn't download the config or any layers.
 
 ```sh
-curl -s 'http://127.0.0.1:3000/api/oci/inspect?reference=nginx:1.27'
+curl -s 'http://127.0.0.1:5523/api/oci/inspect?reference=nginx:1.27'
 ```
 
 The reference is written the same way as `docker pull`, so a bare name resolves to `latest`. A missing architecture for this host is rejected.
@@ -40,7 +40,7 @@ The reference is written the same way as `docker pull`, so a bare name resolves 
 Import is a background job, since it can easily exceed the REST request timeout (10 seconds).
 
 ```sh
-curl -s -X POST http://127.0.0.1:3000/api/oci/import \
+curl -s -X POST http://127.0.0.1:5523/api/oci/import \
   -H 'Content-Type: application/json' \
   -d '{"reference":"nginx:1.27"}'
 ```

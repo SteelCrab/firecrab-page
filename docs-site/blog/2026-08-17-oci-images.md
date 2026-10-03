@@ -32,7 +32,7 @@ Docker Hub뿐 아니라 표준 OCI 레지스트리 프로토콜을 쓰는 사설
 먼저 이 호스트에서 실행 가능한지 확인합니다. 이 요청은 설정이나 레이어를 내려받지 않고 메타데이터만 읽습니다.
 
 ```sh
-curl -s 'http://127.0.0.1:3000/api/oci/inspect?reference=nginx:1.27'
+curl -s 'http://127.0.0.1:5523/api/oci/inspect?reference=nginx:1.27'
 ```
 
 `docker pull`과 같은 표기를 사용하므로, 태그를 생략하면 `latest`로 해석됩니다. 이 호스트 아키텍처용 이미지가 없으면 거부됩니다.
@@ -40,7 +40,7 @@ curl -s 'http://127.0.0.1:3000/api/oci/inspect?reference=nginx:1.27'
 가져오기는 REST 요청 제한 시간(10초)을 넘길 수 있어 백그라운드 작업으로 처리됩니다.
 
 ```sh
-curl -s -X POST http://127.0.0.1:3000/api/oci/import \
+curl -s -X POST http://127.0.0.1:5523/api/oci/import \
   -H 'Content-Type: application/json' \
   -d '{"reference":"nginx:1.27"}'
 ```

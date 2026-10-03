@@ -74,6 +74,22 @@ file is missing (and break real 404s). Workers also apply `dist/_headers` native
 After the first successful deploy, attach the custom domain `firecrab.dev` to this
 Worker in the dashboard (or via routes) so production traffic hits the new deployment.
 
+## Content sources
+
+The landing page and docs overview track [SteelCrab/firecrab](https://github.com/SteelCrab/firecrab)
+(`README*.md`, `CHANGELOG.md`, `public-docs/`). When that project ships a release, update these together:
+
+| What | Where |
+| --- | --- |
+| Version pill and release link | `releaseVersion` in `src/landing/landingData.ts`, plus `version` in `package.json` |
+| Feature, component, comparison, and install copy | `src/landing/landingData.ts` |
+| Architecture diagrams | `public/architecture/*.svg`, copied from `assets/architecture/` in the firecrab repository |
+| Docs overview | `docs-site/docs/intro.mdx` and `docs-site/i18n/en/.../current/intro.mdx` |
+
+Only the `at-a-glance` and `runs-anywhere` diagrams have Korean variants; the others are English-only
+and the landing page says so. Boot-time and memory figures quote Firecracker's published
+specification (boot ≤ 125 ms, VMM overhead ≤ 5 MiB), not a FireCrab measurement.
+
 ## Stack
 
 - React

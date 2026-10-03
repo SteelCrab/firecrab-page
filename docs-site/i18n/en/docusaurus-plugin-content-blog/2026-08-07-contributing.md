@@ -84,7 +84,7 @@ shellcheck install.sh scripts/firecrab-doctor.sh
 
 ## Security defaults
 
-- Default bind is loopback (`127.0.0.1:3000`). Do not assume auth or multi-tenant isolation.
+- Default bind is loopback (`127.0.0.1:5523`). Do not assume auth or multi-tenant isolation.
 - Prefer extending the helper protocol over giving the API new host privileges.
 - Report sensitive security issues privately to maintainers rather than opening a public issue with exploit detail.
 
