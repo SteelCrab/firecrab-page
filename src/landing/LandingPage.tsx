@@ -5,34 +5,41 @@ import {
   BookOpen,
   Box,
   Check,
-  Copy,
   Github,
   HardDrive,
   Monitor,
   Network,
   Server,
+  ShieldAlert,
   ShieldCheck,
   Star,
   Terminal,
   Wrench,
   Zap,
 } from 'lucide-react';
+import siteHeader from '../shared/siteHeader.json';
 import '../shared/site-header.css';
 import './LandingPage.css';
 import { ArchitectureSection } from './ArchitectureSection';
-import { getPreferredLanguage, languageInfo, languages, rememberLanguage, readmeFile, type Language } from './i18n';
+import { CopyButton } from './CodeBlock';
+import { DemoVideo } from './DemoVideo';
+import { ExternalLink } from './ExternalLink';
+import { getPreferredLanguage, languageInfo, languages, pick, rememberLanguage, readmeFile, type Language } from './i18n';
 import { createI18n, I18nProvider } from './i18n/context';
 import { InstallSection } from './InstallSection';
 import {
   comparisonTable,
+  consoleUrl,
   featureHighlights,
   installCommand,
+  navLabel,
   productViews,
   releaseVersion,
   repositoryUrl,
   workflow,
 } from './landingData';
 import { SiteHeader } from './SiteHeader';
+import { tabKeyDown } from './tabs';
 
 const architectureDocUrl = `${repositoryUrl}/blob/main/public-docs/architecture.md`;
 
@@ -43,35 +50,18 @@ const compareColumns = {
   firecrab: 'FireCrab (Firecracker)',
 };
 
+const featureIcons = { Zap, ShieldCheck, Network, HardDrive, Box, Terminal, Monitor, Activity, Wrench };
+
 function FeatureIcon({ name }: { name: string }) {
-  switch (name) {
-    case 'Zap':
-      return <Zap size={18} />;
-    case 'ShieldCheck':
-      return <ShieldCheck size={18} />;
-    case 'Network':
-      return <Network size={18} />;
-    case 'HardDrive':
-      return <HardDrive size={18} />;
-    case 'Box':
-      return <Box size={18} />;
-    case 'Terminal':
-      return <Terminal size={18} />;
-    case 'Monitor':
-      return <Monitor size={18} />;
-    case 'Activity':
-      return <Activity size={18} />;
-    case 'Wrench':
-      return <Wrench size={18} />;
-    default:
-      return <Server size={18} />;
-  }
+  const Icon = featureIcons[name as keyof typeof featureIcons] ?? Server;
+  return <Icon size={18} aria-hidden="true" />;
 }
+
+const tourTabId = (index: number) => `fc-tour-tab-${productViews[index].id}`;
 
 export default function LandingPage() {
   const [language, setLanguage] = useState<Language>(getPreferredLanguage);
   const [activeView, setActiveView] = useState(0);
-  const [copiedHero, setCopiedHero] = useState(false);
 
   const i18n = useMemo(() => createI18n(language), [language]);
   const { t, loc, list, path } = i18n;
@@ -120,15 +110,8 @@ export default function LandingPage() {
     setLanguage(nextLanguage);
   };
 
-  const copyHeroCommand = async () => {
-    try {
-      await navigator.clipboard.writeText(installCommand);
-      setCopiedHero(true);
-      window.setTimeout(() => setCopiedHero(false), 2000);
-    } catch {
-      setCopiedHero(false);
-    }
-  };
+
+  const installLabel = pick(siteHeader.labels.install, language);
 
   return (
     <I18nProvider value={i18n}>
@@ -140,31 +123,24 @@ export default function LandingPage() {
         <SiteHeader language={language} onLanguageChange={changeLanguage} />
 
         <main id="main-content">
-          {/* HERO SECTION */}
+          {/* HERO: message and actions on the left, the product demo on the right */}
           <section className="fc-hero-band" id="top" aria-labelledby="fc-hero-title">
             <div className="fc-hero-content">
               <div className="fc-hero-announcement">
                 <span className="fc-badge-pill">Apache 2.0 Open Source</span>
-                <a
-                  href={`${repositoryUrl}/releases`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="fc-announcement-link"
-                >
+                <ExternalLink href={`${repositoryUrl}/releases`} className="fc-announcement-link">
                   {t('FireCrab {version} 릴리즈 보기', 'FireCrab {version} is now released on GitHub').replace(
                     '{version}',
                     releaseVersion,
                   )}{' '}
-                  ↗
-                </a>
+                  <span aria-hidden="true">↗</span>
+                </ExternalLink>
               </div>
 
               <h1 id="fc-hero-title" className="fc-display-mega">
                 {t('내 서버에서 바로 쓰는', 'The lightweight MicroVM platform')}
                 <br />
-                <span className="fc-hero-highlight">
-                  {t('경량 MicroVM 플랫폼.', 'for your own server.')}
-                </span>
+                {t('경량 MicroVM 플랫폼.', 'for your own server.')}
               </h1>
 
               <p className="fc-hero-lead">
@@ -174,106 +150,78 @@ export default function LandingPage() {
                 )}
               </p>
 
-              {/* Quick Install Code Card */}
-              <div className="fc-hero-install-card">
-                <div className="fc-install-code-group">
-                  <span className="fc-prompt-sign">$</span>
-                  <code>{installCommand}</code>
-                </div>
-                <button
-                  type="button"
-                  className={`fc-btn-copy ${copiedHero ? 'is-copied' : ''}`}
-                  onClick={copyHeroCommand}
-                  aria-label={t('명령어 복사', 'Copy command')}
-                >
-                  {copiedHero ? <Check size={13} /> : <Copy size={13} />}
-                  <span>{copiedHero ? t('복사됨', 'Copied') : t('복사', 'Copy')}</span>
-                </button>
-              </div>
-
-              {/* CTAs */}
+              {/* One primary action; docs and GitHub step down in weight */}
               <div className="fc-hero-cta-group">
                 <a className="fc-button-download" href="#install">
-                  <span>{t('설치 가이드 보기', 'Get Started')}</span>
-                  <ArrowRight size={15} />
+                  <span>{installLabel}</span>
+                  <ArrowRight size={15} aria-hidden="true" />
                 </a>
-                <a
-                  className="fc-button-tertiary-text"
-                  href={repositoryUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Github size={16} />
-                  <span>GitHub (SteelCrab/firecrab)</span>
-                  <span className="fc-hero-arrow">↗</span>
-                </a>
-                <a className="fc-button-tertiary-text" href={path('/docs')}>
-                  <BookOpen size={16} />
+                <a className="fc-btn-secondary" href={path('/docs')}>
+                  <BookOpen size={15} aria-hidden="true" />
                   <span>{t('공식 문서 읽기', 'Documentation')}</span>
-                  <span className="fc-hero-arrow">↗</span>
                 </a>
+                <ExternalLink className="fc-button-tertiary-text" href={repositoryUrl}>
+                  <Github size={16} aria-hidden="true" />
+                  <span>GitHub (SteelCrab/firecrab)</span>
+                  <span className="fc-hero-arrow" aria-hidden="true">↗</span>
+                </ExternalLink>
+              </div>
+
+              {/* The one-line installer is Linux only (macOS and Windows: see #install), so it is labelled. */}
+              <div className="fc-hero-install-card">
+                <span className="fc-install-os">Linux</span>
+                <code className="fc-install-command">
+                  <span className="fc-prompt-sign" aria-hidden="true">$ </span>
+                  {installCommand}
+                </code>
+                <CopyButton text={installCommand} className="fc-btn-copy" label={t('명령어 복사', 'Copy command')} />
               </div>
             </div>
 
-            {/* IDE MOCKUP CARD with Signature Timeline Pastels */}
-            <div className="fc-ide-mockup-wrapper">
-              <div className="fc-ide-mockup-card">
-                {/* Window Bar */}
-                <div className="fc-ide-header">
-                  <div className="fc-ide-dots">
-                    <span className="fc-dot" />
-                    <span className="fc-dot" />
-                    <span className="fc-dot" />
-                  </div>
-                  <div className="fc-ide-title">
-                    firecrab-dashboard — microvm (127.0.0.1:5523)
-                  </div>
-                </div>
-
-                {/* Mockup screen */}
-                <div className="fc-ide-screen">
-                  <img
-                    src="/dashboard-firecrab-m2.gif"
-                    alt={t(
-                      'FireCrab 대시보드 실시간 실행 데모',
-                      'Real-time demo of managing MicroVMs in the FireCrab dashboard',
-                    )}
-                  />
-                </div>
-              </div>
-            </div>
+            <figure className="fc-hero-media">
+              <DemoVideo
+                src="/dashboard-firecrab-m2.mp4"
+                poster="/dashboard-firecrab-m2-poster.webp"
+                width={716}
+                height={604}
+                label={t(
+                  'FireCrab 대시보드 실시간 실행 데모',
+                  'Real-time demo of managing MicroVMs in the FireCrab dashboard',
+                )}
+              />
+            </figure>
           </section>
 
           {/* PROOF BAND */}
           <section className="fc-proof-section" aria-label={t('기술 구성', 'Technology')}>
-            <div className="fc-proof-container">
-              <div className="fc-proof-col">
+            <ul className="fc-proof-container">
+              <li className="fc-proof-col">
                 <span className="fc-badge-pill">ENGINE</span>
-                <h4>Rust API + net-helper</h4>
+                <p className="fc-proof-title">Rust API + net-helper</p>
                 <p>{t('권한을 나눈 두 서비스: 비특권 API와 제한된 capability의 네트워크 helper', 'Two privilege-separated services: an unprivileged API and a capability-bounded network helper')}</p>
-              </div>
-              <div className="fc-proof-col">
+              </li>
+              <li className="fc-proof-col">
                 <span className="fc-badge-pill">VIRTUALIZATION</span>
-                <h4>Firecracker + KVM</h4>
+                <p className="fc-proof-title">Firecracker + KVM</p>
                 <p>{t('MicroVM마다 Firecracker 프로세스 하나, 각자 자기 커널로 부팅', 'One Firecracker process per MicroVM, each booting its own kernel')}</p>
-              </div>
-              <div className="fc-proof-col">
+              </li>
+              <li className="fc-proof-col">
                 <span className="fc-badge-pill">INTERFACE</span>
-                <h4>Dashboard · CLI · API</h4>
+                <p className="fc-proof-title">Dashboard · CLI · API</p>
                 <p>{t('브라우저 Terminal, firecrab CLI, REST · WebSocket API', 'Browser Terminal, the firecrab CLI, and REST/WebSocket APIs')}</p>
-              </div>
-              <div className="fc-proof-col">
+              </li>
+              <li className="fc-proof-col">
                 <span className="fc-badge-pill">PLATFORM</span>
-                <h4>Linux · macOS · Windows</h4>
+                <p className="fc-proof-title">Linux · macOS · Windows</p>
                 <p>{t('Linux는 직접 실행, macOS · Windows는 microManager (Windows는 Preview)', 'Linux runs directly; macOS and Windows use microManager (Windows is Preview)')}</p>
-              </div>
-            </div>
+              </li>
+            </ul>
           </section>
 
-          {/* 01 / FEATURES (WHY FIRECRAB) */}
+          {/* FEATURES */}
           <section className="fc-section" id="features" aria-labelledby="fc-features-title">
             <div className="fc-section-header">
-              <span className="fc-caption-uppercase">01 / WHY FIRECRAB</span>
+              <p className="fc-caption-uppercase">{navLabel('features', language)}</p>
               <h2 id="fc-features-title" className="fc-display-lg">
                 {t('컨테이너의 가벼움과,', 'The speed of containers,')}
                 <br />
@@ -287,9 +235,9 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="fc-feature-grid">
+            <ul className="fc-feature-grid">
               {featureHighlights.map((feature) => (
-                <div className="fc-feature-card" key={feature.id}>
+                <li className="fc-feature-card" key={feature.id}>
                   <div className="fc-card-top-row">
                     <div className="fc-feature-icon-box">
                       <FeatureIcon name={feature.iconName} />
@@ -298,15 +246,15 @@ export default function LandingPage() {
                   </div>
                   <h3 className="fc-title-md">{loc(feature.title)}</h3>
                   <p className="fc-body-md">{loc(feature.description)}</p>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
 
-          {/* 02 / COMPARISON MATRIX */}
+          {/* COMPARISON */}
           <section className="fc-section" id="compare" aria-labelledby="fc-compare-title">
             <div className="fc-section-header">
-              <span className="fc-caption-uppercase">02 / COMPARISON</span>
+              <p className="fc-caption-uppercase">{navLabel('compare', language)}</p>
               <h2 id="fc-compare-title" className="fc-display-lg">
                 {t('도커 vs 기존 가상머신 vs', 'Docker vs Traditional VMs vs')}
                 <br />
@@ -321,26 +269,28 @@ export default function LandingPage() {
             </div>
 
             <div className="fc-comparison-card">
-              <table className="fc-compare-table">
+              <table className="fc-compare-table" aria-labelledby="fc-compare-title">
                 <thead>
                   <tr>
-                    <th>{t('비교 항목', 'Attribute')}</th>
-                    <th>{compareColumns.docker}</th>
-                    <th>{compareColumns.traditionalVm}</th>
-                    <th className="fc-col-firecrab">{compareColumns.firecrab}</th>
+                    <th scope="col">{t('비교 항목', 'Attribute')}</th>
+                    <th scope="col">{compareColumns.docker}</th>
+                    <th scope="col">{compareColumns.traditionalVm}</th>
+                    <th scope="col" className="fc-col-firecrab">
+                      {compareColumns.firecrab}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {comparisonTable.map((row, idx) => (
-                    <tr key={idx} className={row.highlight ? 'is-key-row' : ''}>
-                      <td className="fc-dim-col">
-                        <strong>{loc(row.dimension)}</strong>
-                      </td>
+                  {comparisonTable.map((row) => (
+                    <tr key={row.dimension.en}>
+                      <th scope="row" className="fc-dim-col">
+                        {loc(row.dimension)}
+                      </th>
                       <td data-label={compareColumns.docker}>{loc(row.docker)}</td>
                       <td data-label={compareColumns.traditionalVm}>{loc(row.traditionalVm)}</td>
                       <td className="fc-col-firecrab" data-label={compareColumns.firecrab}>
                         <div className="fc-cell-highlight">
-                          <Check size={14} className="fc-check-icon" />
+                          <Check size={14} className="fc-check-icon" aria-hidden="true" />
                           <span>{loc(row.firecrab)}</span>
                         </div>
                       </td>
@@ -349,32 +299,36 @@ export default function LandingPage() {
                 </tbody>
               </table>
 
-              {/* GitHub README.md Purpose (README.md / README.ko.md) */}
+              {/* GitHub README.md purpose (README.md / README.ko.md), then its limits */}
               <div className="fc-compare-quote-band">
-                <p className="fc-compare-quote-text">
-                  “{t(
-                    '내 Linux 서버 한 대에서 Firecracker microVM을 만들고 운영합니다. 브라우저 대시보드·CLI·REST API로 관리하며, 개인 서버·홈랩·개발 환경에 적합합니다.',
-                    'Run Firecracker microVMs on one Linux host you control, managed through a browser dashboard, CLI, or REST API. Built for personal servers, homelabs, and development environments.',
-                  )}”
+                <figure className="fc-compare-quote">
+                  <blockquote>
+                    <p className="fc-compare-quote-text">
+                      “{t(
+                        '내 Linux 서버 한 대에서 Firecracker microVM을 만들고 운영합니다. 브라우저 대시보드·CLI·REST API로 관리하며, 개인 서버·홈랩·개발 환경에 적합합니다.',
+                        'Run Firecracker microVMs on one Linux host you control, managed through a browser dashboard, CLI, or REST API. Built for personal servers, homelabs, and development environments.',
+                      )}”
+                    </p>
+                  </blockquote>
+                  <figcaption className="fc-compare-quote-meta">SteelCrab/firecrab · GitHub README</figcaption>
+                </figure>
+                <p className="fc-compare-warning">
+                  <ShieldAlert size={16} aria-hidden="true" />
+                  <span>
+                    {t(
+                      '단일 호스트 시스템입니다. 멀티 호스트 스케줄링, 고가용성, 라이브 마이그레이션은 제공하지 않으며, 인증이 없는 API 리스너를 외부 네트워크에 노출해서는 안 됩니다.',
+                      'FireCrab stays a single-host system with no built-in multi-host scheduling, HA, or live migration, and its unauthenticated API listener must not be exposed to an external network.',
+                    )}
+                  </span>
                 </p>
-                <p className="fc-compare-quote-note">
-                  {t(
-                    '단일 호스트 시스템입니다. 멀티 호스트 스케줄링, 고가용성, 라이브 마이그레이션은 제공하지 않으며, 인증이 없는 API 리스너를 외부 네트워크에 노출해서는 안 됩니다.',
-                    'FireCrab stays a single-host system with no built-in multi-host scheduling, HA, or live migration, and its unauthenticated API listener must not be exposed to an external network.',
-                  )}
-                </p>
-                <div className="fc-compare-quote-meta">
-                  <span className="fc-quote-author">SteelCrab/firecrab</span>
-                  <span className="fc-quote-badge">GitHub README</span>
-                </div>
               </div>
             </div>
           </section>
 
-          {/* 03 / CORE COMPONENTS (4-PILLAR TOUR) */}
+          {/* CORE COMPONENTS (tabs) */}
           <section className="fc-section" id="components" aria-labelledby="fc-components-title">
             <div className="fc-section-header">
-              <span className="fc-caption-uppercase">03 / CORE COMPONENTS</span>
+              <p className="fc-caption-uppercase">{navLabel('components', language)}</p>
               <h2 id="fc-components-title" className="fc-display-lg">
                 {t('MicroVM 하나를 만드는', 'Four building blocks')}
                 <br />
@@ -389,44 +343,45 @@ export default function LandingPage() {
             </div>
 
             <div className="fc-tour-wrapper">
-              {/* Tour hairline tabs */}
-              <div className="fc-tour-tablist" role="tablist">
+              <div className="fc-tour-tablist" role="tablist" aria-labelledby="fc-components-title">
                 {productViews.map((view, index) => (
                   <button
                     type="button"
                     role="tab"
                     key={view.id}
+                    id={tourTabId(index)}
                     aria-selected={activeView === index}
                     aria-controls="fc-tour-panel"
+                    tabIndex={activeView === index ? 0 : -1}
                     className={`fc-tour-tab ${activeView === index ? 'is-active' : ''}`}
                     onClick={() => setActiveView(index)}
+                    onKeyDown={(event) => tabKeyDown(event, index, productViews.length, setActiveView, tourTabId)}
                   >
-                    <div className="fc-tab-label-group">
-                      <img src={view.icon} alt="" aria-hidden="true" />
-                      <span>{view.label}</span>
-                    </div>
-                    <span className="fc-tab-num">0{index + 1}</span>
+                    <img src={view.icon} alt="" width={20} height={20} />
+                    <span>{view.label}</span>
                   </button>
                 ))}
               </div>
 
-              {/* Active Tour Panel */}
-              <div className="fc-tour-panel-card" id="fc-tour-panel" role="tabpanel">
+              <div
+                className="fc-tour-panel-card"
+                id="fc-tour-panel"
+                role="tabpanel"
+                aria-labelledby={tourTabId(activeView)}
+                tabIndex={0}
+              >
                 <div className="fc-tour-split">
                   <div className="fc-tour-text-side">
-                    <div className="fc-tour-meta">
-                      <span className="fc-badge-pill">{loc(currentView.badge)}</span>
-                      <span className="fc-tour-index">0{activeView + 1} / 04</span>
-                    </div>
+                    <span className="fc-badge-pill">{loc(currentView.badge)}</span>
                     <h3 className="fc-display-md">{loc(currentView.title)}</h3>
                     <p className="fc-body-md">{loc(currentView.description)}</p>
 
                     <div className="fc-tour-specs">
-                      <span className="fc-caption-uppercase">{t('핵심 역량', 'Capabilities')}</span>
+                      <h4 className="fc-caption-uppercase">{t('핵심 역량', 'Capabilities')}</h4>
                       <ul>
-                        {list(currentView.details).map((detail, dIdx) => (
-                          <li key={dIdx}>
-                            <Check size={14} className="fc-check-icon" />
+                        {list(currentView.details).map((detail) => (
+                          <li key={detail}>
+                            <Check size={14} className="fc-check-icon" aria-hidden="true" />
                             <span>{detail}</span>
                           </li>
                         ))}
@@ -434,20 +389,16 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  <div className="fc-tour-preview-side">
-                    <div className="fc-screenshot-frame">
-                      <div className="fc-screenshot-bar">
-                        <div className="fc-screenshot-dots">
-                          <span /><span /><span />
-                        </div>
-                        <code>{currentView.label}</code>
-                      </div>
-                      <img
-                        key={currentView.image}
-                        src={currentView.image}
-                        alt={loc(currentView.alt)}
-                      />
-                    </div>
+                  <div className="fc-screenshot-frame">
+                    <img
+                      key={currentView.image}
+                      src={currentView.image}
+                      alt={loc(currentView.alt)}
+                      width={1300}
+                      height={1200}
+                      loading="lazy"
+                      decoding="async"
+                    />
                   </div>
                 </div>
 
@@ -456,26 +407,25 @@ export default function LandingPage() {
                   <div className="fc-tour-secondary-pane">
                     <div className="fc-secondary-top">
                       <div className="fc-secondary-title-box">
-                        <img src={currentView.secondary.icon} alt="" aria-hidden="true" />
+                        <img src={currentView.secondary.icon} alt="" width={28} height={28} />
                         <div>
                           <span className="fc-badge-pill">{currentView.secondary.label}</span>
                           <h4 className="fc-title-md">{loc(currentView.secondary.title)}</h4>
                         </div>
                       </div>
-                      <a
-                        href={currentView.secondary.image}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="fc-open-img-link"
-                      >
-                        {t('고해상도 원본 보기', 'Open High-Res')} ↗
-                      </a>
+                      <ExternalLink href={currentView.secondary.image} className="fc-open-img-link">
+                        {t('고해상도 원본 보기', 'Open High-Res')} <span aria-hidden="true">↗</span>
+                      </ExternalLink>
                     </div>
                     <p className="fc-body-sm">{loc(currentView.secondary.description)}</p>
                     <div className="fc-secondary-media-frame">
                       <img
                         src={currentView.secondary.image}
                         alt={loc(currentView.secondary.alt)}
+                        width={1300}
+                        height={1200}
+                        loading="lazy"
+                        decoding="async"
                         style={{ objectPosition: currentView.secondary.imagePosition }}
                       />
                     </div>
@@ -485,13 +435,13 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 04 / ARCHITECTURE (~/firecrab README: Intro GIF + "at a glance" + "runs anywhere") */}
+          {/* ARCHITECTURE (~/firecrab README: intro animation + "at a glance" + "runs anywhere") */}
           <ArchitectureSection />
 
-          {/* 05 / GETTING STARTED WORKFLOW */}
+          {/* GETTING STARTED */}
           <section className="fc-section" aria-labelledby="fc-flow-title">
             <div className="fc-section-header">
-              <span className="fc-caption-uppercase">05 / GETTING STARTED</span>
+              <p className="fc-caption-uppercase">{t('시작하기', 'Getting started')}</p>
               <h2 id="fc-flow-title" className="fc-display-lg">
                 {t('첫 MicroVM 가동까지', 'Your first MicroVM')}
                 <br />
@@ -499,27 +449,27 @@ export default function LandingPage() {
               </h2>
             </div>
 
-            <div className="fc-workflow-grid">
+            <ol className="fc-workflow-grid">
               {workflow.map((item) => (
-                <div className="fc-workflow-card" key={item.number}>
-                  <div className="fc-workflow-top">
+                <li className="fc-workflow-card" key={item.number}>
+                  <div className="fc-workflow-top" aria-hidden="true">
                     <span className="fc-workflow-badge">{item.number}</span>
                     <div className="fc-workflow-divider" />
                   </div>
                   <h3 className="fc-title-md">{loc(item.title)}</h3>
                   <p className="fc-body-md">{loc(item.description)}</p>
-                </div>
+                </li>
               ))}
-            </div>
+            </ol>
           </section>
 
-          {/* 06 / INSTALLATION (~/firecrab README: Installation, Run, Run from source) */}
+          {/* INSTALLATION (~/firecrab README: Installation, Run, Run from source) */}
           <InstallSection />
 
-          {/* CTA BAND (Pre-Footer) */}
+          {/* CTA BAND (pre-footer) */}
           <section className="fc-cta-band" aria-labelledby="fc-cta-title">
             <div className="fc-cta-container">
-              <span className="fc-caption-uppercase">100% FREE & OPEN SOURCE</span>
+              <p className="fc-caption-uppercase">Apache 2.0 Open Source</p>
               <h2 id="fc-cta-title" className="fc-display-lg">
                 {t('당신의 서버를 위한,', 'Isolated microVM workloads,')}
                 <br />
@@ -533,18 +483,13 @@ export default function LandingPage() {
               </p>
 
               <div className="fc-cta-btn-row">
-                <a
-                  href={repositoryUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="fc-button-download"
-                >
-                  <Github size={16} />
+                <ExternalLink href={repositoryUrl} className="fc-button-download">
+                  <Github size={16} aria-hidden="true" />
                   <span>{t('GitHub에서 Star 누르기', 'Star on GitHub')}</span>
-                  <Star size={13} className="fc-star-icon" />
-                </a>
+                  <Star size={13} className="fc-star-icon" aria-hidden="true" />
+                </ExternalLink>
                 <a href={path('/docs')} className="fc-btn-secondary">
-                  <BookOpen size={15} />
+                  <BookOpen size={15} aria-hidden="true" />
                   <span>{t('문서 및 튜토리얼', 'Docs & tutorials')}</span>
                 </a>
               </div>
@@ -557,7 +502,7 @@ export default function LandingPage() {
           <div className="fc-footer-inner">
             <div className="fc-footer-brand-col">
               <a className="fc-wordmark" href="#top">
-                <img src="/firecrab-icon.png" alt="" aria-hidden="true" />
+                <img src="/icons/firecrab-icon-64.png" alt="" width={26} height={26} />
                 <span className="fc-wordmark-title">FireCrab</span>
               </a>
               <p className="fc-body-sm">
@@ -571,53 +516,42 @@ export default function LandingPage() {
 
             <div className="fc-footer-nav-grid">
               <div className="fc-footer-col">
-                <span className="fc-caption-uppercase">{t('프로젝트', 'Project')}</span>
+                <h2 className="fc-caption-uppercase">{t('프로젝트', 'Project')}</h2>
                 <a href="#features">{t('특징', 'Features')}</a>
                 <a href="#compare">{t('기술 비교', 'Compare')}</a>
                 <a href="#components">{t('컴포넌트', 'Components')}</a>
                 <a href="#architecture">{t('아키텍처', 'Architecture')}</a>
                 <a href="#install">{t('설치하기', 'Install')}</a>
+                <a href={consoleUrl}>{t('콘솔', 'Console')}</a>
               </div>
 
               <div className="fc-footer-col">
-                <span className="fc-caption-uppercase">{t('문서', 'Docs')}</span>
+                <h2 className="fc-caption-uppercase">{t('문서', 'Docs')}</h2>
                 <a href={path('/docs')}>{t('소개 및 시작하기', 'Introduction')}</a>
                 <a href={path('/docs/tutorials/three-tier-architecture')}>
                   {t('3티어 구성 튜토리얼', '3-Tier Tutorial')}
                 </a>
-                <a href={architectureDocUrl} target="_blank" rel="noreferrer">
-                  {t('상세 아키텍처', 'Detailed Architecture')}
-                </a>
+                <ExternalLink href={architectureDocUrl}>{t('상세 아키텍처', 'Detailed Architecture')}</ExternalLink>
                 <a href={path('/blog')}>{t('블로그', 'Blog')}</a>
-                <a href={`${repositoryUrl}/releases`} target="_blank" rel="noreferrer">
-                  {t('릴리즈 노트', 'Releases')}
-                </a>
+                <ExternalLink href={`${repositoryUrl}/releases`}>{t('릴리즈 노트', 'Releases')}</ExternalLink>
               </div>
 
               <div className="fc-footer-col">
-                <span className="fc-caption-uppercase">{t('커뮤니티', 'Community')}</span>
-                <a href={repositoryUrl} target="_blank" rel="noreferrer">
-                  GitHub Repository
-                </a>
-                <a href={`${repositoryUrl}/issues`} target="_blank" rel="noreferrer">
-                  Issues
-                </a>
-                <a href={`${repositoryUrl}/discussions`} target="_blank" rel="noreferrer">
-                  Discussions
-                </a>
-                <a href={`${repositoryUrl}/blob/main/LICENSE`} target="_blank" rel="noreferrer">
-                  Apache 2.0 License
-                </a>
-                <a href={`${repositoryUrl}/blob/main/${readmeFile(language)}`} target="_blank" rel="noreferrer">
+                <h2 className="fc-caption-uppercase">{t('커뮤니티', 'Community')}</h2>
+                <ExternalLink href={repositoryUrl}>GitHub Repository</ExternalLink>
+                <ExternalLink href={`${repositoryUrl}/issues`}>Issues</ExternalLink>
+                <ExternalLink href={`${repositoryUrl}/discussions`}>Discussions</ExternalLink>
+                <ExternalLink href={`${repositoryUrl}/blob/main/LICENSE`}>Apache 2.0 License</ExternalLink>
+                <ExternalLink href={`${repositoryUrl}/blob/main/${readmeFile(language)}`}>
                   {readmeFile(language)}
-                </a>
+                </ExternalLink>
               </div>
             </div>
           </div>
 
           <div className="fc-footer-bottom-row">
             <span>© 2026 FireCrab Project. Inspired by Cursor design.</span>
-            <div className="fc-footer-langs">
+            <div className="fc-footer-langs" role="group" aria-label={pick(siteHeader.labels.languageSelector, language)}>
               {languages.map((entry, index) => (
                 <span key={entry.code} className="fc-footer-lang-item">
                   {index > 0 ? <span aria-hidden="true">·</span> : null}

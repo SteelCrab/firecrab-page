@@ -5,13 +5,14 @@
   --fc-surface-strong: #e6e5e0;
   --fc-ink: #26251e;
   --fc-body: #5a5852;
-  --fc-muted: #807d72;
+  --fc-muted: #6b685f;
   --fc-muted-soft: #a09c92;
   --fc-hairline: #e6e5e0;
   --fc-hairline-soft: #efeee8;
   --fc-hairline-strong: #cfcdc4;
   --fc-primary: #f54e00;
   --fc-primary-active: #d04200;
+  --fc-primary-deep: #b93a00;
   --fc-on-primary: #ffffff;
 
   color: var(--fc-body);

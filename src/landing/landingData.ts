@@ -1,11 +1,22 @@
 import siteHeader from '../shared/siteHeader.json';
-import type { Language, LocalizedList, LocalizedText } from './i18n';
+import { pick, type Language, type LocalizedList, type LocalizedText } from './i18n';
 
 export type { Language, LocalizedList, LocalizedText };
 
 export const repositoryUrl = siteHeader.repositoryUrl;
 export const releaseVersion = siteHeader.version;
 export const installCommand = `curl -fsSL ${repositoryUrl}/releases/latest/download/install.sh | bash`;
+/** Hosted console of the Firecrab services (the old firecrab.dev/dashboard/ redirects here). */
+export const consoleUrl = 'https://console.firecrab.dev/';
+
+/**
+ * Label of a top-navigation link (siteHeader.json). Section eyebrows use it, so a section is
+ * called the same in the menu and on the page, in every language.
+ */
+export const navLabel = (id: string, language: Language): string => {
+  const link = siteHeader.links.find((entry) => entry.id === id);
+  return link ? pick(link.label, language) : id;
+};
 
 export interface ProductView {
   id: string;
@@ -40,7 +51,7 @@ export const productViews: ProductView[] = [
     },
     image: '/dashboard-microvm.png',
     alt: { ko: 'FireCrab MicroVM 생성 폼과 실행 중인 MicroVM 목록', en: 'FireCrab MicroVM creation form and running MicroVM list' },
-    icon: '/m2-icon.png',
+    icon: '/icons/m2-icon-64.png',
     details: {
       ko: [
         '생성 · 시작 · 중지 · 삭제 수명주기와 단계별 시작 타임라인 · 로그',
@@ -64,7 +75,7 @@ export const productViews: ProductView[] = [
       },
       image: '/dashboard-terminal.png',
       alt: { ko: '실행 중인 MicroVM의 브라우저 시리얼 Terminal', en: 'Browser serial Terminal connected to a running MicroVM' },
-      icon: '/m2-icon.png',
+      icon: '/icons/m2-icon-64.png',
       imagePosition: 'center 34%',
     },
   },
@@ -79,7 +90,7 @@ export const productViews: ProductView[] = [
     },
     image: '/dashboard-networks.png',
     alt: { ko: 'FireCrab MicroNetwork 생성과 네트워크 목록', en: 'FireCrab MicroNetwork creation and network list' },
-    icon: '/micronetwork-icon.png',
+    icon: '/icons/micronetwork-icon-64.png',
     details: {
       ko: [
         '사용자 정의 IPv4 CIDR과 선택형 IPv6 /64 (SLAAC · DHCPv6)',
@@ -107,7 +118,7 @@ export const productViews: ProductView[] = [
     },
     image: '/dashboard-microvm.png',
     alt: { ko: 'FireCrab MicroVM 생성 화면의 MicroStorage 저장 위치 선택', en: 'Selecting a MicroStorage location while creating a MicroVM' },
-    icon: '/microstorage-icon.png',
+    icon: '/icons/microstorage-icon-64.png',
     details: {
       ko: [
         '호스트에 마운트된 파일시스템과 여유 공간을 확인하고 디렉터리를 풀로 등록',
@@ -135,7 +146,7 @@ export const productViews: ProductView[] = [
     },
     image: '/dashboard-images.png',
     alt: { ko: 'FireCrab M2Image 목록과 설치 상태', en: 'FireCrab M2Image list and installation state' },
-    icon: '/m2image-icon.png',
+    icon: '/icons/m2image-icon-64.png',
     details: {
       ko: [
         'MicroRegistry 패키지를 다이제스트 검증 후 설치 (호스트 아키텍처에 맞춰 선택)',
@@ -253,42 +264,36 @@ export const comparisonTable = [
     docker: { ko: '프로세스 격리 (호스트 커널 공유)', en: 'Process isolation (shared host kernel)' },
     traditionalVm: { ko: '하드웨어 에뮬레이션 (무거운 QEMU)', en: 'Full hardware emulation (heavy QEMU)' },
     firecrab: { ko: 'KVM 하드웨어 가상화 + 독립 게스트 커널', en: 'KVM hardware virtualization + dedicated guest kernel' },
-    highlight: true,
   },
   {
     dimension: { ko: '부팅 속도', en: 'Boot Time' },
     docker: { ko: '수 초 (1 ~ 3s)', en: 'Few seconds (1 ~ 3s)' },
     traditionalVm: { ko: '느림 (30 ~ 120s)', en: 'Slow (30 ~ 120s)' },
     firecrab: { ko: '밀리초 단위 (Firecracker 사양 ≤ 125ms)', en: 'Millisecond-class (Firecracker spec ≤ 125 ms)' },
-    highlight: true,
   },
   {
     dimension: { ko: '메모리 오버헤드', en: 'Memory Footprint' },
     docker: { ko: '최소 (~수 MB)', en: 'Minimal (~few MB)' },
     traditionalVm: { ko: '큼 (수백 MB ~ 수 GB per VM)', en: 'Heavy (hundreds of MB ~ GBs per VM)' },
     firecrab: { ko: '초경량 (VMM 오버헤드 ≤ 5 MiB per microVM)', en: 'Ultra-light (VMM overhead ≤ 5 MiB per microVM)' },
-    highlight: true,
   },
   {
     dimension: { ko: '보안 및 취약점 표면', en: 'Attack Surface' },
     docker: { ko: '커널 공유로 인한 컨테이너 탈출 위험', en: 'Kernel escape risks via shared host kernel' },
     traditionalVm: { ko: '복잡한 가상 하드웨어 디바이스 표면', en: 'Large attack surface from legacy emulated devices' },
     firecrab: { ko: '최소 디바이스 모델 + 엄격한 Seccomp 필터', en: 'Minimal device model + strict seccomp jail' },
-    highlight: true,
   },
   {
     dimension: { ko: '네트워크 & 스토리지', en: 'Network & Storage' },
     docker: { ko: '복잡한 도커 네트워크 드라이버', en: 'Complex docker network drivers & overlays' },
     traditionalVm: { ko: '수동 브릿지 및 디스크 마운트 설정', en: 'Manual bridge & virtual disk management' },
     firecrab: { ko: '선언적 MicroNetwork & MicroStorage 풀 내장', en: 'Built-in declarative MicroNetwork & MicroStorage pools' },
-    highlight: true,
   },
   {
     dimension: { ko: '관리 인터페이스', en: 'Management' },
     docker: { ko: 'Docker CLI · Engine API', en: 'Docker CLI & Engine API' },
     traditionalVm: { ko: '벤더 콘솔, libvirt 등 별도 도구', en: 'Vendor consoles, libvirt & separate tooling' },
     firecrab: { ko: '웹 대시보드 + firecrab CLI + REST/WebSocket API', en: 'Web dashboard + firecrab CLI + REST/WebSocket API' },
-    highlight: true,
   },
   {
     dimension: { ko: '운영 환경', en: 'Deployment' },
@@ -298,7 +303,6 @@ export const comparisonTable = [
       ko: 'Linux 호스트 한 대에 원클릭 설치, macOS · Windows는 microManager 관리 VM',
       en: 'One-line install on a single Linux host; macOS & Windows via a microManager VM',
     },
-    highlight: true,
   },
 ];
 
@@ -331,11 +335,15 @@ export const workflow = [
 
 /**
  * 아키텍처 섹션은 ~/firecrab README 의 "Architecture" 와 같은 구성이다.
- * Intro GIF 한 장, 그리고 도식 두 장("한눈에", "어디서든 실행"). 도식 SVG 는
+ * Intro 애니메이션(GIF 를 MP4 로 바꾼 것) 한 편, 그리고 도식 두 장("한눈에", "어디서든 실행"). 도식 SVG 는
  * ~/firecrab/assets/architecture 에서 public/architecture 로 복사해 쓰며, 한국어판만 따로 있다.
+ * 도식은 모두 가로 1200px 이고, height 는 레이아웃이 밀리지 않게 img 에 그대로 넣는다.
  */
 export const architectureIntro = {
-  image: '/firecrab-demo.gif',
+  video: '/firecrab-demo.mp4',
+  poster: '/firecrab-demo-poster.webp',
+  width: 800,
+  height: 450,
   alt: {
     ko: 'FireCrab 데모: 아키텍처와 지원 플랫폼을 소개하는 애니메이션',
     en: 'FireCrab demo: an animated introduction to the architecture and supported platforms',
@@ -349,6 +357,7 @@ export const architectureBlocks = {
       ko: '/architecture/firecrab-at-a-glance.ko.svg',
       en: '/architecture/firecrab-at-a-glance.en.svg',
     },
+    height: 540,
     alt: {
       ko: 'FireCrab 한눈에: 브라우저와 CLI 요청이 FireCrab을 거쳐 MicroVM마다 Firecracker 프로세스 하나로 실행되는 흐름',
       en: 'FireCrab at a glance: browser and CLI requests flow through FireCrab into one Firecracker process per MicroVM',
@@ -378,6 +387,7 @@ export const architectureBlocks = {
       ko: '/architecture/firecrab-runs-anywhere.ko.svg',
       en: '/architecture/firecrab-runs-anywhere.en.svg',
     },
+    height: 600,
     alt: {
       ko: 'Linux는 직접, macOS와 Windows는 microManager의 관리용 Debian VM을 거쳐 같은 localhost:5523 대시보드로 열리는 구성',
       en: 'Linux runs directly, while macOS and Windows go through a microManager Debian VM to the same localhost:5523 dashboard',

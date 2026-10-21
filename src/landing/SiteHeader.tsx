@@ -60,7 +60,7 @@ export function SiteHeader({
     <header className="fc-header">
       <div className="fc-nav-shell">
         <a className="fc-wordmark" href="#top" aria-label="FireCrab">
-          <img src="/firecrab-icon.png" alt="" aria-hidden="true" />
+          <img src="/icons/firecrab-icon-64.png" alt="" width={26} height={26} />
           <span className="fc-wordmark-title">FireCrab</span>
           <span className="fc-version-pill">{siteHeader.version}</span>
         </a>

@@ -16,16 +16,20 @@
      <= 360px   no version pill
    ========================================================================== */
 
-/* Design tokens. The landing page (.fc-site) and the header on any page share them. */
+/* Design tokens. The landing page (.fc-site) and the header on any page share them.
+   Contrast (WCAG 2.2 AA, 4.5:1 for text): #f54e00 is only 3.3–3.5:1 against white and the
+   cream canvas, so it stays for non-text accents (borders, tab marks, the selection). Text in
+   orange uses --fc-primary-deep, and white button labels sit on --fc-primary-active. */
 .fc-site,
 .fc-header,
 nav.navbar {
   --fc-primary: #f54e00;
   --fc-primary-active: #d04200;
+  --fc-primary-deep: #b93a00;
   --fc-ink: #26251e;
   --fc-body: #5a5852;
   --fc-body-strong: #26251e;
-  --fc-muted: #807d72;
+  --fc-muted: #6b685f;
   --fc-muted-soft: #a09c92;
   --fc-hairline: #e6e5e0;
   --fc-hairline-soft: #efeee8;
@@ -35,6 +39,7 @@ nav.navbar {
   --fc-surface-card: #ffffff;
   --fc-surface-strong: #e6e5e0;
   --fc-on-primary: #ffffff;
+  --fc-success: #1a7356;
 
   /* Timeline pastels (signature AI / lifecycle) */
   --fc-timeline-thinking: #dfa88f;
@@ -49,6 +54,14 @@ nav.navbar {
   --fc-font-mono: "JetBrains Mono", "Fira Code", monospace;
 
   --fc-header-height: 64px;
+}
+
+/* One visible keyboard focus ring for every control (mouse clicks do not show it). */
+.fc-site :focus-visible,
+.fc-header :focus-visible,
+nav.navbar :focus-visible {
+  outline: 2px solid var(--fc-ink);
+  outline-offset: 2px;
 }
 
 /* ==========================================================================
@@ -175,7 +188,7 @@ nav.navbar a {
 
 .fc-desktop-nav a:hover,
 .fc-desktop-nav a.is-active {
-  color: var(--fc-primary);
+  color: var(--fc-primary-deep);
 }
 
 /* ==========================================================================
@@ -289,7 +302,7 @@ nav.navbar a {
   color: var(--fc-ink);
 }
 
-/* button-primary (Cursor Orange #f54e00, 40px, 8px radius) */
+/* button-primary (40px, 8px radius). White text needs the darker orange for 4.5:1. */
 .fc-btn-primary {
   display: inline-flex;
   align-items: center;
@@ -297,7 +310,7 @@ nav.navbar a {
   height: 40px;
   padding: 10px 18px;
   border-radius: 8px;
-  background: var(--fc-primary);
+  background: var(--fc-primary-active);
   color: var(--fc-on-primary);
   font-size: 14px;
   font-weight: 500;
@@ -307,7 +320,7 @@ nav.navbar a {
 }
 
 .fc-btn-primary:hover {
-  background: var(--fc-primary-active);
+  background: var(--fc-primary-deep);
   color: var(--fc-on-primary);
 }
 
@@ -379,7 +392,7 @@ nav.navbar a {
 }
 
 .fc-mobile-menu > a.is-active {
-  color: var(--fc-primary);
+  color: var(--fc-primary-deep);
 }
 
 .fc-mobile-menu > a.fc-mobile-gh-link {
@@ -387,7 +400,7 @@ nav.navbar a {
   align-items: center;
   gap: 6px;
   margin-top: 8px;
-  color: var(--fc-primary);
+  color: var(--fc-primary-deep);
 }
 
 /* ==========================================================================

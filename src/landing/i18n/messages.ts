@@ -134,12 +134,6 @@ export const messages: Record<string, Partial<MessageRow>> = {
     id: "Salin perintah",
     es: "Copiar comando",
   },
-  "Get Started": {
-    ja: "はじめる",
-    zh: "开始使用",
-    id: "Mulai",
-    es: "Empezar",
-  },
   "Documentation": {
     ja: "ドキュメント",
     zh: "查看文档",
@@ -1063,5 +1057,35 @@ export const messages: Record<string, Partial<MessageRow>> = {
     zh: "标志：Linux、Apple、Debian 标志来自 simple-icons（CC0），齿轮图标来自 Lucide（ISC）。所有标志和商标均属于其各自所有者。",
     id: "Logo: Linux, Apple, dan Debian berasal dari simple-icons (CC0); ikon roda gigi dari Lucide (ISC). Semua logo dan merek dagang milik pemiliknya masing-masing.",
     es: "Logotipos: Linux, Apple y Debian de simple-icons (CC0); el icono del engranaje de Lucide (ISC). Todos los logotipos y marcas pertenecen a sus respectivos propietarios.",
+  },
+  "opens in a new tab": {
+    ja: "新しいタブで開きます",
+    zh: "在新标签页中打开",
+    id: "terbuka di tab baru",
+    es: "se abre en una pestaña nueva",
+  },
+  "Pause animation": {
+    ja: "アニメーションを一時停止",
+    zh: "暂停动画",
+    id: "Jeda animasi",
+    es: "Pausar animación",
+  },
+  "Play animation": {
+    ja: "アニメーションを再生",
+    zh: "播放动画",
+    id: "Putar animasi",
+    es: "Reproducir animación",
+  },
+  "Getting started": {
+    ja: "はじめに",
+    zh: "快速开始",
+    id: "Memulai",
+    es: "Primeros pasos",
+  },
+  "Console": {
+    ja: "コンソール",
+    zh: "控制台",
+    id: "Konsol",
+    es: "Consola",
   },
 };

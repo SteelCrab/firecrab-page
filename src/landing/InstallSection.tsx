@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { CodeBlock } from './CodeBlock';
+import { ExternalLink } from './ExternalLink';
 import { readmeFile } from './i18n';
 import { useI18n } from './i18n/context';
 import { platformGuides, type GuideBlock, type PlatformId } from './installGuide';
-import { repositoryUrl } from './landingData';
+import { navLabel, repositoryUrl } from './landingData';
 import { RichText } from './RichText';
+import { tabKeyDown } from './tabs';
 
 /** Preselect the platform the visitor is probably on (phones fall back to Linux). */
 const detectPlatform = (): PlatformId => {
@@ -51,12 +53,13 @@ export function InstallSection() {
   const { t, language } = useI18n();
   const [platformId, setPlatformId] = useState<PlatformId>(detectPlatform);
   const guide = platformGuides.find((entry) => entry.id === platformId) ?? platformGuides[0];
+  const tabId = (index: number) => `fc-platform-tab-${platformGuides[index].id}`;
 
   return (
     <section className="fc-section" id="install" aria-labelledby="fc-install-title">
       <div className="fc-install-layout">
         <div className="fc-install-guide">
-          <span className="fc-caption-uppercase">06 / INSTALLATION</span>
+          <p className="fc-caption-uppercase">{navLabel('install', language)}</p>
           <h2 id="fc-install-title" className="fc-display-lg">
             {t('서버는 이미 있으니까.', 'You already have the server.')}
             <br />
@@ -72,16 +75,20 @@ export function InstallSection() {
           </p>
 
           <div className="fc-platform-tabs" role="tablist" aria-label={t('플랫폼 선택', 'Choose a platform')}>
-            {platformGuides.map((entry) => (
+            {platformGuides.map((entry, index) => (
               <button
                 type="button"
                 role="tab"
                 key={entry.id}
-                id={`fc-platform-tab-${entry.id}`}
+                id={tabId(index)}
                 aria-selected={entry.id === guide.id}
                 aria-controls="fc-install-steps"
+                tabIndex={entry.id === guide.id ? 0 : -1}
                 className={`fc-platform-tab ${entry.id === guide.id ? 'is-active' : ''}`}
                 onClick={() => setPlatformId(entry.id)}
+                onKeyDown={(event) =>
+                  tabKeyDown(event, index, platformGuides.length, (next) => setPlatformId(platformGuides[next].id), tabId)
+                }
               >
                 <span className="fc-platform-name">
                   {entry.name}
@@ -93,24 +100,14 @@ export function InstallSection() {
           </div>
 
           <div className="fc-install-actions">
-            <a
-              href={`${repositoryUrl}/blob/main/public-docs/installation.md`}
-              target="_blank"
-              rel="noreferrer"
-              className="fc-link-action"
-            >
-              <BookOpen size={16} />
+            <ExternalLink href={`${repositoryUrl}/blob/main/public-docs/installation.md`} className="fc-link-action">
+              <BookOpen size={16} aria-hidden="true" />
               <span>{t('전체 설치 가이드', 'Full installation guide')}</span>
-              <span>↗</span>
-            </a>
-            <a
-              href={`${repositoryUrl}/blob/main/${readmeFile(language)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="fc-link-action-subtle"
-            >
-              {readmeFile(language)} ↗
-            </a>
+              <span aria-hidden="true">↗</span>
+            </ExternalLink>
+            <ExternalLink href={`${repositoryUrl}/blob/main/${readmeFile(language)}`} className="fc-link-action-subtle">
+              {readmeFile(language)} <span aria-hidden="true">↗</span>
+            </ExternalLink>
           </div>
         </div>
 

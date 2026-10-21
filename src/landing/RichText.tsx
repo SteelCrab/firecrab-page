@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ExternalLink } from './ExternalLink';
 import { repositoryUrl } from './landingData';
 
 /**
@@ -27,9 +28,9 @@ export function RichText({ text }: { text: string }): ReactNode {
           const link = linkPattern.exec(part);
           if (link) {
             return (
-              <a key={index} href={resolveHref(link[2])} target="_blank" rel="noreferrer">
+              <ExternalLink key={index} href={resolveHref(link[2])}>
                 {link[1]}
-              </a>
+              </ExternalLink>
             );
           }
           return part;

@@ -1,5 +1,6 @@
+import { DemoVideo } from './DemoVideo';
 import { useI18n } from './i18n/context';
-import { architectureBlocks, architectureIntro } from './landingData';
+import { architectureBlocks, architectureIntro, navLabel } from './landingData';
 import { RichText } from './RichText';
 
 /**
@@ -16,7 +17,7 @@ export function ArchitectureSection() {
   return (
     <section className="fc-section" id="architecture" aria-labelledby="fc-arch-title">
       <div className="fc-section-header">
-        <span className="fc-caption-uppercase">04 / ARCHITECTURE</span>
+        <p className="fc-caption-uppercase">{navLabel('architecture', language)}</p>
         <h2 id="fc-arch-title" className="fc-display-lg">
           {t('하나의 단순한 아키텍처,', 'One simple architecture,')}
           <br />
@@ -34,13 +35,26 @@ export function ArchitectureSection() {
 
       <div className="fc-arch-card">
         <figure className="fc-arch-intro">
-          <img src={architectureIntro.image} alt={loc(architectureIntro.alt)} loading="lazy" />
+          <DemoVideo
+            src={architectureIntro.video}
+            poster={architectureIntro.poster}
+            width={architectureIntro.width}
+            height={architectureIntro.height}
+            label={loc(architectureIntro.alt)}
+          />
         </figure>
 
         <article className="fc-arch-block">
           <h3 className="fc-title-md">{loc(glance.title)}</h3>
           <div className="fc-arch-diagram-wrap">
-            <img src={diagram(glance.image)} alt={loc(glance.alt)} loading="lazy" />
+            <img
+              src={diagram(glance.image)}
+              alt={loc(glance.alt)}
+              width={1200}
+              height={glance.height}
+              loading="lazy"
+              decoding="async"
+            />
           </div>
           <ol className="fc-arch-steps">
             {glance.steps.map((step) => (
@@ -52,7 +66,14 @@ export function ArchitectureSection() {
         <article className="fc-arch-block">
           <h3 className="fc-title-md">{loc(anywhere.title)}</h3>
           <div className="fc-arch-diagram-wrap">
-            <img src={diagram(anywhere.image)} alt={loc(anywhere.alt)} loading="lazy" />
+            <img
+              src={diagram(anywhere.image)}
+              alt={loc(anywhere.alt)}
+              width={1200}
+              height={anywhere.height}
+              loading="lazy"
+              decoding="async"
+            />
           </div>
           {anywhere.paragraphs.map((paragraph) => (
             <p className="fc-body-sm fc-arch-text" key={paragraph.en}>
