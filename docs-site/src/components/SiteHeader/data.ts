@@ -16,7 +16,7 @@ export interface HeaderLinkData {
 
 export const headerLinks = siteHeader.links as HeaderLinkData[];
 export const headerLabels = siteHeader.labels as Record<keyof typeof siteHeader.labels, LocalizedLabel>;
-export const {version, repositoryUrl} = siteHeader;
+export const {version, repositoryUrl, consoleUrl} = siteHeader;
 
 /** siteHeader.json 의 문구는 모든 언어를 담고 있다. */
 export const pick = (text: LocalizedLabel, language: Language): string => text[language] ?? text.en;

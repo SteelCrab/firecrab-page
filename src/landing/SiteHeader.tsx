@@ -67,7 +67,7 @@ export function SiteHeader({
 
         <nav className="fc-desktop-nav" aria-label={label(siteHeader.labels.mainMenu)}>
           {siteHeader.links.map((link) => (
-            <a href={linkHref(link, language)} key={link.id}>
+            <a href={linkHref(link, language)} key={link.id} data-link={link.id}>
               {label(link.label)}
             </a>
           ))}
@@ -79,6 +79,10 @@ export function SiteHeader({
           <a className="fc-github-pill" href={siteHeader.repositoryUrl} target="_blank" rel="noreferrer">
             <Github size={15} />
             <span>{label(siteHeader.labels.star)}</span>
+          </a>
+
+          <a className="fc-btn-console" href={siteHeader.consoleUrl}>
+            {label(siteHeader.labels.console)}
           </a>
 
           <a className="fc-btn-primary" href={installLink ? linkHref(installLink, language) : '#install'}>
@@ -98,7 +102,7 @@ export function SiteHeader({
         </button>
       </div>
 
-      {/* Drawer: language grid, the same links, GitHub */}
+      {/* Drawer: language grid, the same links, Console, GitHub */}
       <nav
         className={`fc-mobile-nav ${menuOpen ? 'is-open' : ''}`}
         id="fc-mobile-nav"
@@ -126,6 +130,10 @@ export function SiteHeader({
               {label(link.label)}
             </a>
           ))}
+
+          <a href={siteHeader.consoleUrl} className="fc-mobile-console-link" onClick={closeMenu}>
+            {label(siteHeader.labels.console)} →
+          </a>
 
           <a
             href={siteHeader.repositoryUrl}

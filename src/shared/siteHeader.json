@@ -1,6 +1,7 @@
 {
   "version": "v0.3.0",
   "repositoryUrl": "https://github.com/SteelCrab/firecrab",
+  "consoleUrl": "https://console.firecrab.dev/",
   "languages": [
     { "code": "ko", "label": "한국어", "short": "KO", "htmlLang": "ko", "docsPrefix": "" },
     { "code": "en", "label": "English", "short": "EN", "htmlLang": "en", "docsPrefix": "/en" },
@@ -45,6 +46,7 @@
     "openMenu": { "ko": "메뉴 열기", "en": "Open menu", "ja": "メニューを開く", "zh": "打开菜单", "id": "Buka menu", "es": "Abrir menú" },
     "closeMenu": { "ko": "메뉴 닫기", "en": "Close menu", "ja": "メニューを閉じる", "zh": "关闭菜单", "id": "Tutup menu", "es": "Cerrar menú" },
     "languageSelector": { "ko": "언어 선택", "en": "Language selector", "ja": "言語を選択", "zh": "选择语言", "id": "Pilih bahasa", "es": "Seleccionar idioma" },
+    "console": { "ko": "콘솔", "en": "Console", "ja": "コンソール", "zh": "控制台", "id": "Konsol", "es": "Consola" },
     "star": { "ko": "Star", "en": "Star", "ja": "Star", "zh": "Star", "id": "Star", "es": "Star" },
     "install": { "ko": "설치하기", "en": "Install", "ja": "インストール", "zh": "安装", "id": "Instal", "es": "Instalar" }
   }

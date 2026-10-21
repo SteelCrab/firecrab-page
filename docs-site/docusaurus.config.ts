@@ -172,6 +172,7 @@ const config: Config = {
         })),
         {type: 'custom-fcLanguage', position: 'right' as const},
         {type: 'custom-fcStar', position: 'right' as const},
+        {type: 'custom-fcConsole', position: 'right' as const},
         {type: 'custom-fcInstall', position: 'right' as const},
       ],
     },

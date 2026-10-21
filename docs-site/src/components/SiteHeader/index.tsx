@@ -3,7 +3,7 @@ import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import {useNavbarMobileSidebar} from '@docusaurus/theme-common/internal';
-import {headerLabels, headerLinks, pick, repositoryUrl, useHeaderLanguage, version} from './data';
+import {consoleUrl, headerLabels, headerLinks, pick, repositoryUrl, useHeaderLanguage, version} from './data';
 import {CloseIcon, GithubIcon, MenuIcon} from './icons';
 import {LanguageDropdown, LanguageGrid} from './LanguageMenu';
 
@@ -88,7 +88,7 @@ export function HeaderLink({linkId, onClick}: ItemProps & {linkId: string}): Rea
   // 랜딩 섹션은 다른 앱이다. Link 로 넣으면 broken-link 검사에 걸리고 404 로 라우팅된다.
   if (link.kind === 'landing') {
     return (
-      <a href={`/#${link.hash}`} onClick={onClick}>
+      <a href={`/#${link.hash}`} data-link={link.id} onClick={onClick}>
         {text}
       </a>
     );
@@ -129,6 +129,26 @@ export function HeaderStar({mobile, onClick}: ItemProps): ReactNode {
     <a className="fc-github-pill" href={repositoryUrl} target="_blank" rel="noreferrer">
       <GithubIcon size={15} />
       <span>{pick(headerLabels.star, language.code)}</span>
+    </a>
+  );
+}
+
+/** custom-fcConsole: 막대에서는 보조 버튼, 서랍에서는 GitHub 위의 링크. 콘솔은 다른 주소라 원시 <a> 를 쓴다. */
+export function HeaderConsole({mobile, onClick}: ItemProps): ReactNode {
+  const language = useHeaderLanguage();
+  const text = pick(headerLabels.console, language.code);
+
+  if (mobile) {
+    return (
+      <a href={consoleUrl} className="fc-mobile-console-link" onClick={onClick}>
+        {text} →
+      </a>
+    );
+  }
+
+  return (
+    <a className="fc-btn-console" href={consoleUrl}>
+      {text}
     </a>
   );
 }

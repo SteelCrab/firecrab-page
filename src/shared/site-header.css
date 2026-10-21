@@ -8,11 +8,11 @@
    documented in README.md ("Shared site header").
 
    Breakpoints
-     >= 1141px  full bar
-     997-1140   condensed bar (no Star pill, tighter gaps) so English labels still fit
+     >= 1241px  full bar
+     997-1240   condensed bar (no Star pill or Install text link, tighter gaps) so long labels fit
      <= 996px   menu button + drawer. 996px is Docusaurus' own mobile threshold
                 (useWindowSize), which is why the landing page collapses at the same width.
-     <= 640px   16px gutters      <= 520px  no language switch in the bar
+     <= 640px   16px gutters      <= 520px  no language switch or Console in the bar
      <= 360px   no version pill
    ========================================================================== */
 
@@ -302,6 +302,29 @@ nav.navbar a {
   color: var(--fc-ink);
 }
 
+/* Console: the secondary button next to the primary CTA (same 40px height and radius). */
+.fc-btn-console {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 10px 16px;
+  border: 1px solid var(--fc-hairline-strong);
+  border-radius: 8px;
+  background: var(--fc-surface-card);
+  color: var(--fc-ink);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition: border-color 150ms ease;
+}
+
+.fc-btn-console:hover {
+  border-color: var(--fc-ink);
+  color: var(--fc-ink);
+}
+
 /* button-primary (40px, 8px radius). White text needs the darker orange for 4.5:1. */
 .fc-btn-primary {
   display: inline-flex;
@@ -395,6 +418,10 @@ nav.navbar a {
   color: var(--fc-primary-deep);
 }
 
+.fc-mobile-menu > a.fc-mobile-console-link {
+  font-weight: 600;
+}
+
 .fc-mobile-menu > a.fc-mobile-gh-link {
   display: inline-flex;
   align-items: center;
@@ -479,16 +506,18 @@ nav.navbar .navbar-sidebar__back {
   }
 }
 
-/* Condensed bar: the English labels need ~1100px with everything on, so drop the
-   Star pill and tighten the gaps until the menu button takes over at 996px. */
-@media (min-width: 997px) and (max-width: 1140px) {
+/* Condensed bar: the English and Spanish labels need ~1240px with everything on, so drop
+   the Star pill and the Install text link (the Install button stays on the right), and
+   tighten the gaps until the menu button takes over at 996px. */
+@media (min-width: 997px) and (max-width: 1240px) {
   .fc-nav-shell {
     gap: 16px;
   }
   .fc-desktop-nav {
     gap: 18px;
   }
-  .fc-nav-actions .fc-github-pill {
+  .fc-nav-actions .fc-github-pill,
+  .fc-desktop-nav a[data-link='install'] {
     display: none;
   }
 }
@@ -536,9 +565,10 @@ nav.navbar .navbar-sidebar__back {
   .fc-nav-shell {
     gap: 12px;
   }
-  /* The language switch is the first thing in the drawer, so the bar keeps room for
+  /* The language switch and Console are in the drawer, so the bar keeps room for
      the Install CTA. */
-  .fc-nav-actions .fc-language-menu {
+  .fc-nav-actions .fc-language-menu,
+  .fc-nav-actions .fc-btn-console {
     display: none;
   }
 }
